@@ -1,8 +1,7 @@
 
 
 namespace Cipa.Domain.Entities {
-    public class LimiteDimensionamento {
-        public int Id { get; set; }
+    public class LimiteDimensionamento : Entity<int> {
         public int Limite { get; set; }
         public int IntervaloAcrescimo { get; set; }
         public int AcrescimoEfetivos { get; set; }

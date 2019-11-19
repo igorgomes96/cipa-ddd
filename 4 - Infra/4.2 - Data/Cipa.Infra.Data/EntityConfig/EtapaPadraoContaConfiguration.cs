@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Cipa.Infra.Data.EntityConfig {
-    public class EtapaPadraoContaConfiguration : EtapaBaseConfiguration<EtapaPadraoConta>
+    public class EtapaPadraoContaConfiguration : EtapaBaseConfiguration<EtapaPadraoConta, int>
     {
         public override void Configure(EntityTypeBuilder<EtapaPadraoConta> builder)
         {
@@ -22,6 +22,8 @@ namespace Cipa.Infra.Data.EntityConfig {
 
             builder.Property(e => e.DuracaoPadrao)
                 .IsRequired();
+
+            builder.HasIndex(e => new { e.ContaId, e.Ordem }).IsUnique();
         }
     }
 }

@@ -3,9 +3,8 @@ using Cipa.Domain.Helpers;
 
 namespace Cipa.Domain.Entities
 {
-    public class EtapaCronograma : EtapaBase
+    public class EtapaCronograma : EtapaBase<int>
     {
-        public int Id { get; set; }
         public int EleicaoId { get; set; }
         public DateTime DataPrevista { get; set; }
         public DateTime? DataRealizada { get; set; }
@@ -26,15 +25,38 @@ namespace Cipa.Domain.Entities
 
         public override bool Equals(object obj)
         {
-            return (base.Equals(obj) || ((EtapaCronograma)obj).Id == Id);
+            var compareTo = obj as EtapaCronograma;
+
+            if (ReferenceEquals(this, compareTo)) return true;
+            if (ReferenceEquals(null, compareTo)) return false;
+
+            return Id.Equals(compareTo.Id);
+        }
+
+        public static bool operator ==(EtapaCronograma a, EtapaCronograma b)
+        {
+            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+                return true;
+
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+                return false;
+
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(EtapaCronograma a, EtapaCronograma b)
+        {
+            return !(a == b);
         }
 
         public override int GetHashCode()
         {
-            int hash = 13;
-            hash = (hash * 7) + Id.GetHashCode();
-            hash = (hash * 7) + Id.GetHashCode();
-            return hash;
+            return (GetType().GetHashCode() * 907) + Id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return GetType().Name + " [Id=" + Id + "]";
         }
 
     }

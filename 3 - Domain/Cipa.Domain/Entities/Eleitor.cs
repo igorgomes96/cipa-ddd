@@ -2,9 +2,8 @@ using System;
 
 namespace Cipa.Domain.Entities
 {
-    public class Eleitor
+    public class Eleitor: Entity<int>
     {
-        public int Id { get; set; }
         public string Nome { get; set; }
         public string Email { get; set; }
         public string Matricula { get; set; }
@@ -20,5 +19,6 @@ namespace Cipa.Domain.Entities
         public virtual Eleicao Eleicao { get; set; }
         public virtual Usuario Usuario { get; set; }
         public virtual Inscricao Inscricao { get; set; }
+        public virtual Voto Voto { get; set; }
     }
 }

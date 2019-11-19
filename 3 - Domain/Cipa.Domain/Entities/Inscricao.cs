@@ -10,9 +10,8 @@ namespace Cipa.Domain.Entities
         Reprovada
     }
 
-    public class Inscricao
+    public class Inscricao : Entity<int>
     {
-        public int Id { get; set; }
         public int Votos { get; set; }
         public StatusInscricao StatusInscricao { get; set; }
         public int EleitorId { get; set; }

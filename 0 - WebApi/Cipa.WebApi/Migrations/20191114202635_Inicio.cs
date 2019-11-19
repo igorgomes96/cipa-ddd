@@ -166,14 +166,14 @@ namespace Cipa.WebApi.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Email = table.Column<string>(nullable: true),
-                    Nome = table.Column<string>(nullable: true),
-                    Senha = table.Column<string>(nullable: true),
+                    Email = table.Column<string>(maxLength: 100, nullable: false),
+                    Nome = table.Column<string>(maxLength: 255, nullable: false),
+                    Senha = table.Column<string>(maxLength: 255, nullable: true),
                     ContaId = table.Column<int>(nullable: true),
-                    Perfil = table.Column<string>(nullable: true),
+                    Perfil = table.Column<string>(maxLength: 100, nullable: false),
                     CodigoRecuperacao = table.Column<Guid>(nullable: true),
                     ExpiracaoCodigoRecuperacao = table.Column<DateTime>(nullable: true),
-                    Cargo = table.Column<string>(nullable: true),
+                    Cargo = table.Column<string>(maxLength: 255, nullable: true),
                     DataCadastro = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -910,11 +910,6 @@ namespace Cipa.WebApi.Migrations
                 column: "ContaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Eleicoes_EstabelecimentoId",
-                table: "Eleicoes",
-                column: "EstabelecimentoId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Eleicoes_GrupoId",
                 table: "Eleicoes",
                 column: "GrupoId");
@@ -925,14 +920,21 @@ namespace Cipa.WebApi.Migrations
                 column: "UsuarioCriacaoId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Eleicoes_EstabelecimentoId_Gestao",
+                table: "Eleicoes",
+                columns: new[] { "EstabelecimentoId", "Gestao" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Eleitores_EleicaoId",
                 table: "Eleitores",
                 column: "EleicaoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Eleitores_UsuarioId",
+                name: "IX_Eleitores_UsuarioId_EleicaoId",
                 table: "Eleitores",
-                column: "UsuarioId");
+                columns: new[] { "UsuarioId", "EleicaoId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Empresas_ContaId",
@@ -950,24 +952,32 @@ namespace Cipa.WebApi.Migrations
                 column: "GrupoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EtapasCronogramas_EleicaoId",
-                table: "EtapasCronogramas",
-                column: "EleicaoId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_EtapasCronogramas_EtapaObrigatoriaId",
                 table: "EtapasCronogramas",
                 column: "EtapaObrigatoriaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EtapasPadroesContas_ContaId",
-                table: "EtapasPadroesContas",
-                column: "ContaId");
+                name: "IX_EtapasCronogramas_EleicaoId_Ordem",
+                table: "EtapasCronogramas",
+                columns: new[] { "EleicaoId", "Ordem" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_EtapasPadroesContas_EtapaObrigatoriaId",
                 table: "EtapasPadroesContas",
                 column: "EtapaObrigatoriaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EtapasPadroesContas_ContaId_Ordem",
+                table: "EtapasPadroesContas",
+                columns: new[] { "ContaId", "Ordem" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Grupos_CodigoGrupo",
+                table: "Grupos",
+                column: "CodigoGrupo",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Inscricoes_EleicaoId",
@@ -994,6 +1004,12 @@ namespace Cipa.WebApi.Migrations
                 name: "IX_Usuarios_ContaId",
                 table: "Usuarios",
                 column: "ContaId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Usuarios_Email",
+                table: "Usuarios",
+                column: "Email",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Votos_EleicaoId",

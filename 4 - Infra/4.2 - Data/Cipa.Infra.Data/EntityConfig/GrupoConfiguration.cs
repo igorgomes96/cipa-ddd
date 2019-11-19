@@ -17,6 +17,8 @@ namespace Cipa.Infra.Data.EntityConfig {
                 .WithOne()
                 .HasForeignKey<LimiteDimensionamento>(g => g.Id)
                 .IsRequired();
+
+            builder.HasIndex(g => g.CodigoGrupo).IsUnique();
         }
     }
 }

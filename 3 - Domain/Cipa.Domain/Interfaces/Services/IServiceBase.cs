@@ -8,7 +8,7 @@ namespace Cipa.Domain.Interfaces.Services
         TEntity Adicionar(TEntity obj);
         TEntity BuscarPeloId(int id);
         IEnumerable<TEntity> BuscarTodos();
-        void Atualizar(TEntity obj);
+        TEntity Atualizar(TEntity obj);
         void Excluir(TEntity obj);
     }
 }

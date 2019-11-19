@@ -9,6 +9,6 @@ namespace Cipa.Application.Interfaces
         TEntity BuscarPeloId(int id);
         IEnumerable<TEntity> BuscarTodos();
         void Atualizar(TEntity obj);
-        void Excluir(TEntity obj);
+        void Excluir(int id);
     }
 }

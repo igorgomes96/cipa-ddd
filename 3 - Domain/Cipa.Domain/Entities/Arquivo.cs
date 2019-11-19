@@ -8,9 +8,8 @@ namespace Cipa.Domain.Entities
         DocumentoCronograma,
         Importacao
     }
-    public class Arquivo
+    public class Arquivo: Entity<int>
     {
-        public int Id { get; set; }
         public string Path { get; set; }
         public DateTime DataCadastro { get; set; }
         public DateTime DataCriacao { get; set; }

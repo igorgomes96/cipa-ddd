@@ -30,6 +30,8 @@ namespace Cipa.Infra.Data.EntityConfig {
 
             builder.Property(u => u.Cargo)
                 .HasMaxLength(255);
+
+            builder.HasIndex(u => u.Email).IsUnique();
         }
     }
 }

@@ -41,6 +41,8 @@ namespace Cipa.Infra.Data.EntityConfig {
 
             builder.Property(e => e.EmailGestor)
                 .HasMaxLength(100);
+
+            builder.HasIndex(e => new { e.UsuarioId, e.EleicaoId }).IsUnique();
         }
     }
 }

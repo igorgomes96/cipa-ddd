@@ -24,6 +24,12 @@ namespace Cipa.WebApi.AutoMapper {
                  .ForMember(dest => dest.Grupo, opt => opt.MapFrom(e => e.Grupo.CodigoGrupo))
                  .ReverseMap();
                 cfg.CreateMap<EtapaCronograma, EtapaCronogramaViewModel>().ReverseMap();
+                cfg.CreateMap<Eleitor, EleitorViewModel>().ReverseMap();
+                cfg.CreateMap<Inscricao, InscricaoViewModel>()
+                    .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")));
+                cfg.CreateMap<Inscricao, InscricaoDetalhesViewModel>()
+                    .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")));
+                cfg.CreateMap<Reprovacao, ReprovacaoViewModel>().ReverseMap();
             });
             return config.CreateMapper();
         }

@@ -32,9 +32,10 @@ namespace Cipa.Domain.Services {
             _repository.Excluir(obj);
         }
 
-        public virtual void Atualizar(TEntity obj)
+        public virtual TEntity Atualizar(TEntity obj)
         {
             _repository.Atualizar(obj);
+            return obj;
         }
 
         public void Dispose()

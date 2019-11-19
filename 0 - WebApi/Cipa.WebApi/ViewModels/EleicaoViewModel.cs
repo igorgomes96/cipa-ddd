@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Cipa.WebApi.ViewModels
 {
@@ -6,12 +7,16 @@ namespace Cipa.WebApi.ViewModels
     {
         public int Id { get; set; }
         public int Gestao { get; set; }
-        public int DuracaoGestao { get; set; }
-        public DateTime DataInicio { get; set; }
-        public int EstabelecimentoId { get; set; }
+        [Required(ErrorMessage = "A duração da gestão deve ser informada.")]
+        public int? DuracaoGestao { get; set; }
+        [Required(ErrorMessage = "A data de início do processo eleitoral deve ser informado.")]
+        public DateTime? DataInicio { get; set; }
+        [Required(ErrorMessage = "O código do estabelecimento deve ser informado.")]
+        public int? EstabelecimentoId { get; set; }
         public DateTime DataCadastro { get; set; }
-        public DateTime? HorarioFinalizacao { get; set; }
-        public int GrupoId { get; set; }
+        public DateTime? DataFinalizacao { get; set; }
+        [Required(ErrorMessage = "O grupo ao qual pertence o estabelecimento deve ser informado (Consultar o Quadro II da NR-5).")]
+        public int? GrupoId { get; set; }
         public string Grupo { get; set; }
         public int QtdaEfetivos { get; set; }
         public int QtdaSuplentes { get; set; }

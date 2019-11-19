@@ -102,11 +102,12 @@ namespace Cipa.WebApi.Migrations
 
                     b.HasIndex("ContaId");
 
-                    b.HasIndex("EstabelecimentoId");
-
                     b.HasIndex("GrupoId");
 
                     b.HasIndex("UsuarioCriacaoId");
+
+                    b.HasIndex("EstabelecimentoId", "Gestao")
+                        .IsUnique();
 
                     b.ToTable("Eleicoes");
                 });
@@ -151,7 +152,8 @@ namespace Cipa.WebApi.Migrations
 
                     b.HasIndex("EleicaoId");
 
-                    b.HasIndex("UsuarioId");
+                    b.HasIndex("UsuarioId", "EleicaoId")
+                        .IsUnique();
 
                     b.ToTable("Eleitores");
                 });
@@ -270,9 +272,10 @@ namespace Cipa.WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EleicaoId");
-
                     b.HasIndex("EtapaObrigatoriaId");
+
+                    b.HasIndex("EleicaoId", "Ordem")
+                        .IsUnique();
 
                     b.ToTable("EtapasCronogramas");
                 });
@@ -372,9 +375,10 @@ namespace Cipa.WebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContaId");
-
                     b.HasIndex("EtapaObrigatoriaId");
+
+                    b.HasIndex("ContaId", "Ordem")
+                        .IsUnique();
 
                     b.ToTable("EtapasPadroesContas");
 
@@ -451,6 +455,9 @@ namespace Cipa.WebApi.Migrations
                         .HasMaxLength(10);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CodigoGrupo")
+                        .IsUnique();
 
                     b.ToTable("Grupos");
 
@@ -4470,7 +4477,8 @@ namespace Cipa.WebApi.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Cargo");
+                    b.Property<string>("Cargo")
+                        .HasMaxLength(255);
 
                     b.Property<Guid?>("CodigoRecuperacao");
 
@@ -4478,19 +4486,29 @@ namespace Cipa.WebApi.Migrations
 
                     b.Property<DateTime>("DataCadastro");
 
-                    b.Property<string>("Email");
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100);
 
                     b.Property<DateTime?>("ExpiracaoCodigoRecuperacao");
 
-                    b.Property<string>("Nome");
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(255);
 
-                    b.Property<string>("Perfil");
+                    b.Property<string>("Perfil")
+                        .IsRequired()
+                        .HasMaxLength(100);
 
-                    b.Property<string>("Senha");
+                    b.Property<string>("Senha")
+                        .HasMaxLength(255);
 
                     b.HasKey("Id");
 
                     b.HasIndex("ContaId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("Usuarios");
 
@@ -4679,7 +4697,7 @@ namespace Cipa.WebApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Cipa.Domain.Entities.Eleitor", "Eleitor")
-                        .WithOne()
+                        .WithOne("Voto")
                         .HasForeignKey("Cipa.Domain.Entities.Voto", "EleitorId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

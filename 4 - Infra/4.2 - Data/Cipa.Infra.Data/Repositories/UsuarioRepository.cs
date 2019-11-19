@@ -18,5 +18,10 @@ namespace Cipa.Infra.Data.Repositories
         {
             return QueryUsuario().SingleOrDefault(u => u.Email == email && u.Senha == senha);
         }
+
+        public Usuario BuscarUsuario(string email)
+        {
+            return QueryUsuario().SingleOrDefault(u => u.Email == email);
+        }
     }
 }

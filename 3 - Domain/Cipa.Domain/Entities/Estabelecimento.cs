@@ -3,9 +3,8 @@ using System.Collections.Generic;
 
 namespace Cipa.Domain.Entities
 {
-    public class Estabelecimento
+    public class Estabelecimento: Entity<int>
     {
-        public int Id { get; set; }
         public int EmpresaId { get; set; }
         public string Cidade { get; set; }
         public string Endereco { get; set; }

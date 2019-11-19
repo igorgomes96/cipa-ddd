@@ -37,6 +37,8 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.Property(i => i.NomeAprovador)
                 .HasMaxLength(255); 
+
+            builder.HasIndex(i => i.EleitorId).IsUnique();
         }
     }
 }

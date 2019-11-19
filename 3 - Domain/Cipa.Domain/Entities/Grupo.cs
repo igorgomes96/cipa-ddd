@@ -3,9 +3,8 @@ using System.Linq;
 
 namespace Cipa.Domain.Entities
 {
-    public class Grupo
+    public class Grupo: Entity<int>
     {
-        public int Id { get; set; }
         public string CodigoGrupo { get; set; }
 
         public virtual LimiteDimensionamento LimiteDimensionamento { get; set; }

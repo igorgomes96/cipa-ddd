@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
 
 namespace Cipa.Domain.Entities
 {
-    public class Empresa
+    public class Empresa: Entity<int>
     {
-        public int Id { get; set; }
         public string RazaoSocial { get; set; }
         public string Cnpj { get; set; }
         public string InformacoesGerais { get; set; }

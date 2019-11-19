@@ -10,7 +10,7 @@ namespace Cipa.Infra.Data.EntityConfig {
             builder.HasKey(v => v.Id);
 
             builder.HasOne(v => v.Eleitor)
-                .WithOne()
+                .WithOne(e => e.Voto)
                 .HasForeignKey<Voto>(v => v.EleitorId)
                 .IsRequired();
 
@@ -23,8 +23,10 @@ namespace Cipa.Infra.Data.EntityConfig {
                 .HasMaxLength(15)
                 .IsRequired();
 
-            builder.Property(e => e.DataCadastro)
+            builder.Property(v => v.DataCadastro)
                 .IsRequired();
+
+            builder.HasIndex(v => v.EleitorId).IsUnique();
         }
     }
 }

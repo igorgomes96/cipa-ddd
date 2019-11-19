@@ -24,7 +24,7 @@ namespace Cipa.Domain.Entities {
             }
         }
 
-        public bool PossuiQtdaMinimaCandidatos
+        public bool PossuiQtdaMinimaInscritos
         {
             get
             {

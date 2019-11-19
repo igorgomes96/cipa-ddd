@@ -30,6 +30,7 @@ namespace Cipa.Infra.Data.Context
             modelBuilder.ApplyConfiguration(new EtapaPadraoContaConfiguration());
             modelBuilder.ApplyConfiguration(new ContaConfiguration());
             modelBuilder.ApplyConfiguration(new DimensionamentoConfiguration());
+            modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
             modelBuilder.Seed();
             base.OnModelCreating(modelBuilder);
         }

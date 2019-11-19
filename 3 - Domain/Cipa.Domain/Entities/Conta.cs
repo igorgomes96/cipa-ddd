@@ -4,9 +4,8 @@ using System.Collections.Generic;
 
 namespace Cipa.Domain.Entities
 {
-    public class Conta
+    public class Conta: Entity<int>
     {
-        public int Id { get; set; }
         public int? PlanoId { get; set; }
         public bool Ativa { get; set; }
         public int QtdaEstabelecimentos { get; set; }

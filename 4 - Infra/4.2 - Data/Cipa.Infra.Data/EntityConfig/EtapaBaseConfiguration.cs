@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Cipa.Infra.Data.EntityConfig {
-    public class EtapaBaseConfiguration<TEtapa> : IEntityTypeConfiguration<TEtapa> where TEtapa: EtapaBase
+    public class EtapaBaseConfiguration<TEtapa, TKey> : IEntityTypeConfiguration<TEtapa> where TEtapa: EtapaBase<TKey>
     {
         public virtual void Configure(EntityTypeBuilder<TEtapa> builder)
         {

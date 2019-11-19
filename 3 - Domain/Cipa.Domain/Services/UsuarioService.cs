@@ -14,5 +14,10 @@ namespace Cipa.Domain.Services {
         {
             return _usuarioRepository.BuscarUsuario(email, senha);
         }
+
+        public Usuario BuscarUsuario(string email)
+        {
+            return _usuarioRepository.BuscarUsuario(email);
+        }
     }
 }

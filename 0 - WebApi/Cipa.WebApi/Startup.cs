@@ -9,6 +9,7 @@ using Cipa.Infra.Data.Context;
 using Cipa.Infra.Data.Repositories;
 using Cipa.WebApi.Authentication;
 using Cipa.WebApi.AutoMapper;
+using Cipa.WebApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -91,6 +92,10 @@ namespace Cipa.WebApi
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseHttpErrorMiddleware();
+
+            app.UseCors("AllowAll");
 
             app.UseAuthentication();
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cipa.Application.Interfaces;
+using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Services;
 
 namespace Cipa.Application {
@@ -27,8 +28,10 @@ namespace Cipa.Application {
             return _serviceBase.BuscarPeloId(id);
         }
 
-        public virtual void Excluir(TEntity obj)
+        public virtual void Excluir(int id)
         {
+            TEntity obj = BuscarPeloId(id);
+            if (obj == null) throw new NotFoundException("Código não encontrado.");
             _serviceBase.Excluir(obj);
         }
 

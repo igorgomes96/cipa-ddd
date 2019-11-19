@@ -9,9 +9,8 @@ namespace Cipa.Domain.Entities
         FinalizadoComFalha
     }
 
-    public class Importacao
+    public class Importacao: Entity<int>
     {
-        public int Id { get; set; }
         public DateTime Horario { get; set; }
         public int ArquivoId { get; set; }
         public StatusImportacao Status { get; set; } = StatusImportacao.Aguardando;

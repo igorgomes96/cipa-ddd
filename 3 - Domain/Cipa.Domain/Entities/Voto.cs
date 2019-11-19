@@ -1,8 +1,7 @@
 using System;
 
 namespace Cipa.Domain.Entities {
-    public class Voto {
-        public int Id { get; set; }
+    public class Voto: Entity<int> {
         public int EleitorId { get; set; }
         public int EleicaoId { get; set; }
         public string IP { get; set; }
