@@ -137,7 +137,29 @@ namespace Cipa.WebApi.Controllers
             return _mapper.Map<EleitorViewModel>(_eleicaoAppService.AdicionarEleitor(id, eleitor));
         }
 
+        [HttpPost("{id}/inscricoes")]
+        public InscricaoViewModel PostInscricao(int id, InscricaoViewModel inscricao)
+        {
+            return _mapper.Map<InscricaoViewModel>(_eleicaoAppService.FazerInscricao(id, UsuarioId, inscricao.Objetivos));
+        }
 
+        [HttpPut("{id}/inscricoes")]
+        public InscricaoViewModel PutInscricao(int id, InscricaoViewModel inscricao)
+        {
+            return _mapper.Map<InscricaoViewModel>(_eleicaoAppService.AtualizarInscricao(id, UsuarioId, inscricao.Objetivos));
+        }
+
+        [HttpPut("{id}/inscricoes/{inscricaoId}/aprovar")]
+        public InscricaoViewModel PutAprovarInscricao(int id, int inscricaoId)
+        {
+            return _mapper.Map<InscricaoViewModel>(_eleicaoAppService.AprovarInscricao(id, inscricaoId, UsuarioId));
+        }
+
+        [HttpPut("{id}/inscricoes/{inscricaoId}/reprovar")]
+        public InscricaoDetalhesViewModel PutReprovarInscricao(int id, int inscricaoId, ReprovacaoViewModel reprovacao)
+        {
+            return _mapper.Map<InscricaoDetalhesViewModel>(_eleicaoAppService.ReprovarInscricao(id, inscricaoId, UsuarioId, reprovacao.MotivoReprovacao));
+        }
 
     }
 }

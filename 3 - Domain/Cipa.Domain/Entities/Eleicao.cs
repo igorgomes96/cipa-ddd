@@ -249,6 +249,63 @@ namespace Cipa.Domain.Entities
             Eleitores.Add(eleitor);
             return eleitor;
         }
+
+        public void FazerInscricao(Eleitor eleitor, string objetivos)
+        {
+            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+                throw new CustomException("As inscrições podem ser realizadas somente no período de inscrição. Confira o cronograma da eleição.");
+
+            if (Inscricoes.Any(i => i.EleitorId == eleitor.Id))
+                throw new CustomException("Esse eleitor já está inscrito na eleição.");
+
+            Inscricoes.Add(new Inscricao
+            {
+                Eleitor = eleitor,
+                EleitorId = eleitor.Id,
+                Objetivos = objetivos,
+                StatusInscricao = StatusInscricao.Pendente,
+                Votos = 0
+            });
+        }
+
+        public Inscricao BuscarInscricaoPeloId(int inscricaoId) => Inscricoes.FirstOrDefault(i => i.Id == inscricaoId);
+
+        public Inscricao BuscarInscricaoPeloEleitorId(int eleitorId) => Inscricoes.FirstOrDefault(i => i.EleitorId == eleitorId);
+
+        public Inscricao BuscarInscricaoPeloUsuarioId(int usuarioId) => Inscricoes.FirstOrDefault(i => i.Eleitor.UsuarioId == usuarioId);
+
+        public Inscricao AtualizarInscricao(Eleitor eleitor, string objetivos)
+        {
+            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+                throw new CustomException("As inscrições não podem ser alteradas fora do período de inscrição.");
+
+            var inscricao = BuscarInscricaoPeloEleitorId(eleitor.Id);
+            if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
+            inscricao.AtualizarInscricao(objetivos);
+            return inscricao;
+        }
+
+        public Inscricao AprovarInscricao(int inscricaoId, Usuario usuarioAprovador)
+        {
+            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+                throw new CustomException("As inscrições não podem ser aprovadas fora do período de inscrição.");
+
+            var inscricao = BuscarInscricaoPeloId(inscricaoId);
+            if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
+            inscricao.AprovarInscricao(usuarioAprovador);
+            return inscricao;
+        }
+
+        public Inscricao ReprovarInscricao(int inscricaoId, Usuario usuarioAprovador, string motivoReprovacao)
+        {
+            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+                throw new CustomException("As inscrições não podem ser reprovadas fora do período de inscrição.");
+
+            var inscricao = BuscarInscricaoPeloId(inscricaoId);
+            if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
+            inscricao.ReprovarInscricao(usuarioAprovador, motivoReprovacao);
+            return inscricao;
+        }
     }
 
 }

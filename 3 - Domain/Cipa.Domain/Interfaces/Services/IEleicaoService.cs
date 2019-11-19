@@ -15,6 +15,9 @@ namespace Cipa.Domain.Interfaces.Services {
         Eleicao PassarParaProximaEtapa(Eleicao eleicao);
         Eleicao BuscarPeloIdCarregarTodoAgregado(int id);
         Eleitor AdicionarEleitor(Eleicao eleicao, Eleitor eleitor);
-
+        Inscricao FazerInscricao(Eleicao eleicao, Eleitor eleitor, string objetivos);
+        Inscricao AtualizarInscricao(Eleicao eleicao, Eleitor eleitor, string objetivos);
+        Inscricao AprovarInscricao(Eleicao eleicao, int inscricaoId, Usuario usuarioAprovador);
+        Inscricao ReprovarInscricao(Eleicao eleicao, int inscricaoId, Usuario usuarioAprovador, string motivoReprovacao);
     }
 }

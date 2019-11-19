@@ -14,5 +14,9 @@ namespace Cipa.Application.Interfaces {
         Eleitor BuscarEleitorPeloIdUsuario(int eleicaoId, int usuarioId);
         Eleicao PassarParaProximaEtapa(int eleicaoId);
         Eleitor AdicionarEleitor(int eleicaoId, Eleitor eleitor);
+        Inscricao FazerInscricao(int eleicaoId, int usuarioId, string objetivos);
+        Inscricao AtualizarInscricao(int eleicaoId, int usuarioId, string objetivos);
+        Inscricao AprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId);
+        Inscricao ReprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId, string motivoReprovacao);
     }
 }

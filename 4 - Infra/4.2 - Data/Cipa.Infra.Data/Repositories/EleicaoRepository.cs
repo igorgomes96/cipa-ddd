@@ -69,7 +69,7 @@ namespace Cipa.Infra.Data.Repositories
 
         public int QtdaEleitores(Eleicao eleicao)
         {
-            return _db.Inscricoes.Count(i => i.EleicaoId == eleicao.Id);
+            return _db.Eleitores.Count(i => i.EleicaoId == eleicao.Id);
         }
 
         public int QtdaVotos(Eleicao eleicao)

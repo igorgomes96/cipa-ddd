@@ -100,7 +100,7 @@ namespace Cipa.Domain.Services
 
 
         public Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, Usuario usuario) =>
-             BuscarInscricoes(eleicaoId).FirstOrDefault(i => i.Eleitor.UsuarioId == usuario.Id);
+            BuscarInscricoes(eleicaoId).FirstOrDefault(i => i.Eleitor.UsuarioId == usuario.Id);
 
         public bool ExcluirEleitor(Eleicao eleicao, int eleitorId)
         {
@@ -140,9 +140,37 @@ namespace Cipa.Domain.Services
             }
             eleitor.UsuarioId = usuario.Id;
             eleitor.Usuario = usuario;
-            eleicao.AdicionarEleitor(eleitor, dimensionamentoAtual, dimensionamentoAtual);
+            eleicao.AdicionarEleitor(eleitor, dimensionamentoAtual, dimensionamentoProposto);
             base.Atualizar(eleicao);
             return eleitor;
+        }
+
+        public Inscricao FazerInscricao(Eleicao eleicao, Eleitor eleitor, string objetivos)
+        {
+            eleicao.FazerInscricao(eleitor, objetivos);
+            base.Atualizar(eleicao);
+            return eleicao.Inscricoes.First(i => i.EleitorId == eleitor.Id);
+        }
+
+        public Inscricao AtualizarInscricao(Eleicao eleicao, Eleitor eleitor, string objetivos)
+        {
+            var inscricao = eleicao.AtualizarInscricao(eleitor, objetivos);
+            base.Atualizar(eleicao);
+            return inscricao;
+        }
+
+        public Inscricao AprovarInscricao(Eleicao eleicao, int inscricaoId, Usuario usuarioAprovador)
+        {
+            var inscricaoAprovada = eleicao.AprovarInscricao(inscricaoId, usuarioAprovador);
+            base.Atualizar(eleicao);
+            return inscricaoAprovada;
+        }
+
+        public Inscricao ReprovarInscricao(Eleicao eleicao, int inscricaoId, Usuario usuarioAprovador, string motivoReprovacao)
+        {
+            eleicao.ReprovarInscricao(inscricaoId, usuarioAprovador, motivoReprovacao);
+            base.Atualizar(eleicao);
+            return eleicao.BuscarInscricaoPeloId(inscricaoId);
         }
     }
 }
