@@ -7,7 +7,7 @@ using Cipa.Domain.Interfaces.Services;
 namespace Cipa.Domain.Services {
     public class ContaService : ServiceBase<Conta>, IContaService
     {
-        public ContaService(IContaRepository contaRepository): base(contaRepository) { }
+        public ContaService(IUnitOfWork unitOfWork): base(unitOfWork.ContaRepository, unitOfWork) { }
 
     }
 }

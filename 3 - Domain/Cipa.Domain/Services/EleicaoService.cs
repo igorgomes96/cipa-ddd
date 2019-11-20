@@ -12,44 +12,72 @@ namespace Cipa.Domain.Services
     public class EleicaoService : ServiceBase<Eleicao>, IEleicaoService
     {
         private readonly IEleicaoRepository _eleicaoRepository;
-        private readonly IEstabelecimentoRepository _estabelecimentoRepository;
-        private readonly IUsuarioService _usuarioService;
-
-        public EleicaoService(
-            IEleicaoRepository eleicaoRepository,
-            IEstabelecimentoRepository estabelecimentoRepository,
-            IUsuarioService usuarioService
-        ) : base(eleicaoRepository)
+        public EleicaoService(IUnitOfWork unitOfWork) : base(unitOfWork.EleicaoRepository, unitOfWork)
         {
-            _eleicaoRepository = eleicaoRepository;
-            _estabelecimentoRepository = estabelecimentoRepository;
-            _usuarioService = usuarioService;
+            _eleicaoRepository = (IEleicaoRepository)_repository;
         }
 
         public override Eleicao Adicionar(Eleicao eleicao)
         {
-            int qtdaEleicoes = _estabelecimentoRepository.QuantidadeEleicoesAno(eleicao.Estabelecimento, eleicao.Gestao);
-            if (qtdaEleicoes > 0)
-                throw new CustomException($"Já há uma eleição cadastrada para este estabelecimento no ano de {eleicao.Gestao}.");
+            ValidaQtdaEleicoesPorEstabelecimento(eleicao);
 
+            var estabelecimento = _unitOfWork.EstabelecimentoRepository.BuscarPeloId(eleicao.EstabelecimentoId);
+            if (estabelecimento == null)
+                throw new NotFoundException($"Estabelecimento {eleicao.EstabelecimentoId} não encontrado.");
+
+            var conta = _unitOfWork.ContaRepository.BuscarPeloId(eleicao.ContaId);
+            if (conta == null)
+                throw new NotFoundException($"Conta {eleicao.ContaId} não encontrada.");
+
+            var grupo = _unitOfWork.GrupoRepository.BuscarPeloId(eleicao.GrupoId);
+            if (grupo == null)
+                throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
+
+            eleicao.Conta = conta;
+            eleicao.Grupo = grupo;
+            eleicao.Estabelecimento = estabelecimento;
             eleicao.GerarCronograma();
-            return _repository.Adicionar(eleicao);
+
+            return base.Adicionar(eleicao);
         }
 
-        public override Eleicao Atualizar(Eleicao eleicao)
+        private void ValidaQtdaEleicoesPorEstabelecimento(Eleicao eleicao)
         {
-            Eleicao eleicaoOld = _eleicaoRepository.BuscarPeloId(eleicao.Id);
-            if (eleicaoOld == null) throw new NotFoundException("Código de eleição não encontrado.");
-            bool jaPassouPeriodoInscricao = eleicaoOld.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao);
-            if (jaPassouPeriodoInscricao && eleicaoOld.GrupoId != eleicao.GrupoId)
-            {
-                var dimensionamentoOld = CalcularDimensionamentoEleicao(eleicaoOld);
-                var novoDimensionamento = eleicao.Grupo.CalcularDimensionamento(dimensionamentoOld.QtdaEleitores);
-                if (novoDimensionamento.TotalCipeiros > dimensionamentoOld.QtdaInscricoesAprovadas)
-                    throw new CustomException($"Para o grupo {eleicao.Grupo.CodigoGrupo}, o mínimo de inscrições necessária é {novoDimensionamento.TotalCipeiros}, e só houveram {dimensionamentoOld.QtdaInscricoesAprovadas} inscrições aprovadas nessa eleição.");
+            int qtdaEleicoes = _unitOfWork.EstabelecimentoRepository.QuantidadeEleicoesAno(eleicao.EstabelecimentoId, eleicao.Gestao);
+            if (qtdaEleicoes > 0)
+                throw new CustomException($"Já há uma eleição cadastrada para este estabelecimento no ano de {eleicao.Gestao}.");
+        }
 
-                eleicao.AtualizarDimensionamento(novoDimensionamento);
+        public override Eleicao Atualizar(Eleicao eleicaoAtualizada)
+        {
+            Eleicao eleicao = _eleicaoRepository.BuscarPeloId(eleicaoAtualizada.Id);
+            if (eleicao == null) throw new NotFoundException("Código de eleição não encontrado.");
+
+            if (eleicao.Gestao != eleicaoAtualizada.Gestao)
+                ValidaQtdaEleicoesPorEstabelecimento(eleicaoAtualizada);
+
+            eleicao.DataInicio = eleicaoAtualizada.DataInicio;
+            eleicao.TerminoMandatoAnterior = eleicaoAtualizada.TerminoMandatoAnterior;
+            eleicao.DuracaoGestao = eleicaoAtualizada.DuracaoGestao;
+
+            if (eleicao.GrupoId != eleicaoAtualizada.GrupoId)
+            {
+                var novoGrupo = _unitOfWork.GrupoRepository.BuscarPeloId(eleicaoAtualizada.GrupoId);
+                if (novoGrupo == null)
+                    throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
+
+                if (eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao))
+                {
+                    var dimensionamentoAtual = CalcularDimensionamentoEleicao(eleicao); 
+                    var novoDimensionamento = novoGrupo.CalcularDimensionamento(dimensionamentoAtual.QtdaEleitores);
+                    if (novoDimensionamento.TotalCipeiros > dimensionamentoAtual.QtdaInscricoesAprovadas)
+                        throw new CustomException($"Para o grupo {novoGrupo.CodigoGrupo}, o mínimo de inscrições necessária é {novoDimensionamento.TotalCipeiros}, e só houveram {dimensionamentoAtual.QtdaInscricoesAprovadas} inscrições aprovadas nessa eleição.");
+
+                    eleicao.AtualizarDimensionamento(novoDimensionamento);
+                }
+                eleicao.Grupo = novoGrupo;
             }
+
             return base.Atualizar(eleicao);
         }
 
@@ -104,15 +132,9 @@ namespace Cipa.Domain.Services
 
         public bool ExcluirEleitor(Eleicao eleicao, int eleitorId)
         {
-            var eleitor = _eleicaoRepository.BuscarEleitor(eleicao, eleitorId);
-            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
-            if (eleitor.Inscricao != null && eleitor.Inscricao.StatusInscricao != StatusInscricao.Reprovada)
-                throw new CustomException("Não é possível excluir esse eleitor pois ele é um dos inscritos nessa eleição!");
-
-            if (eleitor.Voto != null && eleitor.Voto.Id != 0)
-                throw new CustomException("Não é possível excluir esse eleitor pois ele já votou nessa eleição!");
-
-            var excluido = eleicao.Eleitores.Remove(eleitor);
+            var dimensionamentoAtual = CalcularDimensionamentoEleicao(eleicao);
+            var novoDimensionamento = CalcularDimensionamentoEleicao(eleicao, dimensionamentoAtual.QtdaEleitores - 1, dimensionamentoAtual.QtdaVotos);
+            var excluido = eleicao.ExcluirEleitor(eleitorId, novoDimensionamento);
             base.Atualizar(eleicao);
             return excluido;
         }
@@ -123,12 +145,11 @@ namespace Cipa.Domain.Services
         {
             var dimensionamentoAtual = CalcularDimensionamentoEleicao(eleicao);
             var dimensionamentoProposto = CalcularDimensionamentoEleicao(eleicao, dimensionamentoAtual.QtdaEleitores + 1, dimensionamentoAtual.QtdaVotos);
-            var usuario = _usuarioService.BuscarUsuario(eleitor.Email);
+            var usuario = _unitOfWork.UsuarioRepository.BuscarUsuario(eleitor.Email);
 
-            // Encapsular em transação
             if (usuario == null)
             {
-                usuario = _usuarioService.Adicionar(new Usuario
+                usuario = _unitOfWork.UsuarioRepository.Adicionar(new Usuario
                 {
                     Cargo = eleitor.Cargo,
                     ContaId = null,
@@ -171,6 +192,15 @@ namespace Cipa.Domain.Services
             eleicao.ReprovarInscricao(inscricaoId, usuarioAprovador, motivoReprovacao);
             base.Atualizar(eleicao);
             return eleicao.BuscarInscricaoPeloId(inscricaoId);
+        }
+
+        public Voto RegistrarVoto(Eleicao eleicao, int inscricaoId, int usuarioId, string ip)
+        {
+            var eleitor = eleicao.BuscarEleitorPeloIdUsuario(usuarioId);
+            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
+            var voto = eleicao.RegistrarVoto(inscricaoId, eleitor, ip);
+            base.Atualizar(eleicao);
+            return voto;
         }
     }
 }

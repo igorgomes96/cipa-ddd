@@ -31,23 +31,17 @@ namespace Cipa.Application
 
         public override Eleicao Adicionar(Eleicao eleicao)
         {
-            if (eleicao.Gestao == 0)
-                eleicao.Gestao = eleicao.TerminoMandatoAnterior?.Year ?? eleicao.DataInicio.Year;
-            eleicao.Estabelecimento = _estabelecimentoService.BuscarPeloId(eleicao.EstabelecimentoId);
-            if (eleicao.Estabelecimento == null)
-                throw new NotFoundException($"Estabelecimento {eleicao.EstabelecimentoId} não encontrado.");
-            eleicao.Conta = _contaService.BuscarPeloId(eleicao.ContaId);
-            eleicao.Grupo = _grupoService.BuscarPeloId(eleicao.GrupoId);
-            if (eleicao.Grupo == null)
-                throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
+            // eleicao.Estabelecimento = _estabelecimentoService.BuscarPeloId(eleicao.EstabelecimentoId);
+            // if (eleicao.Estabelecimento == null)
+            //     throw new NotFoundException($"Estabelecimento {eleicao.EstabelecimentoId} não encontrado.");
+            // eleicao.Conta = _contaService.BuscarPeloId(eleicao.ContaId);
+            // eleicao.Grupo = _grupoService.BuscarPeloId(eleicao.GrupoId);
+            // if (eleicao.Grupo == null)
+            //     throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
             return base.Adicionar(eleicao);
         }
 
-        public override void Atualizar(Eleicao eleicao)
-        {
-            eleicao.Grupo = _grupoService.BuscarPeloId(eleicao.GrupoId);
-            base.Atualizar(eleicao);
-        }
+        public override void Atualizar(Eleicao eleicao) => base.Atualizar(eleicao);
 
         public IEnumerable<EtapaCronograma> BuscarCronograma(int eleicaoId)
         {
@@ -92,7 +86,7 @@ namespace Cipa.Application
 
         public bool ExcluirEleitor(int eleicaoId, int eleitorId)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _eleicaoService.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
             return _eleicaoService.ExcluirEleitor(eleicao, eleitorId);
         }

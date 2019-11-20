@@ -103,7 +103,11 @@ namespace Cipa.WebApi
             app.UseMvc();
         }
 
-        private void AddDependencies(IServiceCollection services) {
+        private void AddDependencies(IServiceCollection services)
+        {
+            // Unit Of Work
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             // Autenticacão
             services.AddScoped<ILoginService, LoginService>();
 

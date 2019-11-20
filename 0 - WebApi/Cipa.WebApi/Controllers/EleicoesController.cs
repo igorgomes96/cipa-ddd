@@ -49,9 +49,9 @@ namespace Cipa.WebApi.Controllers
         [HttpPost]
         public EleicaoViewModel PostEleicao(EleicaoViewModel eleicao)
         {
+            eleicao.ContaId = ContaId;
+            eleicao.UsuarioCriacaoId = UsuarioId;
             var eleicaoModel = _mapper.Map<Eleicao>(eleicao);
-            eleicaoModel.ContaId = ContaId;
-            eleicaoModel.UsuarioCriacaoId = UsuarioId;
             return _mapper.Map<EleicaoViewModel>(_eleicaoAppService.Adicionar(eleicaoModel));
         }
 

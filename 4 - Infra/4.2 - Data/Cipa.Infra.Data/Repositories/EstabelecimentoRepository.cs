@@ -16,9 +16,9 @@ namespace Cipa.Infra.Data.Repositories
             return DbSet.Include(e => e.Empresa).Include(e => e.Grupo).SingleOrDefault(e => e.Id == id);
         }
 
-        public int QuantidadeEleicoesAno(Estabelecimento estabelecimento, int ano)
+        public int QuantidadeEleicoesAno(int estabelecimentoId, int ano)
         {
-            return _db.Eleicoes.Count(e => e.EstabelecimentoId == estabelecimento.Id && e.Gestao == ano);
+            return _db.Eleicoes.Count(e => e.EstabelecimentoId == estabelecimentoId && e.Gestao == ano);
         }
     }
 }

@@ -8,9 +8,14 @@ namespace Cipa.WebApi.AutoMapper {
         public static IMapper MapperConfig() {
             var config = new MapperConfiguration(cfg =>
             {
+                
                 cfg.CreateMap<Eleicao, EleicaoViewModel>()
                  .ForMember(dest => dest.Grupo, opt => opt.MapFrom(e => e.Grupo.CodigoGrupo))
-                 .ReverseMap();
+                 .ReverseMap()
+                 .ConvertUsing(dest => new Eleicao(
+                     dest.Id, dest.DataInicio.Value, dest.DuracaoGestao.Value, dest.EstabelecimentoId.Value, dest.GrupoId.Value,
+                     dest.UsuarioCriacaoId, dest.ContaId, dest.TerminoMandatoAnterior));
+
                 cfg.CreateMap<Eleicao, EleicaoDetalheViewModel>()
                     .ForMember(dest => dest.Grupo, opt => opt.MapFrom(src => src.Grupo.CodigoGrupo))
                     .ForMember(dest => dest.InscricoesFinalizadas, opt => opt.MapFrom(src => src.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao)))
@@ -19,6 +24,7 @@ namespace Cipa.WebApi.AutoMapper {
                     .ForMember(dest => dest.InicioVotacao, opt => opt.MapFrom(src => src.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Votacao).Data))
                     .ForMember(dest => dest.TerminoInscricao, opt => opt.MapFrom(src => src.DataTerminoEtapa(src.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Inscricao))))
                     .ForMember(dest => dest.TerminoVotacao, opt => opt.MapFrom(src => src.DataTerminoEtapa(src.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Votacao))));
+                
                 cfg.CreateMap<Empresa, EmpresaViewModel>().ReverseMap();
                 cfg.CreateMap<Estabelecimento, EstabelecimentoViewModel>()
                  .ForMember(dest => dest.Grupo, opt => opt.MapFrom(e => e.Grupo.CodigoGrupo))

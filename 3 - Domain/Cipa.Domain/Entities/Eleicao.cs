@@ -8,49 +8,67 @@ namespace Cipa.Domain.Entities
 {
     public class Eleicao : Entity<int>
     {
-        public Eleicao() { }
-
         public Eleicao(
             int id,
             DateTime dataInicio,
             int duracaoGestao,
-            Estabelecimento estabelecimento,
-            Grupo grupo,
-            Usuario usuarioCriacao,
+            int estabelecimentoId,
+            int grupoId,
+            int usuarioCriacaoId,
+            int contaId,
             DateTime? terminoMandatoAnterior)
         {
             Id = id;
             DataInicio = dataInicio;
-            EstabelecimentoId = estabelecimento.Id;
-            Estabelecimento = estabelecimento;
-            Gestao = terminoMandatoAnterior?.Year ?? dataInicio.Year;
+            EstabelecimentoId = estabelecimentoId;
+            gestao = terminoMandatoAnterior?.Year ?? dataInicio.Year;
             DuracaoGestao = duracaoGestao;
-            Usuario = usuarioCriacao;
-            UsuarioCriacaoId = usuarioCriacao.Id;
-            ContaId = usuarioCriacao.ContaId ?? throw new CustomException("A conta precisa ser informada para a abertura da eleição.");
-            Conta = usuarioCriacao.Conta;
-            Grupo = grupo ?? throw new CustomException("O grupo precisa ser informado para a abertura da eleição.");
-            GrupoId = grupo.Id == 0 ? throw new CustomException("O grupo precisa ser informado para a abertura da eleição.") : grupo.Id;
+            UsuarioCriacaoId = usuarioCriacaoId;
+            ContaId = contaId;
+            GrupoId = grupoId == 0 ? throw new CustomException("O grupo precisa ser informado para a abertura da eleição.") : grupoId;
             TerminoMandatoAnterior = terminoMandatoAnterior;
         }
 
-
-        public int Gestao { get; set; }
+        private int gestao;
+        public int Gestao
+        {
+            get => gestao;
+        }
         public int DuracaoGestao { get; set; }
-        public int EstabelecimentoId { get; set; }
-        public DateTime DataInicio { get; set; }
-        public int UsuarioCriacaoId { get; set; }
-        public int ContaId { get; set; }
-        public DateTime DataCadastro { get; set; }
+        public int EstabelecimentoId { get; private set; }
+        private DateTime dataInicio;
+        public DateTime DataInicio
+        {
+            get => dataInicio;
+            set
+            {
+                dataInicio = value;
+                if (!TerminoMandatoAnterior.HasValue)
+                    gestao = dataInicio.Year;
+            }
+        }
+        public int UsuarioCriacaoId { get; private set; }
+        public int ContaId { get; private set; }
+        public DateTime DataCadastro { get; private set; }
         public DateTime? DataFinalizacao { get; set; }
-        public int GrupoId { get; set; }
-        public DateTime? TerminoMandatoAnterior { get; set; }
+        public int GrupoId { get; private set; }
+        private DateTime? terminoMandatoAnterior;
+        public DateTime? TerminoMandatoAnterior
+        {
+            get => terminoMandatoAnterior;
+            set
+            {
+                terminoMandatoAnterior = value;
+                if (terminoMandatoAnterior.HasValue)
+                    gestao = terminoMandatoAnterior.Value.Year;
+            }
+        }
 
         public virtual Estabelecimento Estabelecimento { get; set; }
         public virtual Usuario Usuario { get; set; }
         public virtual Conta Conta { get; set; }
         public virtual Grupo Grupo { get; set; }
-        public virtual Dimensionamento Dimensionamento { get; private set; } = new Dimensionamento();
+        public virtual Dimensionamento Dimensionamento { get; private set; } = new Dimensionamento(0, 0, 0, 0);
         public virtual ICollection<Inscricao> Inscricoes { get; } = new List<Inscricao>();
         public virtual ICollection<EtapaCronograma> Cronograma { get; } = new List<EtapaCronograma>();
         public virtual ICollection<Eleitor> Eleitores { get; } = new List<Eleitor>();
@@ -220,32 +238,21 @@ namespace Cipa.Domain.Entities
             }
         }
 
-        public Eleitor AdicionarEleitor(
-            Eleitor eleitor, Dimensionamento dimensionamentoAtual, Dimensionamento dimensionamentoProposto)
+        public Eleitor AdicionarEleitor(Eleitor eleitor, Dimensionamento dimensionamentoAtual, Dimensionamento dimensionamentoProposto)
         {
             eleitor.Email = eleitor.Email.Trim().ToLower();
 
             if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Votacao))
-            {
                 throw new CustomException("Não é permitido cadastrar eleitores após o período de votação.");
-            }
 
             if (Eleitores.Any(e => e.Email == eleitor.Email))
-            {
                 throw new CustomException("Já existe um eleitor cadastrado com o mesmo e-mail para essa eleição.");
-            }
 
-            if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao) && (dimensionamentoAtual.QtdaEleitores + 1) >= dimensionamentoAtual.Maximo)
-            {
-                if (dimensionamentoAtual.QtdaInscricoesAprovadas < dimensionamentoProposto.TotalCipeiros)
-                {
-                    throw new CustomException($"Não é possível adicionar esse novo eleitor, pois sua inclusão altera o dimensionamento da eleição e com isso a quantidade mínima de inscritos passa a ser superior à quantidade atual de inscritos.");
-                }
-                else
-                {
-                    Dimensionamento = dimensionamentoProposto;
-                }
-            }
+            if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao) && dimensionamentoAtual.QtdaInscricoesAprovadas < dimensionamentoProposto.TotalCipeiros)
+                throw new CustomException($"Não é possível adicionar esse novo eleitor, pois sua inclusão altera o dimensionamento da eleição e com isso a quantidade mínima de inscritos passa a ser superior à quantidade atual de inscritos.");
+            else
+                Dimensionamento = dimensionamentoProposto;
+
             Eleitores.Add(eleitor);
             return eleitor;
         }
@@ -305,6 +312,42 @@ namespace Cipa.Domain.Entities
             if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
             inscricao.ReprovarInscricao(usuarioAprovador, motivoReprovacao);
             return inscricao;
+        }
+
+        private bool EleitorJaVotou(int eleitorId) => Votos.Any(v => v.EleitorId == eleitorId);
+
+
+        public bool ExcluirEleitor(int eleitorId, Dimensionamento novoDimensionamento)
+        {
+            var eleitor = BuscarEleitor(eleitorId);
+            if (eleitor == null)
+                throw new NotFoundException("Eleitor não encontrado.");
+            var inscricao = BuscarInscricaoPeloEleitorId(eleitorId);
+            if (inscricao != null && inscricao.StatusInscricao != StatusInscricao.Reprovada)
+                throw new CustomException("Não é possível excluir esse eleitor pois ele é um dos inscritos nessa eleição!");
+            if (EleitorJaVotou(eleitorId))
+                throw new CustomException("Não é possível excluir esse eleitor pois ele já votou nessa eleição!");
+
+            Dimensionamento = novoDimensionamento;
+            return Eleitores.Remove(eleitor);
+        }
+
+        public Voto RegistrarVoto(int inscricaoId, Eleitor eleitor, string ip)
+        {
+            if (EleitorJaVotou(eleitor.Id))
+                throw new CustomException("Eleitor já registrou seu voto nessa eleição. Não é possível votar mais de uma vez.");
+
+            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Votacao)
+                throw new CustomException("Essa eleição não está no período de votação.");
+
+            var inscricao = BuscarInscricaoPeloId(inscricaoId);
+            if (inscricao == null || inscricao.StatusInscricao != StatusInscricao.Aprovada)
+                throw new NotFoundException("Inscrição não encontrada.");
+
+            inscricao.Votos++;
+            var registroVoto = new Voto(eleitor, ip);
+            Votos.Add(registroVoto);
+            return registroVoto;
         }
     }
 

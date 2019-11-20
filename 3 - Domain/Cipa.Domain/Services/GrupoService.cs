@@ -7,7 +7,7 @@ using Cipa.Domain.Interfaces.Services;
 namespace Cipa.Domain.Services {
     public class GrupoService : ServiceBase<Grupo>, IGrupoService
     {
-        public GrupoService(IGrupoRepository grupoRepository): base(grupoRepository) { }
+        public GrupoService(IUnitOfWork unitOfWork): base(unitOfWork.GrupoRepository, unitOfWork) { }
 
     }
 }

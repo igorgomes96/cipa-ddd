@@ -1,16 +1,15 @@
 using System;
 
-namespace Cipa.Domain.Entities {
-    public class Dimensionamento: DimensionamentoBase {
+namespace Cipa.Domain.Entities
+{
+    public class Dimensionamento : DimensionamentoBase
+    {
 
-        public Dimensionamento() { }
-        public Dimensionamento(
-            DimensionamentoBase dimensionamento) {
-            Maximo = dimensionamento.Maximo;
-            Minimo = dimensionamento.Minimo;
-            QtdaEfetivos = dimensionamento.QtdaEfetivos;
-            QtdaSuplentes = dimensionamento.QtdaSuplentes;
-        }
+        public Dimensionamento(int maximo, int minimo, int qtdaEfetivos, int qtdaSuplentes) : 
+            base(maximo, minimo, qtdaEfetivos, qtdaSuplentes) { }
+
+        public Dimensionamento(DimensionamentoBase dimensionamento) :
+            base(dimensionamento.Maximo, dimensionamento.Minimo, dimensionamento.QtdaEfetivos, dimensionamento.QtdaSuplentes) { }
 
         public int QtdaEleitores { get; set; }
         public int QtdaVotos { get; set; }
@@ -18,8 +17,10 @@ namespace Cipa.Domain.Entities {
         public int QtdaInscricoesReprovadas { get; set; }
         public int QtdaInscricoesPendentes { get; set; }
 
-        public int QtdaInscricoes {
-            get {
+        public int QtdaInscricoes
+        {
+            get
+            {
                 return QtdaInscricoesAprovadas + QtdaInscricoesPendentes + QtdaInscricoesReprovadas;
             }
         }
@@ -32,15 +33,19 @@ namespace Cipa.Domain.Entities {
             }
         }
 
-        
-        public int QtdaMinimaVotos {
-            get {
+
+        public int QtdaMinimaVotos
+        {
+            get
+            {
                 return (int)Math.Ceiling((decimal)QtdaEleitores / 2);
             }
         }
 
-        public bool PossuiQtdaMinimaVotos {
-            get {
+        public bool PossuiQtdaMinimaVotos
+        {
+            get
+            {
                 return QtdaVotos >= QtdaMinimaVotos;
             }
         }

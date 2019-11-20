@@ -17,69 +17,19 @@ namespace Cipa.Infra.Data.Repositories
             _db = db;
         }
 
-        protected DbSet<TEntity> DbSet
-        {
-            get
-            {
-                return _db.Set<TEntity>();
-            }
-        }
+        protected DbSet<TEntity> DbSet => _db.Set<TEntity>();
 
-        public virtual TEntity Adicionar(TEntity obj)
-        {
-            TEntity newObj = DbSet.Add(obj).Entity;
-            _db.SaveChanges();
-            return newObj;
-        }
+        public virtual TEntity Adicionar(TEntity obj) => DbSet.Add(obj).Entity;
 
-        public virtual IEnumerable<TEntity> BuscarTodos()
-        {
-            return DbSet;
-        }
+        public virtual IEnumerable<TEntity> BuscarTodos() => DbSet;
 
-        public virtual TEntity BuscarPeloId(int id)
-        {
-            return DbSet.Find(id);
-        }
+        public virtual TEntity BuscarPeloId(int id) => DbSet.Find(id);
 
-        public virtual void Excluir(TEntity obj)
-        {
-            DbSet.Remove(obj);
-            _db.SaveChanges();
-        }
+        public virtual void Excluir(TEntity obj) => DbSet.Remove(obj);
 
-        public virtual void Atualizar(TEntity obj)
-        {
-            _db.Entry(obj).State = EntityState.Modified;
-            _db.SaveChanges();
-        }
+        public virtual void Atualizar(TEntity obj) => _db.Entry(obj).State = EntityState.Modified;
 
-        public virtual void Dispose()
-        {
-            _db.Dispose();
-        }
+        public virtual void Dispose() => _db.Dispose();
 
-        public IDisposable BeginTransaction()
-        {
-            return _db.Database.BeginTransaction();
-        }
-
-        public void Commit(IDisposable transaction)
-        {
-            if (transaction == null)
-            {
-                throw new CustomException("Não há nenhuma transação aberta.");
-            }
-            ((IDbContextTransaction)transaction).Commit();
-        }
-
-        public void Rollback(IDisposable transaction)
-        {
-            if (transaction == null)
-            {
-                throw new CustomException("Não há nenhuma transação aberta.");
-            }
-            ((IDbContextTransaction)transaction).Rollback();
-        }
     }
 }

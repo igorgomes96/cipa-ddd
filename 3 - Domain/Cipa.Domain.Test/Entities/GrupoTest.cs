@@ -20,8 +20,8 @@ namespace Cipa.Domain.Test.Entities
             int qtdaEleitores, int qtdaEfetivosEsperado, int qtdaSuplentesEsperado)
         {
             var grupo = new Grupo();
-            grupo.Dimensionamentos.Add(new LinhaDimensionamento { Minimo = 2501, Maximo = 5000, QtdaEfetivos = 12, QtdaSuplentes = 9 });
-            grupo.Dimensionamentos.Add(new LinhaDimensionamento { Minimo = 5001, Maximo = 10000, QtdaEfetivos = 15, QtdaSuplentes = 12 });
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(5000, 2501, 12, 9));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento( 10000, 5001, 15, 12));
             grupo.LimiteDimensionamento = new LimiteDimensionamento { Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2, AcrescimoSuplentes = 3 };
 
             var dimensionamento = grupo.CalcularDimensionamento(qtdaEleitores);

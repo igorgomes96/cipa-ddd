@@ -24,13 +24,9 @@ namespace Cipa.Domain.Entities
                 var minimo = dimensionamento.Maximo - intervalo + 1;
                 var qtdaEfetivos = dimensionamento.QtdaEfetivos + LimiteDimensionamento.AcrescimoEfetivos * indiceIntervalo;
                 var qtdaSuplentes = dimensionamento.QtdaSuplentes + LimiteDimensionamento.AcrescimoSuplentes * indiceIntervalo;
-                return new LinhaDimensionamento {
+                return new LinhaDimensionamento(maximo, minimo, qtdaEfetivos, qtdaSuplentes) {
                     Grupo = this,
-                    GrupoId = Id,
-                    Maximo = maximo,
-                    Minimo = minimo,
-                    QtdaEfetivos = qtdaEfetivos,
-                    QtdaSuplentes = qtdaSuplentes
+                    GrupoId = Id
                 };
             }
             return dimensionamento;

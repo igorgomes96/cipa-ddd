@@ -6,8 +6,8 @@ namespace Cipa.Domain.Services {
     public class UsuarioService: ServiceBase<Usuario>, IUsuarioService {
 
         private readonly IUsuarioRepository _usuarioRepository;
-        public UsuarioService(IUsuarioRepository usuarioRepository): base(usuarioRepository) {
-            _usuarioRepository = usuarioRepository;
+        public UsuarioService(IUnitOfWork unitOfWork): base(unitOfWork.UsuarioRepository, unitOfWork) {
+            _usuarioRepository = (IUsuarioRepository)_repository;
         }
 
         public Usuario BuscarUsuario(string email, string senha)

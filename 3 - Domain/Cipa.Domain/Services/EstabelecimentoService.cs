@@ -7,7 +7,7 @@ using Cipa.Domain.Interfaces.Services;
 namespace Cipa.Domain.Services {
     public class EstabelecimentoService : ServiceBase<Estabelecimento>, IEstabelecimentoService
     {
-        public EstabelecimentoService(IEstabelecimentoRepository estabelecimentoRepository): base(estabelecimentoRepository) { }
+        public EstabelecimentoService(IUnitOfWork unitOfWork): base(unitOfWork.EstabelecimentoRepository, unitOfWork) { }
 
     }
 }
