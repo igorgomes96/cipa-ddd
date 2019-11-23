@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cipa.WebApi.Migrations
 {
     [DbContext(typeof(CipaContext))]
-    [Migration("20191114202635_Inicio")]
+    [Migration("20191122212413_Inicio")]
     partial class Inicio
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -67,8 +67,18 @@ namespace Cipa.WebApi.Migrations
                     b.Property<int>("QtdaEfetivos")
                         .HasColumnName("DimensionamentoQtdaEfetivos");
 
+                    b.Property<int>("QtdaEleitores");
+
+                    b.Property<int>("QtdaInscricoesAprovadas");
+
+                    b.Property<int>("QtdaInscricoesPendentes");
+
+                    b.Property<int>("QtdaInscricoesReprovadas");
+
                     b.Property<int>("QtdaSuplentes")
                         .HasColumnName("DimensionamentoQtdaSuplentes");
+
+                    b.Property<int>("QtdaVotos");
 
                     b.HasKey("Id");
 
@@ -4518,9 +4528,12 @@ namespace Cipa.WebApi.Migrations
                         new
                         {
                             Id = 1,
+                            Cargo = "Cargo Teste",
+                            CodigoRecuperacao = new Guid("d6afe93c-e9ac-406e-9c76-e1cdf045f1a5"),
                             ContaId = 1,
-                            DataCadastro = new DateTime(2019, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
+                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 11, 23, 18, 24, 12, 975, DateTimeKind.Local).AddTicks(7150),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"

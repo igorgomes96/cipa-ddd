@@ -36,8 +36,35 @@ namespace Cipa.WebApi.AutoMapper {
                 cfg.CreateMap<Inscricao, InscricaoDetalhesViewModel>()
                     .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")));
                 cfg.CreateMap<Reprovacao, ReprovacaoViewModel>().ReverseMap();
+                cfg.CreateMap<Voto, VotoViewModel>();
+                cfg.CreateMap<Dimensionamento, DimensionamentoViewModel>();
+                cfg.CreateMap<Inscricao, ApuracaoViewModel>().ConvertUsing(src => new ApuracaoViewModel {
+                    Area = src.Eleitor.Area,
+                    Cargo = src.Eleitor.Cargo,
+                    DataAdmissao = src.Eleitor.DataAdmissao,
+                    DataNascimento = src.Eleitor.DataNascimento,
+                    Email = src.Eleitor.Email,
+                    InscricaoId = src.Id,
+                    Matricula = src.Eleitor.Matricula,
+                    Nome = src.Eleitor.Nome,
+                    ResultadoApuracao = ConverteResultadoApuracao(src.ResultadoApuracao),
+                    Votos = src.Votos
+                });
             });
             return config.CreateMapper();
+        }
+
+        private static string ConverteResultadoApuracao(ResultadoApuracao resultado) {
+            switch (resultado) {
+                case ResultadoApuracao.Efetivo:
+                    return "Efetivo";
+                case ResultadoApuracao.Suplente:
+                    return "Suplente";
+                case ResultadoApuracao.NaoEleito:
+                    return "Não eleito";
+                default:
+                    return "";
+            }
         }
     }
 }

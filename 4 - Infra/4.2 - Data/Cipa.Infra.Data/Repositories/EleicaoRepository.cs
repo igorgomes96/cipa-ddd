@@ -45,36 +45,32 @@ namespace Cipa.Infra.Data.Repositories
 
         public Eleicao BuscarPeloIdCarregarEleitores(int id)
         {
-            return QueryEleicao().Include(e => e.Eleitores).SingleOrDefault(e => e.Id == id);
+            return QueryEleicao()
+                .Include(e => e.Eleitores)
+                    .ThenInclude(e => e.Usuario)
+                .SingleOrDefault(e => e.Id == id);
         }
 
         public Eleicao BuscarPeloIdCarregarVotos(int id)
         {
-            return QueryEleicao().Include(e => e.Votos).SingleOrDefault(e => e.Id == id);
+            return QueryEleicao()
+                .Include(e => e.Votos)
+                    .ThenInclude(v => v.Eleitor)
+                .SingleOrDefault(e => e.Id == id);
         }
 
-        public IEnumerable<Eleicao> BuscarPelaConta(Conta conta)
+        public IEnumerable<Eleicao> BuscarPelaConta(int contaId)
         {
-            var eleicoes = QueryEleicao().Where(e => e.ContaId == conta.Id);
+            var eleicoes = QueryEleicao().Where(e => e.ContaId == contaId);
             eleicoes.Load();
             return eleicoes;
         }
 
-        public IEnumerable<Eleicao> BuscarPeloUsuario(Usuario usuario)
+        public IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId)
         {
-            var eleicoes = QueryEleicao().Where(e => e.UsuarioCriacaoId == usuario.Id);
+            var eleicoes = QueryEleicao().Where(e => e.UsuarioCriacaoId == usuarioId);
             eleicoes.Load();
             return eleicoes;
-        }
-
-        public int QtdaEleitores(Eleicao eleicao)
-        {
-            return _db.Eleitores.Count(i => i.EleicaoId == eleicao.Id);
-        }
-
-        public int QtdaVotos(Eleicao eleicao)
-        {
-            return _db.Votos.Count(v => v.EleicaoId == eleicao.Id);
         }
 
         public Eleitor BuscarEleitor(Eleicao eleicao, int id)
@@ -109,5 +105,9 @@ namespace Cipa.Infra.Data.Repositories
                 .Include(e => e.Votos).SingleOrDefault(e => e.Id == id);
         }
 
+        public IEnumerable<Voto> BuscarVotos(int id)
+        {
+            return _db.Votos.Where(v => v.EleicaoId == id);
+        }
     }
 }

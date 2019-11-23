@@ -28,6 +28,7 @@ namespace Cipa.WebApi.ViewModels
 
         public EstabelecimentoViewModel Estabelecimento { get; set; }
         public EtapaCronogramaViewModel EtapaAtual { get; set; }
+        public DimensionamentoViewModel Dimensionamento { get; set; }
     }
 
 }

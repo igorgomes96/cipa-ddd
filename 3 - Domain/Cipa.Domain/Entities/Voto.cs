@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 
 namespace Cipa.Domain.Entities
 {
-    public class Voto : Entity<int>
+    public class Voto : ValueObject
     {
         public Voto() { }
         public Voto(Eleitor eleitor, string ip)
@@ -12,6 +13,8 @@ namespace Cipa.Domain.Entities
             EleicaoId = eleitor.EleicaoId;
             IP = ip;
         }
+
+        public int Id { get; set; }
         public int EleitorId { get; set; }
         public int EleicaoId { get; set; }
         public string IP { get; set; }
@@ -20,5 +23,9 @@ namespace Cipa.Domain.Entities
         public virtual Eleicao Eleicao { get; set; }
         public virtual Eleitor Eleitor { get; set; }
 
+        protected override IEnumerable<object> GetAtomicValues()
+        {
+            yield return EleitorId;
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace Cipa.Domain.Entities
         public bool Ativa { get; set; }
         public DateTime DataCadastro { get; set; }
 
-        public virtual Conta Conta { get; set; }
+        public virtual Conta Conta { get; private set; }
         public virtual ICollection<Estabelecimento> Estabelecimentos { get; } = new List<Estabelecimento>();
 
         public string CnpjFormatado

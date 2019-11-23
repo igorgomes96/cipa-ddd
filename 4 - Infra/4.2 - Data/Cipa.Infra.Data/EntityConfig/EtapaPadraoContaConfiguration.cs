@@ -3,13 +3,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Cipa.Infra.Data.EntityConfig {
-    public class EtapaPadraoContaConfiguration : EtapaBaseConfiguration<EtapaPadraoConta, int>
+    public class EtapaPadraoContaConfiguration : IEntityTypeConfiguration<EtapaPadraoConta>
     {
-        public override void Configure(EntityTypeBuilder<EtapaPadraoConta> builder)
+        public void Configure(EntityTypeBuilder<EtapaPadraoConta> builder)
         {
-            base.Configure(builder);
-
             builder.HasKey(e => e.Id);
+
+             builder.Property(e => e.Nome)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(e => e.Descricao)
+                .HasMaxLength(4000);
+
+            builder.Property(e => e.Ordem)
+                .IsRequired();
 
             builder.HasOne(e => e.Conta)
                 .WithMany(c => c.EtapasPadroes)

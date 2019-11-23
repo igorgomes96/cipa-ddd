@@ -19,10 +19,10 @@ namespace Cipa.Domain.Test.Entities
         public void CalculaDimensionamento_CenariosNoLimiteAbaixoLimiteAcimaLimite_RetornaDimensionamento(
             int qtdaEleitores, int qtdaEfetivosEsperado, int qtdaSuplentesEsperado)
         {
-            var grupo = new Grupo();
+            var grupo = new Grupo("C-Teste");
             grupo.Dimensionamentos.Add(new LinhaDimensionamento(5000, 2501, 12, 9));
             grupo.Dimensionamentos.Add(new LinhaDimensionamento( 10000, 5001, 15, 12));
-            grupo.LimiteDimensionamento = new LimiteDimensionamento { Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2, AcrescimoSuplentes = 3 };
+            grupo.LimiteDimensionamento = new LimiteDimensionamento(10000, 2500, 2, 3);
 
             var dimensionamento = grupo.CalcularDimensionamento(qtdaEleitores);
 

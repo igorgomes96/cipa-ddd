@@ -1,15 +1,18 @@
 using System;
+using System.Collections.Generic;
 
 namespace Cipa.Domain.Entities
 {
     public class Dimensionamento : DimensionamentoBase
     {
 
-        public Dimensionamento(int maximo, int minimo, int qtdaEfetivos, int qtdaSuplentes) : 
-            base(maximo, minimo, qtdaEfetivos, qtdaSuplentes) { }
+        public Dimensionamento(int maximo, int minimo, int qtdaEfetivos, int qtdaSuplentes) :
+            base(maximo, minimo, qtdaEfetivos, qtdaSuplentes)
+        { }
 
         public Dimensionamento(DimensionamentoBase dimensionamento) :
-            base(dimensionamento.Maximo, dimensionamento.Minimo, dimensionamento.QtdaEfetivos, dimensionamento.QtdaSuplentes) { }
+            base(dimensionamento.Maximo, dimensionamento.Minimo, dimensionamento.QtdaEfetivos, dimensionamento.QtdaSuplentes)
+        { }
 
         public int QtdaEleitores { get; set; }
         public int QtdaVotos { get; set; }
@@ -48,6 +51,16 @@ namespace Cipa.Domain.Entities
             {
                 return QtdaVotos >= QtdaMinimaVotos;
             }
+        }
+
+        protected override IEnumerable<object> GetAtomicValues()
+        {
+            foreach (var valor in base.GetAtomicValues()) yield return valor;
+            yield return QtdaEleitores;
+            yield return QtdaVotos;
+            yield return QtdaInscricoesAprovadas;
+            yield return QtdaInscricoesReprovadas;
+            yield return QtdaInscricoesPendentes;
         }
     }
 }

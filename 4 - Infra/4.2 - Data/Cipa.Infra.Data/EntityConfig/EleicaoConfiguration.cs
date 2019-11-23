@@ -8,6 +8,7 @@ namespace Cipa.Infra.Data.EntityConfig
     {
         public void Configure(EntityTypeBuilder<Eleicao> builder)
         {
+
             builder.HasKey(e => e.Id);
 
             builder.Property(e => e.Gestao)
@@ -40,7 +41,8 @@ namespace Cipa.Infra.Data.EntityConfig
             builder.HasOne(e => e.Grupo)
                 .WithMany()
                 .HasForeignKey(e => e.GrupoId)
-                .IsRequired();
+                .IsRequired()
+                .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasOne(e => e.Dimensionamento)
                 .WithOne()

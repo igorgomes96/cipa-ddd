@@ -30,7 +30,7 @@ namespace Cipa.WebApi.Controllers
         [Pagination]
         public IEnumerable<EleicaoViewModel> GetEleicoes()
         {
-            if (User.IsInRole(Perfil.SESMT))
+            if (User.IsInRole(PerfilUsuario.SESMT))
                 return _eleicaoAppService.BuscarPelaConta(ContaId).AsQueryable().ProjectTo<EleicaoViewModel>(_mapper.ConfigurationProvider);
             else
                 return _eleicaoAppService.BuscarPeloUsuario(UsuarioId).AsQueryable().ProjectTo<EleicaoDetalheViewModel>(_mapper.ConfigurationProvider);
@@ -47,7 +47,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpPost]
-        public EleicaoViewModel PostEleicao(EleicaoViewModel eleicao)
+        public ActionResult<EleicaoViewModel> PostEleicao(EleicaoViewModel eleicao)
         {
             eleicao.ContaId = ContaId;
             eleicao.UsuarioCriacaoId = UsuarioId;
@@ -64,10 +64,9 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteEleicao(int id)
+        public EleicaoViewModel DeleteEleicao(int id)
         {
-            _eleicaoAppService.Excluir(id);
-            return Ok();
+            return _mapper.Map<EleicaoViewModel>(_eleicaoAppService.Excluir(id));
         }
 
         [HttpGet("{id}/cronograma")]
@@ -82,11 +81,9 @@ namespace Cipa.WebApi.Controllers
 
 
         [HttpDelete("{eleicaoId}/eleitores/{eleitorId}")]
-        public ActionResult DeleteEleitor(int eleicaoId, int eleitorId)
+        public Eleitor DeleteEleitor(int eleicaoId, int eleitorId)
         {
-            var excluido = _eleicaoAppService.ExcluirEleitor(eleicaoId, eleitorId);
-            if (!excluido) return BadRequest("Código de eleitor não encontrado.");
-            return Ok();
+            return _eleicaoAppService.ExcluirEleitor(eleicaoId, eleitorId);
         }
 
         [HttpGet("{id}/eleitor")]
@@ -160,6 +157,37 @@ namespace Cipa.WebApi.Controllers
         {
             return _mapper.Map<InscricaoDetalhesViewModel>(_eleicaoAppService.ReprovarInscricao(id, inscricaoId, UsuarioId, reprovacao.MotivoReprovacao));
         }
+
+        [HttpPost("{id}/inscricoes/{inscricaoId}/votar")]
+        public VotoViewModel PostVotar(int id, int inscricaoId)
+        {
+            return _mapper.Map<VotoViewModel>(_eleicaoAppService.RegistrarVoto(id, inscricaoId, UsuarioId, IpRequisicao));
+        }
+
+        [HttpPost("{id}/votarbranco")]
+        public VotoViewModel PostVotarEmBranco(int id)
+        {
+            return _mapper.Map<VotoViewModel>(_eleicaoAppService.VotarEmBranco(id, UsuarioId, IpRequisicao));
+        }
+
+        [HttpGet("{id}/votos")]
+        public IEnumerable<VotoViewModel> GetVotos(int id)
+        {
+            return _eleicaoAppService.BuscarVotos(id).AsQueryable().ProjectTo<VotoViewModel>(_mapper.ConfigurationProvider);
+        }
+
+        [HttpGet("{id}/votousuario")]
+        public VotoViewModel GetVotoUsuario(int id)
+        {
+            return _mapper.Map<VotoViewModel>(_eleicaoAppService.BuscarVotoUsuario(id, UsuarioId));
+        }
+
+        [HttpGet("{id}/apuracao")]
+        public IEnumerable<ApuracaoViewModel> GetApuracao(int id)
+        {
+            return _eleicaoAppService.ApurarVotos(id).AsQueryable().ProjectTo<ApuracaoViewModel>(_mapper.ConfigurationProvider);
+        }
+
 
     }
 }

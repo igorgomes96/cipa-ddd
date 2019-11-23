@@ -8,12 +8,11 @@ namespace Cipa.Domain.Interfaces.Repositories {
         Eleicao BuscarPeloIdCarregarVotos(int id);
         Eleicao BuscarPeloIdCarregarTodoAgregado(int id);
         IEnumerable<Inscricao> BuscarInscricoes(int id, StatusInscricao? status = null);
-        // IEnumerable<Voto> BuscarVotos(int id);
         IEnumerable<Eleitor> BuscarEleitores(int id);
-        IEnumerable<Eleicao> BuscarPelaConta(Conta conta);
-        IEnumerable<Eleicao> BuscarPeloUsuario(Usuario usuario);
+        IEnumerable<Voto> BuscarVotos(int id);
+        IEnumerable<Eleicao> BuscarPelaConta(int contaId);
+        IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId);
         Eleitor BuscarEleitor(Eleicao eleicao, int id);
-        int QtdaEleitores(Eleicao eleicao);
-        int QtdaVotos(Eleicao eleicao);
+
     }
 }

@@ -10,7 +10,7 @@ namespace Cipa.Application.Interfaces {
         IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status);
         Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Eleitor> BuscarEleitores(int eleicaoId);
-        bool ExcluirEleitor(int eleicaoId, int eleitorId);
+        Eleitor ExcluirEleitor(int eleicaoId, int eleitorId);
         Eleitor BuscarEleitorPeloIdUsuario(int eleicaoId, int usuarioId);
         Eleicao PassarParaProximaEtapa(int eleicaoId);
         Eleitor AdicionarEleitor(int eleicaoId, Eleitor eleitor);
@@ -18,5 +18,10 @@ namespace Cipa.Application.Interfaces {
         Inscricao AtualizarInscricao(int eleicaoId, int usuarioId, string objetivos);
         Inscricao AprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId);
         Inscricao ReprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId, string motivoReprovacao);
+        Voto RegistrarVoto(int eleicaoId, int inscricaoId, int usuarioId, string ip);
+        Voto VotarEmBranco(int eleicaoId, int usuarioId, string ip);
+        IEnumerable<Voto> BuscarVotos(int eleicaoId);
+        Voto BuscarVotoUsuario(int eleicaoId, int usuarioId);
+        IEnumerable<Inscricao> ApurarVotos(int eleicaoId);
     }
 }

@@ -6,6 +6,14 @@ namespace Cipa.WebApi.Controllers
 {
     public class Controller : ControllerBase
     {
+        protected string IpRequisicao
+        {
+            get
+            {
+                return Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            }
+        }
+        
         protected int ContaId
         {
             get

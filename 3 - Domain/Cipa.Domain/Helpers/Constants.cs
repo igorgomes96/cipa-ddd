@@ -1,6 +1,6 @@
 namespace Cipa.Domain.Helpers
 {
-    public static class Perfil
+    public static class PerfilUsuario
     {
         public const string Eleitor = "Eleitor";
         public const string SESMT = "SESMT";

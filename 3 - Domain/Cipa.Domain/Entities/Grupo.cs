@@ -5,6 +5,11 @@ namespace Cipa.Domain.Entities
 {
     public class Grupo: Entity<int>
     {
+        public Grupo() { } // EF
+        public Grupo(string codigoGrupo) {
+            CodigoGrupo = codigoGrupo;
+        }
+
         public string CodigoGrupo { get; set; }
 
         public virtual LimiteDimensionamento LimiteDimensionamento { get; set; }

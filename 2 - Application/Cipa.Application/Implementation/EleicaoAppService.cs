@@ -3,141 +3,258 @@ using System.Linq;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
-using Cipa.Domain.Interfaces.Services;
+using Cipa.Domain.Interfaces.Repositories;
 
 namespace Cipa.Application
 {
     public class EleicaoAppService : AppServiceBase<Eleicao>, IEleicaoAppService
     {
-        private readonly IEleicaoService _eleicaoService;
-        private readonly IUsuarioService _usuarioService;
-        private readonly IEstabelecimentoService _estabelecimentoService;
-        private readonly IContaService _contaService;
-        private readonly IGrupoService _grupoService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public EleicaoAppService(
-            IEleicaoService eleicaoService,
-            IEstabelecimentoService estabelecimentoService,
-            IUsuarioService usuarioService,
-            IContaService contaService,
-            IGrupoService grupoService) : base(eleicaoService)
+        public EleicaoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.EleicaoRepository)
         {
-            _eleicaoService = eleicaoService;
-            _usuarioService = usuarioService;
-            _estabelecimentoService = estabelecimentoService;
-            _contaService = contaService;
-            _grupoService = grupoService;
+            _unitOfWork = unitOfWork;
         }
 
         public override Eleicao Adicionar(Eleicao eleicao)
         {
-            // eleicao.Estabelecimento = _estabelecimentoService.BuscarPeloId(eleicao.EstabelecimentoId);
-            // if (eleicao.Estabelecimento == null)
-            //     throw new NotFoundException($"Estabelecimento {eleicao.EstabelecimentoId} não encontrado.");
-            // eleicao.Conta = _contaService.BuscarPeloId(eleicao.ContaId);
-            // eleicao.Grupo = _grupoService.BuscarPeloId(eleicao.GrupoId);
-            // if (eleicao.Grupo == null)
-            //     throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
-            return base.Adicionar(eleicao);
+            var estabelecimento = _unitOfWork.EstabelecimentoRepository.BuscarPeloId(eleicao.EstabelecimentoId);
+            if (estabelecimento == null)
+                throw new NotFoundException($"Estabelecimento {eleicao.EstabelecimentoId} não encontrado.");
+
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloIdCarregarAgregadoConta(eleicao.UsuarioCriacaoId);
+            if (usuario == null)
+                throw new NotFoundException($"Usuário {eleicao.UsuarioCriacaoId} não encontrado.");
+
+            var grupo = _unitOfWork.GrupoRepository.BuscarPeloId(eleicao.GrupoId);
+            if (grupo == null)
+                throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
+
+            var qtdaEstabelecimentos = _unitOfWork.EstabelecimentoRepository
+                .QuantidadeEleicoesAno(eleicao.EstabelecimentoId, eleicao.Gestao);
+
+            var novaEleicao = new Eleicao(
+                eleicao.DataInicio,
+                eleicao.DuracaoGestao,
+                eleicao.TerminoMandatoAnterior,
+                usuario, estabelecimento,
+                qtdaEstabelecimentos, grupo);
+            novaEleicao.GerarCronograma();
+
+            return base.Adicionar(novaEleicao);
         }
 
-        public override void Atualizar(Eleicao eleicao) => base.Atualizar(eleicao);
+        public override void Atualizar(Eleicao eleicao)
+        {
+            Eleicao eleicaoExistente = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicao.Id);
+            if (eleicaoExistente == null) throw new NotFoundException("Código de eleição não encontrado.");
+
+            eleicaoExistente.DataInicio = eleicao.DataInicio;
+            eleicaoExistente.TerminoMandatoAnterior = eleicao.TerminoMandatoAnterior;
+            eleicaoExistente.DuracaoGestao = eleicao.DuracaoGestao;
+
+            var grupo = _unitOfWork.GrupoRepository.BuscarPeloId(eleicao.GrupoId);
+            if (grupo == null)
+                throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
+
+            eleicaoExistente.Grupo = grupo;
+
+            base.Atualizar(eleicaoExistente);
+        }
+
+        public override Eleicao Excluir(int id)
+        {
+            Eleicao eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(id);
+            if (eleicao == null) throw new NotFoundException("Código de eleição não encontrado.");
+
+            if (eleicao.EtapaAtual != null || eleicao.DataFinalizacao.HasValue)
+            {
+                throw new CustomException("Um eleição só pode ser excluída antes do início do processo.");
+            }
+            _unitOfWork.EleicaoRepository.Excluir(eleicao);
+            _unitOfWork.Commit();
+            return eleicao;
+        }
 
         public IEnumerable<EtapaCronograma> BuscarCronograma(int eleicaoId)
         {
-            var eleicao = _eleicaoService.BuscarPeloId(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
             return eleicao.Cronograma.OrderBy(e => e.Ordem);
         }
 
         public IEnumerable<Eleitor> BuscarEleitores(int eleicaoId) =>
-            _eleicaoService.BuscarEleitores(eleicaoId).OrderBy(e => e.Nome);
+            _unitOfWork.EleicaoRepository.BuscarEleitores(eleicaoId).OrderBy(e => e.Nome);
 
         public Eleitor BuscarEleitorPeloIdUsuario(int eleicaoId, int usuarioId)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            return eleicao.BuscarEleitorPeloIdUsuario(usuarioId);
+
+            return eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
         }
 
         public IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status = null) =>
-            _eleicaoService.BuscarInscricoes(eleicaoId, status);
+            _unitOfWork.EleicaoRepository.BuscarInscricoes(eleicaoId, status);
 
         public Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId)
         {
-            var usuario = _usuarioService.BuscarPeloId(usuarioId);
-            if (usuario == null) throw new CustomException("Usuário inválido!");
-            return _eleicaoService.BuscarInscricaoPeloUsuario(eleicaoId, usuario);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
+            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
+
+            return eleicao.BuscarInscricaoPeloEleitorId(eleitor.Id);
         }
 
         public IEnumerable<Eleicao> BuscarPelaConta(int contaId)
         {
-            var conta = _contaService.BuscarPeloId(contaId);
-            if (conta == null) throw new CustomException("Conta inválida!");
-            return _eleicaoService.BuscarPelaConta(conta);
+            return _unitOfWork.EleicaoRepository.BuscarPelaConta(contaId);
         }
 
         public IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId)
         {
-            var usuario = _usuarioService.BuscarPeloId(usuarioId);
-            if (usuario == null) throw new CustomException("Usuário inválido!");
-            return _eleicaoService.BuscarPeloUsuario(usuario);
+            return _unitOfWork.EleicaoRepository.BuscarPeloUsuario(usuarioId);
         }
 
-        public bool ExcluirEleitor(int eleicaoId, int eleitorId)
+        public Eleitor ExcluirEleitor(int eleicaoId, int eleitorId)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            return _eleicaoService.ExcluirEleitor(eleicao, eleitorId);
+
+            var eleitor = eleicao.BuscarEleitor(eleitorId);
+            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
+
+            var eleitorExcluido = eleicao.ExcluirEleitor(eleitor);
+            if (!eleitorExcluido)
+                throw new CustomException("Erro ao excluir eleitor.");
+
+            base.Atualizar(eleicao);
+            return eleitor;
         }
 
         public Eleicao PassarParaProximaEtapa(int eleicaoId)
         {
-            var eleicao = _eleicaoService.BuscarPeloId(eleicaoId);
-            return _eleicaoService.PassarParaProximaEtapa(eleicao);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            eleicao.PassarParaProximaEtapa();
+            base.Atualizar(eleicao);
+            return eleicao;
         }
 
         public Eleitor AdicionarEleitor(int eleicaoId, Eleitor eleitor)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            return _eleicaoService.AdicionarEleitor(eleicao, eleitor);
+
+            var usuario = _unitOfWork.UsuarioRepository.BuscarUsuario(eleitor.Email);
+            if (usuario == null)
+                usuario = new Usuario(eleitor.Email, eleitor.Nome, eleitor.Cargo);
+            eleitor.Usuario = usuario;
+
+            var eleitorAdicionado = eleicao.AdicionarEleitor(eleitor);
+            base.Atualizar(eleicao);
+            return eleitorAdicionado;
         }
 
         public Inscricao FazerInscricao(int eleicaoId, int usuarioId, string objetivos)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            var eleitor = eleicao.BuscarEleitorPeloIdUsuario(usuarioId);
+
+            var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
             if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
-            return _eleicaoService.FazerInscricao(eleicao, eleitor, objetivos);
+
+            var inscricao = eleicao.FazerInscricao(eleitor, objetivos);
+            base.Atualizar(eleicao);
+            return inscricao;
         }
 
         public Inscricao AtualizarInscricao(int eleicaoId, int usuarioId, string objetivos)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            var eleitor = eleicao.BuscarEleitorPeloIdUsuario(usuarioId);
+
+            var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
             if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
-            return _eleicaoService.AtualizarInscricao(eleicao, eleitor, objetivos);
+
+            var inscricao = eleicao.AtualizarInscricao(eleitor.Id, objetivos);
+            base.Atualizar(eleicao);
+            return inscricao;
         }
 
-        public Inscricao AprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId)
+        public Inscricao AprovarInscricao(int eleicaoId, int inscricaoId, int usuarioAprovadorId)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            var usuarioAprovador = _usuarioService.BuscarPeloId(usuarioId);
-            if (usuarioAprovador == null) throw new NotFoundException("Usuário inválido.");
-            return _eleicaoService.AprovarInscricao(eleicao, inscricaoId, usuarioAprovador);
+
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioAprovadorId);
+            if (usuario == null) throw new CustomException("Usuário inválido!");
+
+            var inscricaoAprovada = eleicao.AprovarInscricao(inscricaoId, usuario);
+            base.Atualizar(eleicao);
+            return inscricaoAprovada;
         }
 
-        public Inscricao ReprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId, string motivoReprovacao)
+        public Inscricao ReprovarInscricao(int eleicaoId, int inscricaoId, int usuarioAprovadorId, string motivoReprovacao)
         {
-            var eleicao = _eleicaoService.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            var usuarioAprovador = _usuarioService.BuscarPeloId(usuarioId);
-            if (usuarioAprovador == null) throw new NotFoundException("Usuário inválido.");
-            return _eleicaoService.ReprovarInscricao(eleicao, inscricaoId, usuarioAprovador, motivoReprovacao);
+
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioAprovadorId);
+            if (usuario == null) throw new CustomException("Usuário inválido!");
+
+            var inscricaoReprovacao = eleicao.ReprovarInscricao(inscricaoId, usuario, motivoReprovacao);
+            base.Atualizar(eleicao);
+            return inscricaoReprovacao;
+        }
+
+        public Voto RegistrarVoto(int eleicaoId, int inscricaoId, int usuarioId, string ip)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
+            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
+
+            var voto = eleicao.RegistrarVoto(inscricaoId, eleitor, ip);
+            base.Atualizar(eleicao);
+            return voto;
+        }
+
+        public Voto VotarEmBranco(int eleicaoId, int usuarioId, string ip)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
+            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
+
+            var voto = eleicao.VotarEmBranco(eleitor, ip);
+            base.Atualizar(eleicao);
+            return voto;
+        }
+
+        public IEnumerable<Voto> BuscarVotos(int eleicaoId) => _unitOfWork.EleicaoRepository.BuscarVotos(eleicaoId);
+
+        public Voto BuscarVotoUsuario(int eleicaoId, int usuarioId)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarVotos(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
+            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
+
+            return eleicao.BuscarVotoEleitor(eleitor);
+        }
+
+        public IEnumerable<Inscricao> ApurarVotos(int eleicaoId)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+            return eleicao.ApurarVotos();
         }
 
     }

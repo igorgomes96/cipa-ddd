@@ -1,18 +1,20 @@
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
-using Cipa.Domain.Interfaces.Services;
-using Cipa.Domain.Services;
+using Cipa.Domain.Interfaces.Repositories;
 
-namespace Cipa.Application {
-    public class UsuarioAppService: AppServiceBase<Usuario>, IUsuarioAppService {
-        private readonly IUsuarioService _usuarioService;
-        public UsuarioAppService(IUsuarioService usuarioService): base(usuarioService) {
-            _usuarioService = usuarioService;
+namespace Cipa.Application
+{
+    public class UsuarioAppService : AppServiceBase<Usuario>, IUsuarioAppService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        public UsuarioAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.UsuarioRepository)
+        {
+            _unitOfWork = unitOfWork;
         }
 
         public Usuario BuscarUsuario(string email, string senha)
         {
-            return _usuarioService.BuscarUsuario(email, senha);
+            return _unitOfWork.UsuarioRepository.BuscarUsuario(email, senha);
         }
     }
 }

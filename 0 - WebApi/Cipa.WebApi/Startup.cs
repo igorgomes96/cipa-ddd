@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using Cipa.Application;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Interfaces.Repositories;
-using Cipa.Domain.Interfaces.Services;
-using Cipa.Domain.Services;
 using Cipa.Infra.Data.Context;
 using Cipa.Infra.Data.Repositories;
 using Cipa.WebApi.Authentication;
@@ -113,24 +111,19 @@ namespace Cipa.WebApi
 
             // Eleição
             services.AddScoped<IEleicaoAppService, EleicaoAppService>();
-            services.AddScoped<IEleicaoService, EleicaoService>();
             services.AddScoped<IEleicaoRepository, EleicaoRepository>();
 
             // Estabelecimento
-            services.AddScoped<IEstabelecimentoService, EstabelecimentoService>();
             services.AddScoped<IEstabelecimentoRepository, EstabelecimentoRepository>();
 
             // Conta
-            services.AddScoped<IContaService, ContaService>();
             services.AddScoped<IContaRepository, ContaRepository>();
 
             // Grupo
-            services.AddScoped<IGrupoService, GrupoService>();
             services.AddScoped<IGrupoRepository, GrupoRepository>();
 
             // Usuario
             services.AddScoped<IUsuarioAppService, UsuarioAppService>();
-            services.AddScoped<IUsuarioService, UsuarioService>();
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         }
 

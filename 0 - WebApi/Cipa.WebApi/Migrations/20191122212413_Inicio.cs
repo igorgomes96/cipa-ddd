@@ -237,7 +237,12 @@ namespace Cipa.WebApi.Migrations
                     DimensionamentoMinEleitores = table.Column<int>(nullable: false),
                     DimensionamentoMaxEleitores = table.Column<int>(nullable: false),
                     DimensionamentoQtdaEfetivos = table.Column<int>(nullable: false),
-                    DimensionamentoQtdaSuplentes = table.Column<int>(nullable: false)
+                    DimensionamentoQtdaSuplentes = table.Column<int>(nullable: false),
+                    QtdaEleitores = table.Column<int>(nullable: false),
+                    QtdaVotos = table.Column<int>(nullable: false),
+                    QtdaInscricoesAprovadas = table.Column<int>(nullable: false),
+                    QtdaInscricoesReprovadas = table.Column<int>(nullable: false),
+                    QtdaInscricoesPendentes = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -892,7 +897,7 @@ namespace Cipa.WebApi.Migrations
             migrationBuilder.InsertData(
                 table: "Usuarios",
                 columns: new[] { "Id", "Cargo", "CodigoRecuperacao", "ContaId", "DataCadastro", "Email", "ExpiracaoCodigoRecuperacao", "Nome", "Perfil", "Senha" },
-                values: new object[] { 1, null, null, 1, new DateTime(2019, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "teste@email.com", null, "Teste", "SESMT", "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc" });
+                values: new object[] { 1, "Cargo Teste", new Guid("d6afe93c-e9ac-406e-9c76-e1cdf045f1a5"), 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "teste@email.com", new DateTime(2019, 11, 23, 18, 24, 12, 975, DateTimeKind.Local).AddTicks(7150), "Teste", "SESMT", "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc" });
 
             migrationBuilder.InsertData(
                 table: "Estabelecimentos",
