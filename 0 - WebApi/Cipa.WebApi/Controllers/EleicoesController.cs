@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
@@ -18,6 +17,7 @@ namespace Cipa.WebApi.Controllers
     [ApiController]
     public class EleicoesController : Controller
     {
+        #region Serviços e Construtor
         private readonly IEleicaoAppService _eleicaoAppService;
         private readonly IMapper _mapper;
         public EleicoesController(IEleicaoAppService eleicaoAppService, IMapper mapper)
@@ -25,15 +25,17 @@ namespace Cipa.WebApi.Controllers
             _eleicaoAppService = eleicaoAppService;
             _mapper = mapper;
         }
+        #endregion
 
+        #region Eleições
         [HttpGet]
         [Pagination]
         public IEnumerable<EleicaoViewModel> GetEleicoes()
         {
-            if (User.IsInRole(PerfilUsuario.SESMT))
-                return _eleicaoAppService.BuscarPelaConta(ContaId).AsQueryable().ProjectTo<EleicaoViewModel>(_mapper.ConfigurationProvider);
-            else
-                return _eleicaoAppService.BuscarPeloUsuario(UsuarioId).AsQueryable().ProjectTo<EleicaoDetalheViewModel>(_mapper.ConfigurationProvider);
+            if (User.IsInRole(PerfilUsuario.SESMT)) {
+                return _mapper.Map<List<EleicaoViewModel>>(_eleicaoAppService.BuscarPelaConta(ContaId));
+            } else
+                return _mapper.Map<List<EleicaoDetalheViewModel>>(_eleicaoAppService.BuscarPeloUsuario(UsuarioId));
         }
 
         [HttpGet("{id}")]
@@ -68,22 +70,49 @@ namespace Cipa.WebApi.Controllers
         {
             return _mapper.Map<EleicaoViewModel>(_eleicaoAppService.Excluir(id));
         }
+        #endregion
 
+        #region Cronograma
         [HttpGet("{id}/cronograma")]
         public IEnumerable<EtapaCronogramaViewModel> GetCronograma(int id) =>
-            _eleicaoAppService.BuscarCronograma(id).AsQueryable().ProjectTo<EtapaCronogramaViewModel>(_mapper.ConfigurationProvider);
+            _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.BuscarCronograma(id));
 
+        [HttpPost("{id}/proximaetapa")]
+        public IEnumerable<EtapaCronogramaViewModel> PassarParaProximaEtapa(int id) =>
+            _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.PassarParaProximaEtapa(id)?.Cronograma);
+        #endregion
+
+        #region Eleitores
         [HttpGet("{id}/eleitores")]
         [Query("Nome", "Cargo")]
         [Pagination]
-        public IQueryable<EleitorViewModel> GetEleitores(int id) =>
-             _eleicaoAppService.BuscarEleitores(id).AsQueryable().ProjectTo<EleitorViewModel>(_mapper.ConfigurationProvider);
+        public IEnumerable<EleitorViewModel> GetEleitores(int id) =>
+            _mapper.Map<List<EleitorViewModel>>(_eleicaoAppService.BuscarEleitores(id));
 
+        [HttpPost("{id}/eleitores")]
+        public EleitorViewModel PostEleitor(int id, EleitorViewModel eleitorViewModel)
+        {
+            var eleitor = _mapper.Map<Eleitor>(eleitorViewModel);
+            return _mapper.Map<EleitorViewModel>(_eleicaoAppService.AdicionarEleitor(id, eleitor));
+        }
 
         [HttpDelete("{eleicaoId}/eleitores/{eleitorId}")]
-        public Eleitor DeleteEleitor(int eleicaoId, int eleitorId)
+        public EleitorViewModel DeleteEleitor(int eleicaoId, int eleitorId)
         {
-            return _eleicaoAppService.ExcluirEleitor(eleicaoId, eleitorId);
+            return _mapper.Map<EleitorViewModel>(_eleicaoAppService.ExcluirEleitor(eleicaoId, eleitorId));
+        }
+
+        [HttpGet("{id}/eleitores/{eleitorId}")]
+        public EleitorViewModel GetEleitor(int id, int eleitorId)
+        {
+            return _mapper.Map<EleitorViewModel>(_eleicaoAppService.BuscarEleitor(id, eleitorId));
+        }
+
+        [HttpPut("{eleicaoId}/eleitores/{eleitorId}")]
+        public EleitorViewModel PutEleitor(int eleicaoId, int eleitorId, EleitorViewModel eleitor)
+        {
+            eleitor.Id = eleitorId;
+            return _mapper.Map<EleitorViewModel>(_eleicaoAppService.AtualizarEleitor(eleicaoId, _mapper.Map<Eleitor>(eleitor)));
         }
 
         [HttpGet("{id}/eleitor")]
@@ -91,7 +120,9 @@ namespace Cipa.WebApi.Controllers
         {
             return _mapper.Map<EleitorViewModel>(_eleicaoAppService.BuscarEleitorPeloIdUsuario(id, UsuarioId));
         }
+        #endregion
 
+        #region Inscrições
         [Query("Eleitor.Nome")]
         [HttpGet("{id}/inscricoes")]
         public ActionResult<IEnumerable<InscricaoViewModel>> GetInscricoes(int id, string status, int? seedOrder = null)
@@ -109,29 +140,9 @@ namespace Cipa.WebApi.Controllers
             if (seedOrder.HasValue)
             {
                 Random rnd = new Random(seedOrder.Value);
-                return Ok(inscricoes.OrderBy(_ => rnd.Next()).ProjectTo<InscricaoViewModel>(_mapper.ConfigurationProvider));
+                return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(_ => rnd.Next())));
             }
-            return Ok(inscricoes.OrderBy(i => i.Eleitor.Nome).ProjectTo<InscricaoViewModel>(_mapper.ConfigurationProvider));
-        }
-
-        [HttpGet("{id}/inscricao")]
-        public ActionResult<InscricaoDetalhesViewModel> GetInscricao(int id)
-        {
-            return _mapper.Map<InscricaoDetalhesViewModel>(_eleicaoAppService.BuscarInscricaoPeloUsuario(id, UsuarioId));
-        }
-
-        [HttpPost("{id}/proximaetapa")]
-        public IEnumerable<EtapaCronogramaViewModel> PassarParaProximaEtapa(int id)
-        {
-            return _eleicaoAppService.PassarParaProximaEtapa(id)?.Cronograma.AsQueryable()
-                .ProjectTo<EtapaCronogramaViewModel>(_mapper.ConfigurationProvider);
-        }
-
-        [HttpPost("{id}/eleitores")]
-        public EleitorViewModel PostEleitor(int id, EleitorViewModel eleitorViewModel)
-        {
-            var eleitor = _mapper.Map<Eleitor>(eleitorViewModel);
-            return _mapper.Map<EleitorViewModel>(_eleicaoAppService.AdicionarEleitor(id, eleitor));
+            return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(i => i.Eleitor.Nome)));
         }
 
         [HttpPost("{id}/inscricoes")]
@@ -158,6 +169,14 @@ namespace Cipa.WebApi.Controllers
             return _mapper.Map<InscricaoDetalhesViewModel>(_eleicaoAppService.ReprovarInscricao(id, inscricaoId, UsuarioId, reprovacao.MotivoReprovacao));
         }
 
+        [HttpGet("{id}/inscricao")]
+        public ActionResult<InscricaoDetalhesViewModel> GetInscricao(int id)
+        {
+            return _mapper.Map<InscricaoDetalhesViewModel>(_eleicaoAppService.BuscarInscricaoPeloUsuario(id, UsuarioId));
+        }
+        #endregion
+
+        #region Votação
         [HttpPost("{id}/inscricoes/{inscricaoId}/votar")]
         public VotoViewModel PostVotar(int id, int inscricaoId)
         {
@@ -171,10 +190,8 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpGet("{id}/votos")]
-        public IEnumerable<VotoViewModel> GetVotos(int id)
-        {
-            return _eleicaoAppService.BuscarVotos(id).AsQueryable().ProjectTo<VotoViewModel>(_mapper.ConfigurationProvider);
-        }
+        public IEnumerable<VotoViewModel> GetVotos(int id) =>
+            _mapper.Map<List<VotoViewModel>>(_eleicaoAppService.BuscarVotos(id));
 
         [HttpGet("{id}/votousuario")]
         public VotoViewModel GetVotoUsuario(int id)
@@ -183,11 +200,8 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpGet("{id}/apuracao")]
-        public IEnumerable<ApuracaoViewModel> GetApuracao(int id)
-        {
-            return _eleicaoAppService.ApurarVotos(id).AsQueryable().ProjectTo<ApuracaoViewModel>(_mapper.ConfigurationProvider);
-        }
-
-
+        public IEnumerable<ApuracaoViewModel> GetApuracao(int id) =>
+            _mapper.Map<List<ApuracaoViewModel>>(_eleicaoAppService.ApurarVotos(id));
+        #endregion
     }
 }

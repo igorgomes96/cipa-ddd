@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Cipa.Application;
+﻿using Cipa.Application;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Infra.Data.Context;
@@ -38,6 +36,7 @@ namespace Cipa.WebApi
             // });
             services.AddDbContext<CipaContext>(options =>
             {
+                options.UseLazyLoadingProxies();
                 options.UseMySql(Configuration.GetConnectionString("MySqlConnection"),
                     b => b.MigrationsAssembly("Cipa.WebApi"));
             });
@@ -113,11 +112,21 @@ namespace Cipa.WebApi
             services.AddScoped<IEleicaoAppService, EleicaoAppService>();
             services.AddScoped<IEleicaoRepository, EleicaoRepository>();
 
+            // Grupo
+            services.AddScoped<IGrupoAppService, GrupoAppService>();
+            services.AddScoped<IGrupoRepository, GrupoRepository>();
+
+            // Empresa
+            services.AddScoped<IEmpresaAppService, EmpresaAppService>();
+            services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+
             // Estabelecimento
             services.AddScoped<IEstabelecimentoRepository, EstabelecimentoRepository>();
+            services.AddScoped<IEstabelecimentoAppService, EstabelecimentoAppService>();
 
             // Conta
             services.AddScoped<IContaRepository, ContaRepository>();
+            services.AddScoped<IContaAppService, ContaAppService>();
 
             // Grupo
             services.AddScoped<IGrupoRepository, GrupoRepository>();

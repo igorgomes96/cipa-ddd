@@ -17,6 +17,7 @@ namespace Cipa.Domain.Entities
             Nome = usuario.Nome;
             Email = usuario.Email;
         }
+
         public string Nome { get; set; }
         public string Email { get; set; }
         public string Matricula { get; set; }
@@ -33,5 +34,20 @@ namespace Cipa.Domain.Entities
         public virtual Usuario Usuario { get; set; }
         public virtual Inscricao Inscricao { get; private set; }
         public virtual Voto Voto { get; private set; }
+
+        internal void Atualizar(Eleitor eleitor)
+        {
+            Nome = eleitor.Nome;
+            Email = eleitor.Email;
+            Matricula = eleitor.Matricula;
+            Area = eleitor.Area;
+            Cargo = eleitor.Cargo;
+            DataNascimento = eleitor.DataNascimento;
+            DataAdmissao = eleitor.DataAdmissao;
+            NomeGestor = eleitor.NomeGestor;
+            EmailGestor = eleitor.EmailGestor;
+            Usuario = eleitor.Usuario;
+            UsuarioId = eleitor.UsuarioId;
+        }
     }
 }

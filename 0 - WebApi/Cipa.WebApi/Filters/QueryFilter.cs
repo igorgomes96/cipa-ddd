@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace Cipa.WebApi.Filters
 {
@@ -40,9 +41,9 @@ namespace Cipa.WebApi.Filters
                 var urlQuery = context.HttpContext.Request.Query;
                 var atributos = _values.Where(v => urlQuery.ContainsKey(v.Replace(".", "")))
                                 .ToDictionary(k => k, v => urlQuery[v.Replace(".", "")].ToString().ToLower());
-                if (context.Result is ObjectResult && ((ObjectResult)context.Result).Value is IQueryable)
+                if (context.Result is ObjectResult && ((ObjectResult)context.Result).Value is IEnumerable)
                 {
-                    IQueryable<object> response = ((ObjectResult)context.Result).Value as IQueryable<object>;
+                    var response = ((ObjectResult)context.Result).Value as IEnumerable<object>;
                     ((ObjectResult)context.Result).Value = FilterResponse(response, atributos).AsQueryable();
                 }
             }

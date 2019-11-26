@@ -7,8 +7,8 @@ using Cipa.Domain.Interfaces.Repositories;
 namespace Cipa.Application {
     public class AppServiceBase<TEntity> : IDisposable, IAppServiceBase<TEntity> where TEntity : class
     {
-        private readonly IRepositoryBase<TEntity> _repositoryBase;
-        private readonly IUnitOfWork _unitOfWork;
+        protected readonly IRepositoryBase<TEntity> _repositoryBase;
+        protected readonly IUnitOfWork _unitOfWork;
 
         public AppServiceBase(IUnitOfWork unitOfWork, IRepositoryBase<TEntity> repositoryBase) {
             _repositoryBase = repositoryBase;
@@ -29,16 +29,29 @@ namespace Cipa.Application {
 
         public virtual TEntity BuscarPeloId(int id)
         {
-            return _repositoryBase.BuscarPeloId(id);
+            var entity = _repositoryBase.BuscarPeloId(id);
+            if (entity == null) throw new NotFoundException("Código não encontrado.");
+            return entity;
         }
 
         public virtual TEntity Excluir(int id)
         {
             TEntity obj = BuscarPeloId(id);
             if (obj == null) throw new NotFoundException("Código não encontrado.");
+            return Excluir(obj);
+        }
+
+        public virtual TEntity Excluir(TEntity obj)
+        {
             _repositoryBase.Excluir(obj);
             _unitOfWork.Commit();
             return obj;
+        }
+
+        public virtual void Atualizar(int id, TEntity obj)
+        {
+            _repositoryBase.Atualizar(id, obj);
+            _unitOfWork.Commit();
         }
 
         public virtual void Atualizar(TEntity obj)

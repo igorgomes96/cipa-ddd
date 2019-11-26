@@ -8,6 +8,7 @@ namespace Cipa.Domain.Interfaces.Repositories
         TEntity Adicionar(TEntity obj);
         IEnumerable<TEntity> BuscarTodos();
         TEntity BuscarPeloId(int id);
+        TEntity Atualizar(int id, TEntity obj);
         void Atualizar(TEntity obj);
         void Excluir(TEntity obj);
     }

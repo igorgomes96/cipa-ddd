@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
@@ -14,16 +15,17 @@ namespace Cipa.Domain.Entities
             DateTime? terminoMandatoAnterior,
             Usuario usuarioCriacao,
             Estabelecimento estabelecimento,
-            int qtdaEleicoesEstabelecimentoNoAno,
             Grupo grupo)
         {
             DataInicio = dataInicio;
             DuracaoGestao = duracaoGestao;
             TerminoMandatoAnterior = terminoMandatoAnterior;
-            if (qtdaEleicoesEstabelecimentoNoAno > 0)
-                throw new CustomException($"Já há uma eleição cadastrada para este estabelecimento no ano de {Gestao}.");
-            Usuario = usuarioCriacao ?? throw new CustomException("O usuário de criação deve ser informado.");
             Estabelecimento = estabelecimento ?? throw new CustomException("O estabelecimento deve ser informado."); ;
+            if (Estabelecimento.EleicoesDoAnoCorrente.Any())
+                throw new CustomException($"Já há uma eleição cadastrada para este estabelecimento no ano de {Gestao}.");
+            if (Estabelecimento.EleicoesEmAndamento.Any())
+                throw new CustomException($"Existe uma eleição aberta para este estabelecimento.");
+            Usuario = usuarioCriacao ?? throw new CustomException("O usuário de criação deve ser informado.");
             this._grupo = grupo ?? estabelecimento.Grupo ?? throw new CustomException("O grupo deve ser informado.");
             Conta = usuarioCriacao.Conta ?? throw new CustomException("O usuário de criação da eleição deve estar vinculado à uma conta.");
         }
@@ -98,26 +100,26 @@ namespace Cipa.Domain.Entities
                     var novoDimensionamento = value.CalcularDimensionamento(Dimensionamento.QtdaEleitores);
                     if (novoDimensionamento == null)
                         throw new CustomException("Não foi encontrado o dimensionamento adequado para a eleição. Por favor, contate o suporte.");
-                    if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao))
-                    {
-                        if (novoDimensionamento.TotalCipeiros > Dimensionamento.QtdaInscricoesAprovadas)
-                            throw new CustomException($"Para o grupo {value.CodigoGrupo}, o mínimo de inscrições necessária é {novoDimensionamento.TotalCipeiros}, e só houveram {Dimensionamento.QtdaInscricoesAprovadas} inscrições aprovadas nessa eleição.");
-                    }
+                    if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao) && novoDimensionamento.TotalCipeiros > Dimensionamento.QtdaInscricoesAprovadas)
+                        throw new CustomException($"Para o grupo {value.CodigoGrupo}, o mínimo de inscrições necessária é {novoDimensionamento.TotalCipeiros}, e só houveram {Dimensionamento.QtdaInscricoesAprovadas} inscrições aprovadas nessa eleição.");
                     AtualizarDimensionamento(novoDimensionamento);
                 }
                 _grupo = value;
-
             }
         }
         public virtual Dimensionamento Dimensionamento { get; private set; } = new Dimensionamento(0, 0, 0, 0);
         public virtual ICollection<Inscricao> Inscricoes { get; } = new List<Inscricao>();
-        public virtual IReadOnlyCollection<EtapaCronograma> Cronograma { get; private set; } = new List<EtapaCronograma>();
+        private List<EtapaCronograma> _cronograma = new List<EtapaCronograma>();
+        public virtual IReadOnlyCollection<EtapaCronograma> Cronograma
+        {
+            get => new ReadOnlyCollection<EtapaCronograma>(_cronograma.OrderBy(e => e.Ordem).ToList());
+        }
         public virtual ICollection<Eleitor> Eleitores { get; } = new List<Eleitor>();
         public virtual ICollection<Voto> Votos { get; } = new List<Voto>();
 
         public EtapaCronograma EtapaAtual
         {
-            get => Cronograma?.FirstOrDefault(c => c.PosicaoEtapa == PosicaoEtapa.Atual);
+            get => Cronograma.FirstOrDefault(c => c.PosicaoEtapa == PosicaoEtapa.Atual);
         }
 
         public EtapaCronograma UltimaEtapa
@@ -145,33 +147,28 @@ namespace Cipa.Domain.Entities
         {
             var ordem = 1;
             var data = DataInicio;
-            var cronograma = new List<EtapaCronograma>();
             foreach (var etapaPadrao in Conta.EtapasPadroes.OrderBy(e => e.Ordem))
             {
                 var etapa = new EtapaCronograma(etapaPadrao.Nome, etapaPadrao.Descricao, ordem, Id, data, etapaPadrao.EtapaObrigatoriaId)
                 {
                     Eleicao = this
                 };
-                cronograma.Add(etapa);
+                _cronograma.Add(etapa);
                 data = data.AddDays(etapaPadrao.DuracaoPadrao);
                 ordem++;
             }
-            Cronograma = cronograma;
         }
 
         private void AtualizarDimensionamento()
         {
-            if (Inscricoes.Any())
+            Dimensionamento = new Dimensionamento(Dimensionamento.Maximo, Dimensionamento.Minimo, Dimensionamento.QtdaEfetivos, Dimensionamento.QtdaSuplentes)
             {
-                Dimensionamento.QtdaInscricoesAprovadas = QtdaInscricoes(StatusInscricao.Aprovada);
-                Dimensionamento.QtdaInscricoesReprovadas = QtdaInscricoes(StatusInscricao.Reprovada);
-                Dimensionamento.QtdaInscricoesPendentes = QtdaInscricoes(StatusInscricao.Pendente);
-            }
-            if (Votos.Any())
-                Dimensionamento.QtdaVotos = Votos.Count;
-
-            if (Eleitores.Any())
-                Dimensionamento.QtdaEleitores = Eleitores.Count;
+                QtdaInscricoesAprovadas = QtdaInscricoes(StatusInscricao.Aprovada),
+                QtdaInscricoesReprovadas = QtdaInscricoes(StatusInscricao.Reprovada),
+                QtdaInscricoesPendentes = QtdaInscricoes(StatusInscricao.Pendente),
+                QtdaVotos = Votos.Count,
+                QtdaEleitores = Eleitores.Count,
+            };
         }
 
         private void AtualizarDimensionamento(LinhaDimensionamento linhaDimensionamento)
@@ -362,15 +359,19 @@ namespace Cipa.Domain.Entities
 
         public bool ExcluirEleitor(Eleitor eleitor)
         {
-            LinhaDimensionamento novoDimensionamento = Grupo.CalcularDimensionamento(Dimensionamento.QtdaEleitores - 1);
+            if (!Eleitores.Contains(eleitor))
+                throw new NotFoundException("Eleitor não encontrado.");
+
             var inscricao = BuscarInscricaoPeloEleitorId(eleitor.Id);
             if (inscricao != null && inscricao.StatusInscricao != StatusInscricao.Reprovada)
                 throw new CustomException("Não é possível excluir esse eleitor pois ele é um dos inscritos nessa eleição!");
             if (EleitorJaVotou(eleitor))
                 throw new CustomException("Não é possível excluir esse eleitor pois ele já votou nessa eleição!");
 
+            var excluido = Eleitores.Remove(eleitor);
+            LinhaDimensionamento novoDimensionamento = Grupo.CalcularDimensionamento(Dimensionamento.QtdaEleitores - 1);
             AtualizarDimensionamento(novoDimensionamento);
-            return Eleitores.Remove(eleitor);
+            return excluido;
         }
 
         private Voto RegistrarVoto(Eleitor eleitor, string ip)
@@ -447,6 +448,19 @@ namespace Cipa.Domain.Entities
         {
             inscricao.ResultadoApuracao = resultado;
             return inscricao;
+        }
+
+        public Eleitor AtualizarEleitor(Eleitor eleitor)
+        {
+            var eleitorExistente = BuscarEleitor(eleitor.Id);
+            if (eleitorExistente == null) throw new NotFoundException("Eleitor não encontrado.");
+
+            if (eleitorExistente.Email != eleitor.Email && Eleitores.Any(e => e.Email == eleitor.Email))
+                throw new CustomException("Já existe um eleitor cadastrado com o mesmo e-mail para essa eleição.");
+
+            eleitorExistente.Atualizar(eleitor);
+
+            return eleitorExistente;
         }
     }
 

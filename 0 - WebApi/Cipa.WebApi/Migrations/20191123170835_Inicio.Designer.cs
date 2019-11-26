@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cipa.WebApi.Migrations
 {
     [DbContext(typeof(CipaContext))]
-    [Migration("20191122212413_Inicio")]
+    [Migration("20191123170835_Inicio")]
     partial class Inicio
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -725,6 +725,8 @@ namespace Cipa.WebApi.Migrations
 
                     b.Property<string>("Objetivos")
                         .HasMaxLength(255);
+
+                    b.Property<int>("ResultadoApuracao");
 
                     b.Property<int>("StatusInscricao");
 
@@ -4529,11 +4531,11 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Cargo = "Cargo Teste",
-                            CodigoRecuperacao = new Guid("d6afe93c-e9ac-406e-9c76-e1cdf045f1a5"),
+                            CodigoRecuperacao = new Guid("4c693a97-42b4-4f3b-8495-c5bfd8345780"),
                             ContaId = 1,
                             DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
-                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 11, 23, 18, 24, 12, 975, DateTimeKind.Local).AddTicks(7150),
+                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 11, 24, 14, 8, 35, 404, DateTimeKind.Local).AddTicks(2900),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"

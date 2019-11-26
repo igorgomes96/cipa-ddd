@@ -43,6 +43,8 @@ namespace Cipa.Infra.Data.Repositories
         public IGrupoRepository GrupoRepository => (IGrupoRepository)_serviceProvider.GetService(typeof(IGrupoRepository));
         public IEstabelecimentoRepository EstabelecimentoRepository => (IEstabelecimentoRepository)_serviceProvider.GetService(typeof(IEstabelecimentoRepository));
         public IUsuarioRepository UsuarioRepository => (IUsuarioRepository)_serviceProvider.GetService(typeof(IUsuarioRepository));
+        public IEmpresaRepository EmpresaRepository => (IEmpresaRepository)_serviceProvider.GetService(typeof(IEmpresaRepository));
+
         #endregion
 
 

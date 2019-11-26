@@ -6,15 +6,9 @@ namespace Cipa.Application
 {
     public class UsuarioAppService : AppServiceBase<Usuario>, IUsuarioAppService
     {
-        private readonly IUnitOfWork _unitOfWork;
-        public UsuarioAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.UsuarioRepository)
-        {
-            _unitOfWork = unitOfWork;
-        }
+        public UsuarioAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.UsuarioRepository) { }
 
-        public Usuario BuscarUsuario(string email, string senha)
-        {
-            return _unitOfWork.UsuarioRepository.BuscarUsuario(email, senha);
-        }
+        public Usuario BuscarUsuario(string email, string senha) => 
+            (_repositoryBase as IUsuarioRepository).BuscarUsuario(email, senha);
     }
 }

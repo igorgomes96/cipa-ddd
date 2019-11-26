@@ -9,20 +9,16 @@ namespace Cipa.Application
 {
     public class EleicaoAppService : AppServiceBase<Eleicao>, IEleicaoAppService
     {
-        private readonly IUnitOfWork _unitOfWork;
 
-        public EleicaoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.EleicaoRepository)
-        {
-            _unitOfWork = unitOfWork;
-        }
+        public EleicaoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.EleicaoRepository){ }
 
         public override Eleicao Adicionar(Eleicao eleicao)
         {
-            var estabelecimento = _unitOfWork.EstabelecimentoRepository.BuscarPeloId(eleicao.EstabelecimentoId);
+            var estabelecimento = _unitOfWork.EstabelecimentoRepository.BuscarPeloId(eleicao.EstabelecimentoId); // .BuscarPeloIdCarregarEleicoes(eleicao.EstabelecimentoId);
             if (estabelecimento == null)
                 throw new NotFoundException($"Estabelecimento {eleicao.EstabelecimentoId} não encontrado.");
 
-            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloIdCarregarAgregadoConta(eleicao.UsuarioCriacaoId);
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(eleicao.UsuarioCriacaoId); // BuscarPeloIdCarregarAgregadoConta(eleicao.UsuarioCriacaoId);
             if (usuario == null)
                 throw new NotFoundException($"Usuário {eleicao.UsuarioCriacaoId} não encontrado.");
 
@@ -30,15 +26,11 @@ namespace Cipa.Application
             if (grupo == null)
                 throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
 
-            var qtdaEstabelecimentos = _unitOfWork.EstabelecimentoRepository
-                .QuantidadeEleicoesAno(eleicao.EstabelecimentoId, eleicao.Gestao);
-
             var novaEleicao = new Eleicao(
                 eleicao.DataInicio,
                 eleicao.DuracaoGestao,
                 eleicao.TerminoMandatoAnterior,
-                usuario, estabelecimento,
-                qtdaEstabelecimentos, grupo);
+                usuario, estabelecimento, grupo);
             novaEleicao.GerarCronograma();
 
             return base.Adicionar(novaEleicao);
@@ -88,7 +80,7 @@ namespace Cipa.Application
 
         public Eleitor BuscarEleitorPeloIdUsuario(int eleicaoId, int usuarioId)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             return eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
@@ -120,7 +112,7 @@ namespace Cipa.Application
 
         public Eleitor ExcluirEleitor(int eleicaoId, int eleitorId)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); //BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var eleitor = eleicao.BuscarEleitor(eleitorId);
@@ -136,7 +128,7 @@ namespace Cipa.Application
 
         public Eleicao PassarParaProximaEtapa(int eleicaoId)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarTodoAgregado(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             eleicao.PassarParaProximaEtapa();
@@ -146,7 +138,7 @@ namespace Cipa.Application
 
         public Eleitor AdicionarEleitor(int eleicaoId, Eleitor eleitor)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var usuario = _unitOfWork.UsuarioRepository.BuscarUsuario(eleitor.Email);
@@ -161,7 +153,7 @@ namespace Cipa.Application
 
         public Inscricao FazerInscricao(int eleicaoId, int usuarioId, string objetivos)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
@@ -174,7 +166,7 @@ namespace Cipa.Application
 
         public Inscricao AtualizarInscricao(int eleicaoId, int usuarioId, string objetivos)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
@@ -187,7 +179,7 @@ namespace Cipa.Application
 
         public Inscricao AprovarInscricao(int eleicaoId, int inscricaoId, int usuarioAprovadorId)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioAprovadorId);
@@ -200,7 +192,7 @@ namespace Cipa.Application
 
         public Inscricao ReprovarInscricao(int eleicaoId, int inscricaoId, int usuarioAprovadorId, string motivoReprovacao)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarEleitores(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarEleitores(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioAprovadorId);
@@ -213,7 +205,7 @@ namespace Cipa.Application
 
         public Voto RegistrarVoto(int eleicaoId, int inscricaoId, int usuarioId, string ip)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarTodoAgregado(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
@@ -226,7 +218,7 @@ namespace Cipa.Application
 
         public Voto VotarEmBranco(int eleicaoId, int usuarioId, string ip)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarTodoAgregado(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
@@ -241,7 +233,7 @@ namespace Cipa.Application
 
         public Voto BuscarVotoUsuario(int eleicaoId, int usuarioId)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarVotos(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarVotos(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
             var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
@@ -252,10 +244,34 @@ namespace Cipa.Application
 
         public IEnumerable<Inscricao> ApurarVotos(int eleicaoId)
         {
-            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloIdCarregarTodoAgregado(eleicaoId);
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarTodoAgregado(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
             return eleicao.ApurarVotos();
         }
 
+        public Eleitor AtualizarEleitor(int eleicaoId, Eleitor eleitor)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); // BuscarPeloIdCarregarEleitores(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var usuario = _unitOfWork.UsuarioRepository.BuscarUsuario(eleitor.Email);
+            if (usuario == null)
+                usuario = new Usuario(eleitor.Email, eleitor.Nome, eleitor.Cargo);
+            eleitor.Usuario = usuario;
+
+            var eleitorAtualizado = eleicao.AtualizarEleitor(eleitor);
+            base.Atualizar(eleicao);
+            return eleitorAtualizado;
+        }
+
+        public Eleitor BuscarEleitor(int eleicaoId, int eleitorId)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId); //BuscarPeloIdCarregarEleitores(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var eleitor = eleicao.BuscarEleitor(eleitorId);
+            if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
+            return eleitor;
+        }
     }
 }

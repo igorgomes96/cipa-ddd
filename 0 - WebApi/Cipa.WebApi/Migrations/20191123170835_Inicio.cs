@@ -193,11 +193,11 @@ namespace Cipa.WebApi.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    EmpresaId = table.Column<int>(nullable: false),
                     Cidade = table.Column<string>(maxLength: 100, nullable: false),
                     Endereco = table.Column<string>(maxLength: 255, nullable: false),
                     Descricao = table.Column<string>(maxLength: 255, nullable: true),
                     GrupoId = table.Column<int>(nullable: true),
+                    EmpresaId = table.Column<int>(nullable: false),
                     Ativo = table.Column<bool>(nullable: false),
                     DataCadastro = table.Column<DateTime>(nullable: false)
                 },
@@ -356,7 +356,8 @@ namespace Cipa.WebApi.Migrations
                     EmailAprovador = table.Column<string>(maxLength: 100, nullable: true),
                     NomeAprovador = table.Column<string>(maxLength: 255, nullable: true),
                     HorarioAprovacao = table.Column<DateTime>(nullable: true),
-                    DataCadastro = table.Column<DateTime>(nullable: false)
+                    DataCadastro = table.Column<DateTime>(nullable: false),
+                    ResultadoApuracao = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -897,7 +898,7 @@ namespace Cipa.WebApi.Migrations
             migrationBuilder.InsertData(
                 table: "Usuarios",
                 columns: new[] { "Id", "Cargo", "CodigoRecuperacao", "ContaId", "DataCadastro", "Email", "ExpiracaoCodigoRecuperacao", "Nome", "Perfil", "Senha" },
-                values: new object[] { 1, "Cargo Teste", new Guid("d6afe93c-e9ac-406e-9c76-e1cdf045f1a5"), 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "teste@email.com", new DateTime(2019, 11, 23, 18, 24, 12, 975, DateTimeKind.Local).AddTicks(7150), "Teste", "SESMT", "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc" });
+                values: new object[] { 1, "Cargo Teste", new Guid("4c693a97-42b4-4f3b-8495-c5bfd8345780"), 1, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "teste@email.com", new DateTime(2019, 11, 24, 14, 8, 35, 404, DateTimeKind.Local).AddTicks(2900), "Teste", "SESMT", "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc" });
 
             migrationBuilder.InsertData(
                 table: "Estabelecimentos",

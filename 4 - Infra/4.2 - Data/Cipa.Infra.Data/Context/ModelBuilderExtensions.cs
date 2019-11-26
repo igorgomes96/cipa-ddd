@@ -16,8 +16,7 @@ namespace Cipa.Infra.Data.Context
                 DataInicio = new DateTime(2019, 1, 1),
                 DataFim = new DateTime(2020, 12, 31),
                 PlanoId = null,
-                QtdaEstabelecimentos = 2,
-                DataCadastro = new DateTime(2019, 1, 1)
+                QtdaEstabelecimentos = 2
             };
 
             Grupo[] grupos = new Grupo[45] {
@@ -493,26 +492,18 @@ namespace Cipa.Infra.Data.Context
                 ContaId = 1
             };
 
-            Empresa empresa = new Empresa
+            Empresa empresa = new Empresa("Empresa Teste", "01540533000390")
             {
                 Id = 1,
                 Cnpj = "01540533000390",
-                Ativa = true,
                 ContaId = 1,
-                RazaoSocial = "Empresa Teste",
-                DataCadastro = new DateTime(2019, 1, 1)
             };
 
-            Estabelecimento estabelecimento = new Estabelecimento
+            Estabelecimento estabelecimento = new Estabelecimento("Uberlândia", "Teste", 1)
             {
                 Id = 1,
-                Ativo = true,
-                Cidade = "Uberlândia",
                 Descricao = "Teste",
-                EmpresaId = 1,
-                Endereco = "Teste",
-                GrupoId = 1,
-                DataCadastro = new DateTime(2019, 1, 1)
+                GrupoId = 1
             };
 
             var etapasObrigatorias = new EtapaObrigatoria[6] {

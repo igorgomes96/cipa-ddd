@@ -15,10 +15,10 @@ namespace Cipa.Domain.Test.Entities
         private Conta ContaPadrao()
         {
             var conta = new Conta();
-            conta.EtapasPadroes.Add(new EtapaPadraoConta("Etapa 1", null, 1, 1, 10, CodigoEtapaObrigatoria.Convocacao));
-            conta.EtapasPadroes.Add(new EtapaPadraoConta("Etapa 2", null, 2, 1, 1, CodigoEtapaObrigatoria.Inscricao));
-            conta.EtapasPadroes.Add(new EtapaPadraoConta("Etapa 3", null, 3, 1, 1, CodigoEtapaObrigatoria.Votacao));
-            conta.EtapasPadroes.Add(new EtapaPadraoConta("Etapa 4", null, 4, 1, 1, CodigoEtapaObrigatoria.Ata));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 1", null, 1, 1, 10, CodigoEtapaObrigatoria.Convocacao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 2", null, 2, 1, 1, CodigoEtapaObrigatoria.Inscricao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 3", null, 3, 1, 1, CodigoEtapaObrigatoria.Votacao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 4", null, 4, 1, 1, CodigoEtapaObrigatoria.Ata));
             return conta;
         }
 
@@ -39,9 +39,10 @@ namespace Cipa.Domain.Test.Entities
             grupo.Dimensionamentos.Add(new LinhaDimensionamento(10000, 5001, 15, 12));
             return grupo;
         }
-        private Estabelecimento EstabelecimentoPadrao => new Estabelecimento { Grupo = GrupoPadrao() };
+        private Estabelecimento EstabelecimentoPadrao => new Estabelecimento("Cidade", "Endereço", 1) { Grupo = GrupoPadrao() };
 
-        private Eleicao CriarEleicao(Conta conta, Grupo grupo, int qtdaEleicoesNoEstabelecimento = 0)
+
+        private Eleicao CriarEleicao(Conta conta, Grupo grupo)
         {
             var eleicao = new Eleicao(
                 new DateTime(2019, 1, 1),
@@ -49,7 +50,6 @@ namespace Cipa.Domain.Test.Entities
                 new DateTime(2019, 2, 28),
                 UsuarioPadrao,
                 EstabelecimentoPadrao,
-                qtdaEleicoesNoEstabelecimento,
                 grupo);
             eleicao.Id = 1;
             eleicao.GerarCronograma();
@@ -62,22 +62,6 @@ namespace Cipa.Domain.Test.Entities
         {
             for (int i = 0; i <= eleicao.Cronograma.Count; i++)
                 eleicao.PassarParaProximaEtapa();
-        }
-
-        private void PassarParaEtapaInscricao(Eleicao eleicao)
-        {
-            while (eleicao.EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
-            {
-                eleicao.PassarParaProximaEtapa();
-            }
-        }
-
-        private void PassarParaEtapaVotacao(Eleicao eleicao)
-        {
-            while (eleicao.EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Votacao)
-            {
-                eleicao.PassarParaProximaEtapa();
-            }
         }
 
         private void PassarEtapaAte(Eleicao eleicao, CodigoEtapaObrigatoria codigoEtapaObrigatoria)
@@ -164,7 +148,7 @@ namespace Cipa.Domain.Test.Entities
         public void JaUltrapassouEtapa_EtapaNaoEncontrada_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var exception = Assert.Throws<CustomException>(() => eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.EditalInscricao));
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
@@ -342,7 +326,7 @@ namespace Cipa.Domain.Test.Entities
         public void QtdaInscricoes_InscricoesCarregadas_RetornaQtda(StatusInscricao statusInscricao, int qtdaExperada)
         {
             var eleicao = CriarEleicao();
-            PassarParaEtapaInscricao(eleicao);
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
             var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
             var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
             var usuario3 = new Usuario("eleitor3@email.com", "Eleitor 3", "Cargo");
@@ -423,7 +407,7 @@ namespace Cipa.Domain.Test.Entities
             int qtdaInscricoesAprovadas, int qtdaInscricoesPendentes, string mensagemErro)
         {
             var eleicao = CriarEleicao();
-            PassarParaEtapaInscricao(eleicao);
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
 
             // Adiciona os eleitores
             List<Eleitor> eleitores = new List<Eleitor>();
@@ -474,7 +458,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarParaEtapaInscricao(eleicao);
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var qtdaInscricoes = 27;
@@ -486,7 +470,7 @@ namespace Cipa.Domain.Test.Entities
                 eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
             }
 
-            PassarParaEtapaVotacao(eleicao);
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
 
             for (int i = 0; i < qtdaVotos; i++)
                 eleicao.RegistrarVoto((i % qtdaInscricoes) + 1, eleitores.ElementAt(i), "::1");
@@ -690,6 +674,45 @@ namespace Cipa.Domain.Test.Entities
 
             var excecao = Assert.Throws<CustomException>(() => eleicao.AdicionarEleitor(novoEleitor));
             Assert.Equal("Não é possível adicionar esse novo eleitor, pois sua inclusão altera o dimensionamento da eleição e com isso a quantidade mínima de inscritos passa a ser superior à quantidade atual de inscritos.", excecao.Message);
+        }
+
+        /// <summary>
+        /// Testa a atualização do dimensionamento adicionando e excluindo eleitores.
+        /// </summary>
+        /// <param name="minimo"></param>
+        /// <param name="maximo"></param>
+        /// <param name="qtdaEleitores"></param>
+        /// <param name="qtdaEfetivos"></param>
+        /// <param name="qtdaSuplentes"></param>
+        [Theory]
+        [InlineData(2501, 5000, 5000, 12, 9)]
+        [InlineData(5001, 10000, 5001, 15, 12)]
+        [InlineData(5001, 10000, 10000, 15, 12)]
+        [InlineData(10001, 12500, 10001, 17, 14)]
+        [InlineData(10001, 12500, 12500, 17, 14)]
+        [InlineData(12501, 15000, 12501, 19, 16)]
+        public void AdicionarEleitor_LimitesDimensionamento_AtualizarDimensionamento(
+            int minimo, int maximo, int qtdaEleitores, int qtdaEfetivos, int qtdaSuplentes)
+        {
+            var eleicao = CriarEleicao();
+
+            var qtdaExcluir = 5;
+            for (int i = 0; i < qtdaEleitores + qtdaExcluir; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+            }
+            for (int i = 0; i < qtdaExcluir; i++)
+            {
+                eleicao.ExcluirEleitor(eleicao.Eleitores.ElementAt(i));
+            }
+
+            var dimensionamentoEsperado = new Dimensionamento(maximo, minimo, qtdaEfetivos, qtdaSuplentes)
+            {
+                QtdaEleitores = qtdaEleitores
+            };
+            Assert.Equal(dimensionamentoEsperado, eleicao.Dimensionamento);
         }
 
         [Fact]
@@ -1269,6 +1292,297 @@ namespace Cipa.Domain.Test.Entities
                 voto =>
                 {
                     Assert.Same(voto, votoRetornado);
+                }
+            );
+
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorNaoInscritoJaVotou_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor);
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            eleicao.VotarEmBranco(eleitor, "::1");
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele já votou nessa eleição!", exception.Message);
+
+        }
+
+        [Fact]
+        public void ExcluirEleitor_InscricaoReprovadaEleitorJaVotou_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor);
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+
+            var inscricao = eleicao.FazerInscricao(eleitor, "Objetivos");
+            inscricao.Id = 1;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.ReprovarInscricao(inscricao.Id, usuarioAprovador, "Motivo Reprovação");
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            eleicao.VotarEmBranco(eleitor, "::1");
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele já votou nessa eleição!", exception.Message);
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorInscritoAprovadoOuPendente_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor);
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+
+            var inscricao = eleicao.FazerInscricao(eleitor, "Objetivos");
+            inscricao.Id = 1;
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele é um dos inscritos nessa eleição!", exception.Message);
+
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+
+            exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele é um dos inscritos nessa eleição!", exception.Message);
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorNaoEncontrado_ThrowsNotFoundException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Eleitor não encontrado.", exception.Message);
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorPodeSerExcluido_RetornaTrueExcluiEleitor()
+        {
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario($"eleitor1@email.com", $"Eleitor1", "Cargo");
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor1);
+            var usuario2 = new Usuario($"eleitor2@email.com", $"Eleitor2", "Cargo");
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+            eleicao.AdicionarEleitor(eleitor2);
+            var usuario3 = new Usuario($"eleitor3@email.com", $"Eleitor3", "Cargo");
+            var eleitor3 = new Eleitor(usuario3) { Id = 3 };
+            eleicao.AdicionarEleitor(eleitor3);
+
+            var excluido = eleicao.ExcluirEleitor(eleitor2);
+            Assert.True(excluido);
+            Assert.Collection(eleicao.Eleitores,
+                eleitor =>
+                {
+                    Assert.Same(eleitor, eleitor1);
+                },
+                eleitor =>
+                {
+                    Assert.Same(eleitor, eleitor3);
+                }
+            );
+
+        }
+
+        [Fact]
+        public void ExcluirEleitor_AlteraDimensionamento_ExcluiEleitorAtualizaDimensionamento()
+        {
+            var eleicao = CriarEleicao();
+
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < 51; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            Assert.Equal(51, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(3, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(3, eleicao.Dimensionamento.QtdaSuplentes);
+
+            var excluido = eleicao.ExcluirEleitor(eleitores.ElementAt(0));
+            Assert.True(excluido);
+
+            Assert.Equal(50, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(1, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(1, eleicao.Dimensionamento.QtdaSuplentes);
+        }
+
+        [Fact]
+        public void SetGrupo_DimensionamentoNaoEncontrado_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var novoGrupo = new Grupo { Id = 2, LimiteDimensionamento = new LimiteDimensionamento(0, 0, 0, 0) };
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.Grupo = novoGrupo);
+            Assert.Equal("Não foi encontrado o dimensionamento adequado para a eleição. Por favor, contate o suporte.", exception.Message);
+        }
+
+        [Fact]
+        public void SetGrupo_EtapaInscricoesPassadaSemQtdaMinimaInscritos_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < 10; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(0), "Objetivos");
+            inscricao.Id = 1;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+
+            var novoGrupo = new Grupo("C-Teste 2")
+            {
+                Id = 2,
+                LimiteDimensionamento = new LimiteDimensionamento(50, 20, 2, 2)
+            };
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(19, 0, 1, 1));
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(50, 20, 2, 2));
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.Grupo = novoGrupo);
+            Assert.Equal("Para o grupo C-Teste 2, o mínimo de inscrições necessária é 2, e só houveram 1 inscrições aprovadas nessa eleição.", exception.Message);
+        }
+
+        [Fact]
+        public void SetGrupo_EtapaInscricoesPassadaComQtdaMinimaInscritos_AtualizaGrupoDimensionamento()
+        {
+            var eleicao = CriarEleicao();
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < 10; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(0), "Objetivos");
+            inscricao.Id = 1;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+
+            var novoGrupo = new Grupo("C-Teste 2")
+            {
+                Id = 2,
+                LimiteDimensionamento = new LimiteDimensionamento(50, 20, 2, 2)
+            };
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(19, 0, 1, 0));
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(50, 20, 2, 1));
+
+            Assert.Equal(10, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(0, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(0, eleicao.Dimensionamento.QtdaSuplentes);
+
+            eleicao.Grupo = novoGrupo;
+
+            Assert.Same(eleicao.Grupo, novoGrupo);
+            Assert.Equal(10, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(1, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(0, eleicao.Dimensionamento.QtdaSuplentes);
+
+        }
+
+        [Fact]
+        public void ApurarVotos_PossuiQtdaMinimaVotosComEmpate_RetornaApuracao()
+        {
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            var inscricao1 = eleicao.FazerInscricao(new Eleitor("Eleitor 1", "eleitor1@email.com") { Id = 1 }, "Meus objetivos");
+            inscricao1.Id = 1;
+            eleicao.AprovarInscricao(inscricao1.Id, usuarioAprovador);
+
+            var inscricao2 = eleicao.FazerInscricao(new Eleitor("Eleitor 2", "eleitor2@email.com") { Id = 2, DataAdmissao = new DateTime(2019, 1, 2) }, "Meus objetivos");
+            inscricao2.Id = 2;
+            eleicao.AprovarInscricao(inscricao2.Id, usuarioAprovador);
+
+            var inscricao3 = eleicao.FazerInscricao(new Eleitor("Eleitor 3", "eleitor3@email.com") { Id = 3, DataAdmissao = new DateTime(2019, 1, 1) }, "Meus objetivos");
+            inscricao3.Id = 3;
+            eleicao.AprovarInscricao(inscricao3.Id, usuarioAprovador);
+
+            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+
+            // Registra os votos
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(0), "::1");
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(1), "::1");
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(2), "::1");
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(3), "::1");
+            eleicao.RegistrarVoto(inscricao2.Id, eleitores.ElementAt(4), "::1");
+            eleicao.RegistrarVoto(inscricao2.Id, eleitores.ElementAt(5), "::1");
+            eleicao.RegistrarVoto(inscricao2.Id, eleitores.ElementAt(6), "::1");
+            eleicao.RegistrarVoto(inscricao3.Id, eleitores.ElementAt(7), "::1");
+            eleicao.RegistrarVoto(inscricao3.Id, eleitores.ElementAt(8), "::1");
+            eleicao.RegistrarVoto(inscricao3.Id, eleitores.ElementAt(9), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(10), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(11), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(12), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(13), "::1");
+
+            var apuracao = eleicao.ApurarVotos();
+
+            Assert.Collection(apuracao,
+                inscricao =>
+                {
+                    Assert.Equal(inscricao, inscricao1);
+                    Assert.Equal(4, inscricao.Votos);
+                    Assert.Equal(ResultadoApuracao.Efetivo, inscricao.ResultadoApuracao);
+                },
+                inscricao =>
+                {
+                    Assert.Equal(inscricao, inscricao3);
+                    Assert.Equal(3, inscricao.Votos);
+                    Assert.Equal(ResultadoApuracao.Suplente, inscricao.ResultadoApuracao);
+                },
+                inscricao =>
+                {
+                    Assert.Equal(inscricao, inscricao2);
+                    Assert.Equal(3, inscricao.Votos);
+                    Assert.Equal(ResultadoApuracao.NaoEleito, inscricao.ResultadoApuracao);
+                },
+                votosBrancos =>
+                {
+                    Assert.Equal("(Em Branco)", votosBrancos.Eleitor.Nome);
+                    Assert.Equal(4, votosBrancos.Votos);
+                    Assert.Equal(ResultadoApuracao.NaoEleito, votosBrancos.ResultadoApuracao);
                 }
             );
 

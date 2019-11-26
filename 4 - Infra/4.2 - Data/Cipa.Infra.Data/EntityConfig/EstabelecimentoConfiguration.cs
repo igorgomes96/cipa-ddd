@@ -35,6 +35,8 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.Property(e => e.DataCadastro)
                 .IsRequired();
+
+            builder.Ignore(e => e.EleicoesDoAnoCorrente).Ignore(e => e.EleicoesEmAndamento);
         }
     }
 }

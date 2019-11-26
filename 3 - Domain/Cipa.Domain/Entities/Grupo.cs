@@ -26,7 +26,7 @@ namespace Cipa.Domain.Entities
                 var excedente = qtdaEleitores - limite;
                 var indiceIntervalo = excedente / intervalo + 1;
                 var maximo = limite + intervalo * indiceIntervalo - 1;
-                var minimo = dimensionamento.Maximo - intervalo + 1;
+                var minimo = maximo - intervalo + 1;
                 var qtdaEfetivos = dimensionamento.QtdaEfetivos + LimiteDimensionamento.AcrescimoEfetivos * indiceIntervalo;
                 var qtdaSuplentes = dimensionamento.QtdaSuplentes + LimiteDimensionamento.AcrescimoSuplentes * indiceIntervalo;
                 return new LinhaDimensionamento(maximo, minimo, qtdaEfetivos, qtdaSuplentes) {

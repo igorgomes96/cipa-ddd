@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using Cipa.WebApi.ViewModels;
+using System.Collections;
 
 namespace Cipa.WebApi.Filters
 {
@@ -38,9 +39,9 @@ namespace Cipa.WebApi.Filters
             try
             {
                 var urlQuery = context.HttpContext.Request.Query.ToDictionary(q => q.Key.ToLower(), q => q.Value.FirstOrDefault()?.ToString());
-                if (urlQuery.ContainsKey("pagesize") && context.Result is ObjectResult && ((ObjectResult)context.Result).Value is IQueryable)
+                if (urlQuery.ContainsKey("pagesize") && context.Result is ObjectResult && ((ObjectResult)context.Result).Value is IEnumerable)
                 {
-                    IQueryable<object> response = ((ObjectResult)context.Result).Value as IQueryable<object>;
+                    IEnumerable<object> response = ((ObjectResult)context.Result).Value as IEnumerable<object>;
                     ((ObjectResult)context.Result).Value = GetPagedResult(urlQuery, response);
                 }
             }

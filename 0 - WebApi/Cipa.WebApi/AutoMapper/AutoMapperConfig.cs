@@ -3,12 +3,15 @@ using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
 using Cipa.WebApi.ViewModels;
 
-namespace Cipa.WebApi.AutoMapper {
-    public class AutoMapperConfig {
-        public static IMapper MapperConfig() {
+namespace Cipa.WebApi.AutoMapper
+{
+    public class AutoMapperConfig
+    {
+        public static IMapper MapperConfig()
+        {
             var config = new MapperConfiguration(cfg =>
             {
-                
+
                 cfg.CreateMap<Eleicao, EleicaoViewModel>()
                  .ForMember(dest => dest.Grupo, opt => opt.MapFrom(e => e.Grupo.CodigoGrupo))
                  .ReverseMap()
@@ -24,7 +27,7 @@ namespace Cipa.WebApi.AutoMapper {
                     .ForMember(dest => dest.InicioVotacao, opt => opt.MapFrom(src => src.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Votacao).Data))
                     .ForMember(dest => dest.TerminoInscricao, opt => opt.MapFrom(src => src.DataTerminoEtapa(src.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Inscricao))))
                     .ForMember(dest => dest.TerminoVotacao, opt => opt.MapFrom(src => src.DataTerminoEtapa(src.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Votacao))));
-                
+
                 cfg.CreateMap<Empresa, EmpresaViewModel>().ReverseMap();
                 cfg.CreateMap<Estabelecimento, EstabelecimentoViewModel>()
                  .ForMember(dest => dest.Grupo, opt => opt.MapFrom(e => e.Grupo.CodigoGrupo))
@@ -38,7 +41,8 @@ namespace Cipa.WebApi.AutoMapper {
                 cfg.CreateMap<Reprovacao, ReprovacaoViewModel>().ReverseMap();
                 cfg.CreateMap<Voto, VotoViewModel>();
                 cfg.CreateMap<Dimensionamento, DimensionamentoViewModel>();
-                cfg.CreateMap<Inscricao, ApuracaoViewModel>().ConvertUsing(src => new ApuracaoViewModel {
+                cfg.CreateMap<Inscricao, ApuracaoViewModel>().ConvertUsing(src => new ApuracaoViewModel
+                {
                     Area = src.Eleitor.Area,
                     Cargo = src.Eleitor.Cargo,
                     DataAdmissao = src.Eleitor.DataAdmissao,
@@ -50,12 +54,19 @@ namespace Cipa.WebApi.AutoMapper {
                     ResultadoApuracao = ConverteResultadoApuracao(src.ResultadoApuracao),
                     Votos = src.Votos
                 });
+                cfg.CreateMap<LimiteDimensionamento, LimiteDimensionamentoViewModel>();
+                cfg.CreateMap<LinhaDimensionamento, LinhaDimensionamentoViewModel>();
+                cfg.CreateMap<Grupo, GrupoViewModel>();
+                cfg.CreateMap<Grupo, GrupoDetalhesViewModel>();
+                cfg.CreateMap<EtapaPadraoConta, EtapaPadraoContaViewModel>().ReverseMap();
             });
             return config.CreateMapper();
         }
 
-        private static string ConverteResultadoApuracao(ResultadoApuracao resultado) {
-            switch (resultado) {
+        private static string ConverteResultadoApuracao(ResultadoApuracao resultado)
+        {
+            switch (resultado)
+            {
                 case ResultadoApuracao.Efetivo:
                     return "Efetivo";
                 case ResultadoApuracao.Suplente:

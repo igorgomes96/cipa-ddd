@@ -22,7 +22,8 @@ namespace Cipa.Infra.Data.EntityConfig {
             builder.HasOne(e => e.Conta)
                 .WithMany(c => c.EtapasPadroes)
                 .HasForeignKey(e => e.ContaId)
-                .IsRequired();
+                .IsRequired()
+                .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasOne(e => e.EtapaObrigatoria)
                 .WithMany()

@@ -10,8 +10,5 @@ namespace Cipa.Infra.Data.Repositories
     {
         public ContaRepository(CipaContext db) : base(db) { }
 
-        public override Conta BuscarPeloId(int id) {
-            return DbSet.Include(c => c.EtapasPadroes).SingleOrDefault(c => c.Id == id);
-        }
     }
 }

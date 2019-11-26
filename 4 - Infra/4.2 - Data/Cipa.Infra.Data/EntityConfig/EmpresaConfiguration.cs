@@ -29,7 +29,9 @@ namespace Cipa.Infra.Data.EntityConfig
                 .IsRequired();
 
             builder.Property(e => e.DataCadastro)
-                .IsRequired();       
+                .IsRequired();
+
+            builder.Ignore(e => e.CnpjFormatado).Ignore(e => e.EstabelecimentosAtivos);  
         }
     }
 }

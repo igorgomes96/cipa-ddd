@@ -29,6 +29,15 @@ namespace Cipa.Infra.Data.Repositories
 
         public virtual void Atualizar(TEntity obj) => _db.Entry(obj).State = EntityState.Modified;
 
+        public virtual TEntity Atualizar(int id, TEntity obj)
+        {
+            var entity = BuscarPeloId(id);
+            if (entity == null) throw new NotFoundException("Código não encontrado.");
+            _db.Entry(entity).CurrentValues.SetValues(obj);
+            Atualizar(entity);
+            return entity;
+        }
+
         public virtual void Dispose() => _db.Dispose();
 
     }

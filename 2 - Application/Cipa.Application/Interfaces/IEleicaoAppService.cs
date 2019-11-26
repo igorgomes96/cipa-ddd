@@ -10,7 +10,9 @@ namespace Cipa.Application.Interfaces {
         IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status);
         Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Eleitor> BuscarEleitores(int eleicaoId);
+        Eleitor BuscarEleitor(int eleicaoId, int eleitorId);
         Eleitor ExcluirEleitor(int eleicaoId, int eleitorId);
+        Eleitor AtualizarEleitor(int eleicaoId, Eleitor eleitor);
         Eleitor BuscarEleitorPeloIdUsuario(int eleicaoId, int usuarioId);
         Eleicao PassarParaProximaEtapa(int eleicaoId);
         Eleitor AdicionarEleitor(int eleicaoId, Eleitor eleitor);

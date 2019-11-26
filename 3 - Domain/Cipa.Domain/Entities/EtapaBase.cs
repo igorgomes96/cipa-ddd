@@ -13,7 +13,7 @@ namespace Cipa.Domain.Entities
         public int Id { get; set; }
         public string Nome { get; set; }
         public string Descricao { get; set; }
-        public int Ordem { get; protected set; }
+        public int Ordem { get; set; }
 
         protected override IEnumerable<object> GetAtomicValues()
         {

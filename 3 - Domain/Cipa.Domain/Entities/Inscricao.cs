@@ -30,7 +30,9 @@ namespace Cipa.Domain.Entities
         public Inscricao(Eleicao eleicao, Eleitor eleitor, string objetivos)
         {
             Eleicao = eleicao;
+            EleicaoId = eleicao.Id;
             Eleitor = eleitor;
+            EleitorId = eleitor.Id;
             Objetivos = objetivos;
             StatusInscricao = StatusInscricao.Pendente;
             Votos = 0;

@@ -4529,11 +4529,11 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Cargo = "Cargo Teste",
-                            CodigoRecuperacao = new Guid("8b492226-3293-464a-8473-e4f3ff830701"),
+                            CodigoRecuperacao = new Guid("4c693a97-42b4-4f3b-8495-c5bfd8345780"),
                             ContaId = 1,
                             DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
-                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 11, 23, 21, 14, 43, 199, DateTimeKind.Local).AddTicks(9789),
+                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 11, 24, 14, 8, 35, 404, DateTimeKind.Local).AddTicks(2900),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"

@@ -16,8 +16,8 @@ namespace Cipa.Infra.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new EleicaoConfiguration());
-            modelBuilder.ApplyConfiguration(new EstabelecimentoConfiguration());
             modelBuilder.ApplyConfiguration(new EmpresaConfiguration());
+            modelBuilder.ApplyConfiguration(new EstabelecimentoConfiguration());
             modelBuilder.ApplyConfiguration(new EtapaCronogramaConfiguration());
             modelBuilder.ApplyConfiguration(new EleitorConfiguration());
             modelBuilder.ApplyConfiguration(new InscricaoConfiguration());
@@ -34,6 +34,7 @@ namespace Cipa.Infra.Data.Context
             modelBuilder.Seed();
             base.OnModelCreating(modelBuilder);
         }
+
 
         public virtual DbSet<Conta> Contas { get; set; }
         public virtual DbSet<Eleicao> Eleicoes { get; set; }

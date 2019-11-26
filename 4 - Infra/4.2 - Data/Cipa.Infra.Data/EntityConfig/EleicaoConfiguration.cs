@@ -18,7 +18,7 @@ namespace Cipa.Infra.Data.EntityConfig
                 .IsRequired();
             
             builder.HasOne(e => e.Estabelecimento)
-                .WithMany()
+                .WithMany(e => e.Eleicoes)
                 .HasForeignKey(e => e.EstabelecimentoId)
                 .IsRequired();
 
