@@ -85,6 +85,7 @@ namespace Cipa.Domain.Entities
                     _gestao = terminoMandatoAnterior.Value.Year;
             }
         }
+        public bool UsuarioEleitor { get; private set; }
 
         public virtual Estabelecimento Estabelecimento { get; private set; }
         public virtual Usuario Usuario { get; private set; }
@@ -116,6 +117,9 @@ namespace Cipa.Domain.Entities
         }
         public virtual ICollection<Eleitor> Eleitores { get; } = new List<Eleitor>();
         public virtual ICollection<Voto> Votos { get; } = new List<Voto>();
+
+        public bool RegistrarSeUsuarioEhEleitor(int usuarioId) =>
+            UsuarioEleitor = Eleitores.Any(e => e.UsuarioId == usuarioId); // Indica se o usuário solicitante é eleitor
 
         public EtapaCronograma EtapaAtual
         {

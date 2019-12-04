@@ -21,7 +21,6 @@ namespace Cipa.WebApi.ViewModels {
         public DateTime? DataNascimento { get; set; }
         public DateTime? DataAdmissao { get; set; }
         public int EleicaoId { get; set; }
-        public bool EhCandidato { get; set; }
         [StringLength(255, ErrorMessage = "O nome do gestor do eleitor não pode conter mais de {1} caracteres.")]
         public string NomeGestor { get; set; }
         [StringLength(255, ErrorMessage = "O e-mail do gestor do eleitor não pode conter mais de {1} caracteres.")]

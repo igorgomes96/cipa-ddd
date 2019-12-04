@@ -32,9 +32,10 @@ namespace Cipa.Infra.Data.EntityConfig {
                 .IsRequired();
 
             builder.HasOne(e => e.Usuario)
-                .WithMany()
+                .WithMany(u => u.Eleitores)
                 .HasForeignKey(e => e.UsuarioId)
-                .IsRequired();
+                .IsRequired()
+                .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.Property(e => e.NomeGestor)
                 .HasMaxLength(255);

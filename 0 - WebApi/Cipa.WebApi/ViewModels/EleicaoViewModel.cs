@@ -18,13 +18,10 @@ namespace Cipa.WebApi.ViewModels
         [Required(ErrorMessage = "O grupo ao qual pertence o estabelecimento deve ser informado (Consultar o Quadro II da NR-5).")]
         public int? GrupoId { get; set; }
         public string Grupo { get; set; }
-        public int QtdaEfetivos { get; set; }
-        public int QtdaSuplentes { get; set; }
         public DateTime? TerminoMandatoAnterior { get; set; }
         public bool UsuarioEleitor { get; set; }
         public int ContaId { get; set; }
         public int UsuarioCriacaoId { get; set; }
-
 
         public EstabelecimentoViewModel Estabelecimento { get; set; }
         public EtapaCronogramaViewModel EtapaAtual { get; set; }

@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Cipa.WebApi.ViewModels {
+namespace Cipa.WebApi.ViewModels
+{
 
-    public class InscricaoViewModel {
+    public class InscricaoViewModel
+    {
         public int Id { get; set; }
         public string StatusAprovacao { get; set; }
         public int EleitorId { get; set; }

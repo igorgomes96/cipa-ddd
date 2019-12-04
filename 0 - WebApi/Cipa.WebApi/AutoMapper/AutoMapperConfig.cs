@@ -38,8 +38,9 @@ namespace Cipa.WebApi.AutoMapper
                     .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")));
                 cfg.CreateMap<Inscricao, InscricaoDetalhesViewModel>()
                     .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")));
-                cfg.CreateMap<Reprovacao, ReprovacaoViewModel>().ReverseMap();
-                cfg.CreateMap<Voto, VotoViewModel>();
+                cfg.CreateMap<Reprovacao, ReprovacaoViewModel>()
+                    .ForMember(dest => dest.Horario, opt => opt.MapFrom(r => r.DataCadastro)).ReverseMap();
+                cfg.CreateMap<Voto, VotoViewModel>().ForMember(dest => dest.Horario, opt => opt.MapFrom(src => src.DataCadastro));
                 cfg.CreateMap<Dimensionamento, DimensionamentoViewModel>();
                 cfg.CreateMap<Inscricao, ApuracaoViewModel>().ConvertUsing(src => new ApuracaoViewModel
                 {
@@ -59,6 +60,8 @@ namespace Cipa.WebApi.AutoMapper
                 cfg.CreateMap<Grupo, GrupoViewModel>();
                 cfg.CreateMap<Grupo, GrupoDetalhesViewModel>();
                 cfg.CreateMap<EtapaPadraoConta, EtapaPadraoContaViewModel>().ReverseMap();
+                cfg.CreateMap<Usuario, UsuarioViewModel>().ReverseMap()
+                    .ConvertUsing(dest => new Usuario(dest.Email, dest.Nome, dest.Cargo));
             });
             return config.CreateMapper();
         }

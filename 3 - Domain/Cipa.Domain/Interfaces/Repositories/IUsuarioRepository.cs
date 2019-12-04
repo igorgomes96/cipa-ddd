@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cipa.Domain.Entities;
 
 namespace Cipa.Domain.Interfaces.Repositories {
@@ -6,6 +7,7 @@ namespace Cipa.Domain.Interfaces.Repositories {
         // Usuario BuscarPeloIdCarregarAgregadoConta(int id);
         Usuario BuscarUsuario(string email);
         Usuario BuscarUsuario(string email, string senha);
+        IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId);
         
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cipa.Domain.Entities;
 
 namespace Cipa.Application.Interfaces
 {

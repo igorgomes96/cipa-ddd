@@ -32,11 +32,18 @@ namespace Cipa.WebApi.Controllers
         [Pagination]
         public IEnumerable<EleicaoViewModel> GetEleicoes()
         {
-            if (User.IsInRole(PerfilUsuario.SESMT)) {
-                return _mapper.Map<List<EleicaoViewModel>>(_eleicaoAppService.BuscarPelaConta(ContaId));
-            } else
+            if (User.IsInRole(PerfilUsuario.SESMT))
+            {
+                var eleicoes = _eleicaoAppService.BuscarPelaConta(ContaId);
+                foreach (var eleicao in eleicoes) eleicao.RegistrarSeUsuarioEhEleitor(UsuarioId);
+                return _mapper.Map<List<EleicaoViewModel>>(eleicoes);
+            }
+            else
+            {
                 return _mapper.Map<List<EleicaoDetalheViewModel>>(_eleicaoAppService.BuscarPeloUsuario(UsuarioId));
+            }
         }
+
 
         [HttpGet("{id}")]
         public ActionResult<EleicaoViewModel> GetEleicao(int id)
@@ -45,7 +52,10 @@ namespace Cipa.WebApi.Controllers
             if (eleicao == null)
                 return NotFound("Eleição não encontrada.");
             else
+            {
+                eleicao.RegistrarSeUsuarioEhEleitor(UsuarioId);
                 return _mapper.Map<EleicaoViewModel>(eleicao);
+            }
         }
 
         [HttpPost]

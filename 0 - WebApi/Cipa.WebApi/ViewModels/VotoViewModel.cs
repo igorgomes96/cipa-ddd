@@ -8,7 +8,7 @@ namespace Cipa.WebApi.ViewModels {
         public string EleitorEmail { get; set; }
         public int EleicaoId { get; set; }
         public string IP { get; set; }
-        public DateTime DataCadastro { get; set; }
+        public DateTime Horario { get; set; }
         
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Cipa.Domain.Helpers;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Cipa.Domain.Entities
 {
@@ -7,7 +9,7 @@ namespace Cipa.Domain.Entities
     {
         public Usuario(string email, string nome, string cargo)
         {
-            Email = email;
+            Email = email.Trim().ToLower();
             Nome = nome;
             Cargo = cargo;
             CodigoRecuperacao = Guid.NewGuid();
@@ -26,5 +28,20 @@ namespace Cipa.Domain.Entities
         public DateTime DataCadastro { get; private set; }
 
         public virtual Conta Conta { get; set; }
+        private List<Eleitor> _eleitores = new List<Eleitor>();
+        public virtual IReadOnlyCollection<Eleitor> Eleitores { get => new ReadOnlyCollection<Eleitor>(_eleitores); }
+
+        public void AlterarParaPerfilEleitor()
+        {
+            Perfil = PerfilUsuario.Eleitor;
+            ContaId = null;
+            Conta = null;
+        }
+
+        public void AlterarParaPerfilSESMT(Conta conta) {
+            Perfil = PerfilUsuario.SESMT;
+            ContaId = conta.Id;
+            Conta = conta;
+        }
     }
 }

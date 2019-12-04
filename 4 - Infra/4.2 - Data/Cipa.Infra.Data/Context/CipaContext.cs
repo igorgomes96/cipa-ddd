@@ -73,6 +73,13 @@ namespace Cipa.Infra.Data.Context
                     entry.Property("DataCadastro").IsModified = false;
                 }
             }
+            foreach (var entry in ChangeTracker.Entries<Eleicao>().Where(ent => ent.State == EntityState.Modified))
+            {
+                if (entry.Entity.Dimensionamento != null && Entry(entry.Entity.Dimensionamento).State == EntityState.Added)
+                {
+                    Entry(entry.Entity.Dimensionamento).State = EntityState.Modified;
+                }
+            }
             return base.SaveChanges();
         }
     }
