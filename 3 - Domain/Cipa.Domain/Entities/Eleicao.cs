@@ -28,6 +28,7 @@ namespace Cipa.Domain.Entities
             Usuario = usuarioCriacao ?? throw new CustomException("O usuário de criação deve ser informado.");
             this._grupo = grupo ?? estabelecimento.Grupo ?? throw new CustomException("O grupo deve ser informado.");
             Conta = usuarioCriacao.Conta ?? throw new CustomException("O usuário de criação da eleição deve estar vinculado à uma conta.");
+            _dimensionamento = new Dimensionamento(0, 0, 0, 0);
         }
 
         public Eleicao(
@@ -108,7 +109,8 @@ namespace Cipa.Domain.Entities
                 _grupo = value;
             }
         }
-        public virtual Dimensionamento Dimensionamento { get; private set; } = new Dimensionamento(0, 0, 0, 0);
+        private Dimensionamento _dimensionamento;
+        public virtual Dimensionamento Dimensionamento { get => _dimensionamento ?? new Dimensionamento(0, 0, 0, 0); }
         public virtual ICollection<Inscricao> Inscricoes { get; } = new List<Inscricao>();
         private List<EtapaCronograma> _cronograma = new List<EtapaCronograma>();
         public virtual IReadOnlyCollection<EtapaCronograma> Cronograma
@@ -155,7 +157,8 @@ namespace Cipa.Domain.Entities
             {
                 var etapa = new EtapaCronograma(etapaPadrao.Nome, etapaPadrao.Descricao, ordem, Id, data, etapaPadrao.EtapaObrigatoriaId)
                 {
-                    Eleicao = this
+                    Eleicao = this,
+                    EtapaObrigatoria = etapaPadrao.EtapaObrigatoria
                 };
                 _cronograma.Add(etapa);
                 data = data.AddDays(etapaPadrao.DuracaoPadrao);
@@ -163,9 +166,65 @@ namespace Cipa.Domain.Entities
             }
         }
 
+        public void AtualizarCronograma(EtapaCronograma etapaCronograma)
+        {
+            var etapaExistente = Cronograma.FirstOrDefault(e => etapaCronograma.Equals(e));
+            if (etapaExistente == null) throw new NotFoundException("Etapa não encontrada no cronograma.");
+            etapaCronograma.EtapaObrigatoria = etapaExistente.EtapaObrigatoria;
+            etapaCronograma.EtapaObrigatoriaId = etapaExistente.EtapaObrigatoriaId;
+
+            if (etapaExistente.DataRealizada.HasValue)
+                throw new CustomException("Não é possível alterar uma etapa já finalizada.");
+
+            var etapaPosterior = RetornarEtapaPosterior(etapaExistente);
+            var etapaAnterior = RetonarEtapaAnterior(etapaExistente);
+
+            ValidarAlteracaoDataEtapaCronograma(etapaCronograma, etapaAnterior, etapaPosterior);
+
+            etapaExistente.Nome = etapaCronograma.Nome;
+            etapaExistente.Descricao = etapaCronograma.Descricao;
+            etapaExistente.DataPrevista = etapaCronograma.DataPrevista;
+        }
+
+        private void ValidarAlteracaoDataEtapaCronograma(EtapaCronograma etapaAtualizada, EtapaCronograma etapaAnterior, EtapaCronograma etapaPosterior)
+        {
+            if (etapaAnterior != null)
+            {
+                // Valida se a data é maior que a data da etapa anterior
+                if (etapaAtualizada.DataPrevista <= etapaAnterior.Data)
+                    throw new CustomException($"A data deve ser maior que a data da etapa anterior ({etapaAnterior.Data.ToString("dd/MM/yyyy")})!");
+
+                // Valida se etapa anterior possui duração mínima
+                if (!PossuiDuracaoMinima(etapaAnterior, etapaAtualizada.DataPrevista))
+                    throw new CustomException($"A etapa anterior ({etapaAnterior.Nome}) deve ter a duração mínima de {etapaAnterior.EtapaObrigatoria.DuracaoMinima} dias!");
+            }
+
+            if (etapaPosterior != null)
+            {
+                // Valida se a data é menor que a data da etapa posterior
+                if (etapaAtualizada.DataPrevista >= etapaPosterior.DataPrevista)
+                    throw new CustomException($"A data deve ser menor que a data da próxima etapa ({etapaPosterior.DataPrevista.ToString("dd/MM/yyyy")})!");
+
+                // Valida se possui duração mínima
+                if (!PossuiDuracaoMinima(etapaAtualizada, etapaPosterior.DataPrevista))
+                    throw new CustomException($"Essa etapa deve ter a duração mínima de {etapaAtualizada.EtapaObrigatoria.DuracaoMinima} dias!");
+            }
+        }
+
+        private bool PossuiDuracaoMinima(EtapaCronograma etapa, DateTime dataProximaEtapa)
+        {
+            if (etapa?.EtapaObrigatoria != null && etapa.EtapaObrigatoria.DuracaoMinima.HasValue)
+            {
+                var difData = (dataProximaEtapa - etapa.DataPrevista).Days;
+                if (difData < etapa.EtapaObrigatoria.DuracaoMinima.Value)
+                    return false;
+            }
+            return true;
+        }
+
         private void AtualizarDimensionamento()
         {
-            Dimensionamento = new Dimensionamento(Dimensionamento.Maximo, Dimensionamento.Minimo, Dimensionamento.QtdaEfetivos, Dimensionamento.QtdaSuplentes)
+            _dimensionamento = new Dimensionamento(Dimensionamento.Maximo, Dimensionamento.Minimo, Dimensionamento.QtdaEfetivos, Dimensionamento.QtdaSuplentes)
             {
                 QtdaInscricoesAprovadas = QtdaInscricoes(StatusInscricao.Aprovada),
                 QtdaInscricoesReprovadas = QtdaInscricoes(StatusInscricao.Reprovada),
@@ -252,7 +311,7 @@ namespace Cipa.Domain.Entities
                 if (inscricoesPendentes > 0)
                     throw new CustomException($"Ainda há {inscricoesPendentes} {(inscricoesPendentes > 1 ? "inscrições pendentes" : "inscrição pendente")} de aprovação!");
 
-                Dimensionamento = Dimensionamento;
+                _dimensionamento = Dimensionamento;
             }
 
             if (EtapaAtual.EtapaObrigatoriaId == CodigoEtapaObrigatoria.Votacao && !Dimensionamento.PossuiQtdaMinimaVotos)

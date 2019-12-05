@@ -46,7 +46,8 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.HasOne(e => e.Dimensionamento)
                 .WithOne()
-                .HasForeignKey<Dimensionamento>(d => d.Id);
+                .HasForeignKey<Dimensionamento>(d => d.Id)
+                .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasIndex(e => new { e.EstabelecimentoId, e.Gestao }).IsUnique();
 

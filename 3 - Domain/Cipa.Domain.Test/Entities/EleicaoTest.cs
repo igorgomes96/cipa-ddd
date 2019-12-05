@@ -15,10 +15,10 @@ namespace Cipa.Domain.Test.Entities
         private Conta ContaPadrao()
         {
             var conta = new Conta();
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 1", null, 1, 1, 10, CodigoEtapaObrigatoria.Convocacao));
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 2", null, 2, 1, 1, CodigoEtapaObrigatoria.Inscricao));
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 3", null, 3, 1, 1, CodigoEtapaObrigatoria.Votacao));
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 4", null, 4, 1, 1, CodigoEtapaObrigatoria.Ata));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 1", null, 1, 1, 10, CodigoEtapaObrigatoria.Convocacao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 5 } });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 2", null, 2, 1, 10, CodigoEtapaObrigatoria.Inscricao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 7 } });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 3", null, 3, 1, 10, CodigoEtapaObrigatoria.Votacao) { EtapaObrigatoria = new EtapaObrigatoria() });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 4", null, 4, 1, 10, CodigoEtapaObrigatoria.Ata) { EtapaObrigatoria = new EtapaObrigatoria() });
             return conta;
         }
 
@@ -111,14 +111,14 @@ namespace Cipa.Domain.Test.Entities
                 },
                 etapa =>
                 {
-                    Assert.Equal(new DateTime(2019, 1, 12), etapa.DataPrevista);
+                    Assert.Equal(new DateTime(2019, 1, 21), etapa.DataPrevista);
                     Assert.Equal("Etapa 3", etapa.Nome);
                     Assert.Equal(3, etapa.Ordem);
                     Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
                 },
                 etapa =>
                 {
-                    Assert.Equal(new DateTime(2019, 1, 13), etapa.DataPrevista);
+                    Assert.Equal(new DateTime(2019, 1, 31), etapa.DataPrevista);
                     Assert.Equal("Etapa 4", etapa.Nome);
                     Assert.Equal(4, etapa.Ordem);
                     Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
@@ -317,6 +317,125 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             Assert.Equal(4, eleicao.UltimaEtapa.Ordem);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaNaoEncontrada_ThrowsNotFoundException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 5", null, 5, 1, DateTime.Today, CodigoEtapaObrigatoria.Convocacao);
+
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal("Etapa não encontrada no cronograma.", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataIgualRealizadaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value, CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataRealizada.Value.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataMenorQueRealizadaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value.AddDays(-1), CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataRealizada.Value.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataMenorQuePrevistaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista.AddDays(-1), CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataIgualPrevistaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista, CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        public static object[][] DatasPrevistas = new object[][]
+        {
+            new object[] { new DateTime(2019, 1, 4) },
+            new object[] { new DateTime(2019, 1, 5) }
+        };
+        [Theory, MemberData(nameof(DatasPrevistas))]
+        public void AtualizarCronograma_EtapaAnteriorComDuracaoMenorQueDuracaoMinimaObrigatoria_ThrowsCustomException(DateTime dataPrevista)
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal("A etapa anterior (Etapa 1) deve ter a duração mínima de 5 dias!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataIgualPrevistaPosterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista, CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser menor que a data da próxima etapa ({eleicao.Cronograma.ElementAt(2).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataMaiorPrevistaPosterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista.AddDays(1), CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser menor que a data da próxima etapa ({eleicao.Cronograma.ElementAt(2).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        public static object[][] DatasPrevistasPosteriores = new object[][]
+        {
+            new object[] { new DateTime(2019, 1, 16) },
+            new object[] { new DateTime(2019, 1, 15) }
+        };
+        [Theory, MemberData(nameof(DatasPrevistasPosteriores))]
+        public void AtualizarCronograma_EtapaComDuracaoMenorQueDuracaoMinimaObrigatoria_ThrowsCustomException(DateTime dataPrevista)
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, CodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal("Essa etapa deve ter a duração mínima de 7 dias!", exception.Message);
+        }
+
+        public static object[][] DatasPrevistasValidas = new object[][]
+        {
+            new object[] { new DateTime(2019, 1, 6) },
+            new object[] { new DateTime(2019, 1, 14) }
+        };
+        [Theory, MemberData(nameof(DatasPrevistasValidas))]
+        public void AtualizarCronograma_DataConsistente_AtualizaCronograma(DateTime dataPrevista)
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2 Atualizada", "Nova Descrição", 2, 1, dataPrevista, CodigoEtapaObrigatoria.Inscricao);
+
+            eleicao.AtualizarCronograma(etapa);
+            Assert.Equal("Etapa 2 Atualizada", eleicao.Cronograma.ElementAt(1).Nome);
+            Assert.Equal("Nova Descrição", eleicao.Cronograma.ElementAt(1).Descricao);
+            Assert.Equal(dataPrevista, eleicao.Cronograma.ElementAt(1).DataPrevista);
         }
 
         [Theory]

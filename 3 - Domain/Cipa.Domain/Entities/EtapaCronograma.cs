@@ -39,6 +39,25 @@ namespace Cipa.Domain.Entities
             yield return Ordem;
         }
 
+        // public override bool Equals(object obj)
+        // {
+        //     return base.Equals(obj);
+        // }
+
+        // public override int GetHashCode()
+        // {
+        //     return base.GetHashCode();
+        // }
+
+        // public static bool operator == (EtapaCronograma a, EtapaCronograma b)
+        // {
+        //     return Equals(a, b);
+        // }
+
+        // public static bool operator != (EtapaCronograma a, EtapaCronograma b)
+        // {
+        //     return !(a == b);
+        // }
 
     }
 }

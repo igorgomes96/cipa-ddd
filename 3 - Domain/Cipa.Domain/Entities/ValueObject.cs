@@ -23,18 +23,12 @@ namespace Cipa.Domain.Entities
 
         public override bool Equals(object obj)
         {
-            if (obj == null || obj.GetType() != GetType())
-            {
-                return false;
-            }
-
             ValueObject other = (ValueObject)obj;
             IEnumerator<object> thisValues = GetAtomicValues().GetEnumerator();
             IEnumerator<object> otherValues = other.GetAtomicValues().GetEnumerator();
             while (thisValues.MoveNext() && otherValues.MoveNext())
             {
-                if (ReferenceEquals(thisValues.Current, null) ^
-                    ReferenceEquals(otherValues.Current, null))
+                if (ReferenceEquals(thisValues.Current, null) ^ ReferenceEquals(otherValues.Current, null))
                 {
                     return false;
                 }

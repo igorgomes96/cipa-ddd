@@ -65,21 +65,13 @@ namespace Cipa.Infra.Data.Context
             foreach (var entry in ChangeTracker.Entries().Where(entry => entry.Entity.GetType().GetProperty("DataCadastro") != null))
             {
                 if (entry.State == EntityState.Added)
-                {
                     entry.Property("DataCadastro").CurrentValue = DateTime.Now;
-                }
                 if (entry.State == EntityState.Modified)
-                {
                     entry.Property("DataCadastro").IsModified = false;
-                }
             }
-            foreach (var entry in ChangeTracker.Entries<Eleicao>().Where(ent => ent.State == EntityState.Modified))
-            {
-                if (entry.Entity.Dimensionamento != null && Entry(entry.Entity.Dimensionamento).State == EntityState.Added)
-                {
-                    Entry(entry.Entity.Dimensionamento).State = EntityState.Modified;
-                }
-            }
+            foreach (var entry in ChangeTracker.Entries<Eleicao>().ToList())
+                if (entry.Entity.Dimensionamento != null)
+                    Entry(entry.Entity.Dimensionamento).State = entry.State;
             return base.SaveChanges();
         }
     }

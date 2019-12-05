@@ -47,7 +47,7 @@ namespace Cipa.Domain.Entities
             NomeGestor = eleitor.NomeGestor;
             EmailGestor = eleitor.EmailGestor;
             Usuario = eleitor.Usuario;
-            UsuarioId = eleitor.UsuarioId;
+            UsuarioId = eleitor.UsuarioId == 0 ? eleitor.Usuario.Id : eleitor.UsuarioId;
         }
     }
 }

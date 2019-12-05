@@ -14,7 +14,8 @@ namespace Cipa.Infra.Data.Repositories
         
         public IEnumerable<Eleicao> BuscarPelaConta(int contaId) => DbSet.Where(e => e.ContaId == contaId);
 
-        public IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId) => DbSet.Where(e => e.UsuarioCriacaoId == usuarioId);
+        public IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId) =>
+            DbSet.Where(e => e.Eleitores.Any(eleitor => eleitor.UsuarioId == usuarioId));
 
         public IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status = null)
         {

@@ -11,12 +11,6 @@ namespace Cipa.Infra.Data.EntityConfig {
             
             builder.ToTable("Eleicoes");
 
-            // builder.Ignore(e => e.QtdaEleitores);
-            // builder.Ignore(e => e.QtdaVotos);
-            // builder.Ignore(e => e.QtdaInscricoesAprovadas);
-            // builder.Ignore(e => e.QtdaInscricoesPendentes);
-            // builder.Ignore(e => e.QtdaInscricoesReprovadas);
-
             builder.Property(e => e.Minimo).HasColumnName("DimensionamentoMinEleitores");
             builder.Property(e => e.Maximo).HasColumnName("DimensionamentoMaxEleitores");
             builder.Property(e => e.QtdaEfetivos).HasColumnName("DimensionamentoQtdaEfetivos");

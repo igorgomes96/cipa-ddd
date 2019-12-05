@@ -30,8 +30,10 @@ namespace Cipa.WebApi.AutoMapper
 
                 cfg.CreateMap<Empresa, EmpresaViewModel>().ReverseMap();
                 cfg.CreateMap<Estabelecimento, EstabelecimentoViewModel>()
-                 .ForMember(dest => dest.Grupo, opt => opt.MapFrom(e => e.Grupo.CodigoGrupo))
-                 .ReverseMap();
+                    .ForMember(dest => dest.Grupo, opt => opt.MapFrom(e => e.Grupo.CodigoGrupo))
+                    .ReverseMap()
+                    .ForPath(src => src.Empresa, opt => opt.MapFrom(dest => (Empresa)null))
+                    .ForPath(src => src.Grupo, opt => opt.MapFrom(dest => (Grupo)null));
                 cfg.CreateMap<EtapaCronograma, EtapaCronogramaViewModel>().ReverseMap();
                 cfg.CreateMap<Eleitor, EleitorViewModel>().ReverseMap();
                 cfg.CreateMap<Inscricao, InscricaoViewModel>()

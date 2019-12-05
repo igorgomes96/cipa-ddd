@@ -30,18 +30,20 @@ namespace Cipa.WebApi.Controllers
         #region Eleições
         [HttpGet]
         [Pagination]
-        public IEnumerable<EleicaoViewModel> GetEleicoes()
+        public IEnumerable<EleicaoDetalheViewModel> GetEleicoes()
         {
+            IEnumerable<Eleicao> eleicoes = null;
             if (User.IsInRole(PerfilUsuario.SESMT))
-            {
-                var eleicoes = _eleicaoAppService.BuscarPelaConta(ContaId);
-                foreach (var eleicao in eleicoes) eleicao.RegistrarSeUsuarioEhEleitor(UsuarioId);
-                return _mapper.Map<List<EleicaoViewModel>>(eleicoes);
-            }
+                eleicoes = _eleicaoAppService.BuscarPelaConta(ContaId);
             else
-            {
-                return _mapper.Map<List<EleicaoDetalheViewModel>>(_eleicaoAppService.BuscarPeloUsuario(UsuarioId));
-            }
+                eleicoes = _eleicaoAppService.BuscarPeloUsuario(UsuarioId);
+            return _mapper.Map<List<EleicaoDetalheViewModel>>(RegistrarSeUsuarioEhEleitor(eleicoes));
+        }
+
+        private IEnumerable<Eleicao> RegistrarSeUsuarioEhEleitor(IEnumerable<Eleicao> eleicoes)
+        {
+            foreach (var eleicao in eleicoes) eleicao.RegistrarSeUsuarioEhEleitor(UsuarioId);
+            return eleicoes;
         }
 
 
@@ -90,6 +92,10 @@ namespace Cipa.WebApi.Controllers
         [HttpPost("{id}/proximaetapa")]
         public IEnumerable<EtapaCronogramaViewModel> PassarParaProximaEtapa(int id) =>
             _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.PassarParaProximaEtapa(id)?.Cronograma);
+
+        [HttpPut("{id}/cronograma")]
+        public IEnumerable<EtapaCronogramaViewModel> AtualizarCronograma(int id, EtapaCronogramaViewModel etapaCronograma) =>
+            _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.AtualizarCronograma(id, _mapper.Map<EtapaCronograma>(etapaCronograma)));
         #endregion
 
         #region Eleitores
@@ -180,7 +186,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpGet("{id}/inscricao")]
-        public ActionResult<InscricaoDetalhesViewModel> GetInscricao(int id)
+        public ActionResult<InscricaoDetalhesViewModel> GetInscricaoUsuario(int id)
         {
             return _mapper.Map<InscricaoDetalhesViewModel>(_eleicaoAppService.BuscarInscricaoPeloUsuario(id, UsuarioId));
         }

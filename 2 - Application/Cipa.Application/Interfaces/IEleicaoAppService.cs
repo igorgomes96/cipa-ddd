@@ -7,6 +7,7 @@ namespace Cipa.Application.Interfaces {
         IEnumerable<Eleicao> BuscarPelaConta(int contaId);
         IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId);
         IEnumerable<EtapaCronograma> BuscarCronograma(int eleicaoId);
+        IEnumerable<EtapaCronograma> AtualizarCronograma(int eleicaoId, EtapaCronograma etapa);
         IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status);
         Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Eleitor> BuscarEleitores(int eleicaoId);
