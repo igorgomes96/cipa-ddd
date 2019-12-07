@@ -25,6 +25,10 @@ namespace Cipa.WebApi.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet]
+        public ContaViewModel GetContaUsuario() => _mapper.Map<ContaViewModel>(_contaAppService.BuscarPeloId(ContaId));
+
+
         [HttpGet("cronograma")]
         public IEnumerable<EtapaPadraoContaViewModel> GetCronogramaPadrao() =>
             _contaAppService.BuscarCronogramaPadrao(ContaId).AsQueryable().ProjectTo<EtapaPadraoContaViewModel>(_mapper.ConfigurationProvider);

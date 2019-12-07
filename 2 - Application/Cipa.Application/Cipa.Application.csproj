@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\3 - Domain\Cipa.Domain\Cipa.Domain.csproj" />
+    <ProjectReference Include="..\..\1 - Services\Cipa.Services\Cipa.Services.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -2,6 +2,7 @@ using AutoMapper;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
 using Cipa.WebApi.ViewModels;
+using System.Collections.Generic;
 
 namespace Cipa.WebApi.AutoMapper
 {
@@ -46,6 +47,7 @@ namespace Cipa.WebApi.AutoMapper
                 cfg.CreateMap<Dimensionamento, DimensionamentoViewModel>();
                 cfg.CreateMap<Inscricao, ApuracaoViewModel>().ConvertUsing(src => new ApuracaoViewModel
                 {
+                    EleicaoId = src.EleicaoId,
                     Area = src.Eleitor.Area,
                     Cargo = src.Eleitor.Cargo,
                     DataAdmissao = src.Eleitor.DataAdmissao,
@@ -64,6 +66,9 @@ namespace Cipa.WebApi.AutoMapper
                 cfg.CreateMap<EtapaPadraoConta, EtapaPadraoContaViewModel>().ReverseMap();
                 cfg.CreateMap<Usuario, UsuarioViewModel>().ReverseMap()
                     .ConvertUsing(dest => new Usuario(dest.Email, dest.Nome, dest.Cargo));
+                cfg.CreateMap<Conta, ContaViewModel>();
+                cfg.CreateMap<IEnumerable<Inscricao>, ResultadoApuracaoViewModel>()
+                    .ConvertUsing<ResultadoApuracaoTypeConverter>();
             });
             return config.CreateMapper();
         }

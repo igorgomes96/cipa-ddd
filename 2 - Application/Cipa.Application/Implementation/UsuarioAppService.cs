@@ -51,7 +51,7 @@ namespace Cipa.Application
             usuarioExistente.Email = usuario.Email.Trim().ToLower();
             usuarioExistente.Nome = usuario.Nome;
             usuarioExistente.Perfil = usuario.Perfil;
-            base.Atualizar(usuario);
+            base.Atualizar(usuarioExistente);
         }
 
         public override Usuario Excluir(int id)

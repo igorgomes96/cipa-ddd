@@ -1,14 +1,17 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Services.Helpers;
 
 namespace Cipa.Application
 {
     public class EleicaoAppService : AppServiceBase<Eleicao>, IEleicaoAppService
     {
+        private const string PATH_FOTOS = @"StaticFiles\Fotos\";
 
         public EleicaoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.EleicaoRepository){ }
 
@@ -282,6 +285,61 @@ namespace Cipa.Application
             eleicao.AtualizarCronograma(etapa);
             base.Atualizar(eleicao);
             return eleicao.Cronograma;
+        }
+
+        public Inscricao AtualizarFotoInscricao(int eleicaoId, int usuarioId, byte[] foto, string fotoFileName)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var inscricao = eleicao.BuscarEleitorPeloUsuarioId(usuarioId)?.Inscricao;
+            if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
+
+            // FileSystemHelpers.GetRelativeFileName();
+            string relativePath = $@"{PATH_FOTOS}{eleicaoId.ToString()}";
+            string absolutePath = @FileSystemHelpers.GetAbsolutePath(relativePath);
+            string tempPath = FileSystemHelpers.GetAbsolutePath($@"{relativePath}/temp");
+
+            if (!Directory.Exists(absolutePath))
+                Directory.CreateDirectory(absolutePath);
+            
+            if (!Directory.Exists(tempPath))
+                Directory.CreateDirectory(tempPath);
+
+            // Salva a imagem original
+            string originalFileName = @FileSystemHelpers.GetAbsolutePath(FileSystemHelpers.GetRelativeFileName(tempPath, fotoFileName));
+            File.WriteAllBytes(originalFileName, foto);
+
+            // Converte para JPEG, com 80% da qualidade
+            string destinationFileName = FileSystemHelpers.GetRelativeFileName(relativePath, Path.ChangeExtension(fotoFileName, ".jpeg"));
+            ImageHelpers.SalvarImagemJPEG(originalFileName, @FileSystemHelpers.GetAbsolutePath(destinationFileName), 80);
+
+            // Exclui o arquivo orginal
+            File.Delete(originalFileName);
+
+            if (!string.IsNullOrWhiteSpace(inscricao.Foto))
+            {
+                var fotoAnterior = FileSystemHelpers.GetAbsolutePath(inscricao.Foto);
+                if (File.Exists(fotoAnterior)) File.Delete(FileSystemHelpers.GetAbsolutePath(inscricao.Foto));
+            }
+            inscricao.Foto = destinationFileName;
+            base.Atualizar(eleicao);
+            return inscricao;
+        }
+
+        public Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var inscricao = eleicao.BuscarInscricaoPeloId(inscricaoId);
+            if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
+
+            var file = FileSystemHelpers.GetAbsolutePath(inscricao.Foto);
+            if (string.IsNullOrWhiteSpace(inscricao.Foto) || !File.Exists(file))
+                throw new NotFoundException("Foto não encontrada.");
+
+            return new FileStream(file, FileMode.Open);
         }
     }
 }

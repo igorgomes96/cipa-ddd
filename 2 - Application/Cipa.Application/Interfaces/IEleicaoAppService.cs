@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Cipa.Domain.Entities;
 
 namespace Cipa.Application.Interfaces {
@@ -26,5 +27,7 @@ namespace Cipa.Application.Interfaces {
         IEnumerable<Voto> BuscarVotos(int eleicaoId);
         Voto BuscarVotoUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Inscricao> ApurarVotos(int eleicaoId);
+        Inscricao AtualizarFotoInscricao(int eleicaoId, int usuarioId, byte[] foto, string fotoFileName);
+        Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId); 
     }
 }

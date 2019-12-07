@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using AutoMapper;
 using Cipa.Application.Interfaces;
@@ -173,6 +174,32 @@ namespace Cipa.WebApi.Controllers
             return _mapper.Map<InscricaoViewModel>(_eleicaoAppService.AtualizarInscricao(id, UsuarioId, inscricao.Objetivos));
         }
 
+        [HttpPost("{id}/inscricoes/foto"), DisableRequestSizeLimit]
+        public ActionResult<InscricaoViewModel> PosttAtualizaFotoInscricao(int id)
+        {
+            if (Request.Form.Files == null || Request.Form.Files.Count == 0)
+                return BadRequest("Nenhuma foto foi enviada.");
+
+            if (Request.Form.Files.Count > 1)
+                return BadRequest("Somente uma foto pode ser enviada.");
+
+            var formFile = Request.Form.Files.First();
+            var fileName = formFile.FileName;
+            byte[] foto = null;
+            using (var ms = new MemoryStream())
+            {
+                formFile.CopyTo(ms);
+                foto = ms.ToArray();
+            }
+            return _mapper.Map<InscricaoViewModel>(_eleicaoAppService.AtualizarFotoInscricao(id, UsuarioId, foto, fileName));
+        }
+
+        [HttpGet("{id}/inscricoes/{inscricaoId}/foto")]
+        public IActionResult GetFotoInscricacao(int id, int inscricaoId)
+        {
+            return new FileStreamResult(_eleicaoAppService.BuscarFotoInscricao(id, inscricaoId), "image/jpeg");
+        }
+
         [HttpPut("{id}/inscricoes/{inscricaoId}/aprovar")]
         public InscricaoViewModel PutAprovarInscricao(int id, int inscricaoId)
         {
@@ -206,6 +233,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpGet("{id}/votos")]
+        [Pagination]
         public IEnumerable<VotoViewModel> GetVotos(int id) =>
             _mapper.Map<List<VotoViewModel>>(_eleicaoAppService.BuscarVotos(id));
 
@@ -218,6 +246,10 @@ namespace Cipa.WebApi.Controllers
         [HttpGet("{id}/apuracao")]
         public IEnumerable<ApuracaoViewModel> GetApuracao(int id) =>
             _mapper.Map<List<ApuracaoViewModel>>(_eleicaoAppService.ApurarVotos(id));
+
+        [HttpGet("{id}/resultado")]
+        public ResultadoApuracaoViewModel GetResultadoApuracao(int id) =>
+            _mapper.Map<ResultadoApuracaoViewModel>(_eleicaoAppService.ApurarVotos(id));
         #endregion
     }
 }
