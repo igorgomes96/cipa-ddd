@@ -1,9 +1,8 @@
-using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Domain.Entities;
+using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Infra.Data.Context;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipa.Infra.Data.Repositories
 {

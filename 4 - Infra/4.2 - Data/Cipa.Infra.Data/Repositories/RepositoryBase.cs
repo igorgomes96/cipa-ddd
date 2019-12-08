@@ -1,11 +1,9 @@
+using Cipa.Domain.Exceptions;
+using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Infra.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Cipa.Domain.Interfaces.Repositories;
-using Microsoft.EntityFrameworkCore.Storage;
-using Cipa.Domain.Exceptions;
-using Cipa.Infra.Data.Context;
-using System.Linq;
 
 namespace Cipa.Infra.Data.Repositories
 {

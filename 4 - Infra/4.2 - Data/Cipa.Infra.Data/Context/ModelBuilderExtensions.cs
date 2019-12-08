@@ -1,7 +1,7 @@
-using System;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Cipa.Infra.Data.Context
 {

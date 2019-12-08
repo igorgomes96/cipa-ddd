@@ -1,8 +1,9 @@
-using System.Collections.Generic;
 using Cipa.Domain.Entities;
+using System.Collections.Generic;
 
-namespace Cipa.Application.Interfaces {
-    public interface IContaAppService: IAppServiceBase<Conta>
+namespace Cipa.Application.Interfaces
+{
+    public interface IContaAppService : IAppServiceBase<Conta>
     {
         IEnumerable<EtapaPadraoConta> BuscarCronogramaPadrao(int contaId);
         EtapaPadraoConta AdicionarEtapaPadrao(int contaId, EtapaPadraoConta etapaPadrao);

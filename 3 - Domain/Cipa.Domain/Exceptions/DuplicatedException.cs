@@ -4,6 +4,6 @@
     {
         public DuplicatedException() : base("Registro duplicado!") { }
 
-        public DuplicatedException(string message): base(message) { }
+        public DuplicatedException(string message) : base(message) { }
     }
 }

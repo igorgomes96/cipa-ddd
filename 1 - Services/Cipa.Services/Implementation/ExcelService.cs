@@ -1,10 +1,9 @@
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
 using Cipa.Domain.Exceptions;
 using Cipa.Services.Interfaces;
 using ClosedXML.Excel;
+using System.Data;
+using System.IO;
+using System.Linq;
 
 namespace Cipa.Services.Implementation
 {
@@ -79,7 +78,7 @@ namespace Cipa.Services.Implementation
                 {
                     for (int c = 0; c < columnsCount; c++)
                         sheet.Cell(linha, c + coluna).Value = dr[c];
-                    
+
                     linha++;
                 }
 

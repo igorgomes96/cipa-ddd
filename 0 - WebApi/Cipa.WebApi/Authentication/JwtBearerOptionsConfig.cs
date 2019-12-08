@@ -1,6 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Cipa.WebApi.Authentication
 {
@@ -38,13 +38,13 @@ namespace Cipa.WebApi.Authentication
                 {
                     var accessToken = context.Request.Query["access_token"];
 
-                        // If the request is for our hub...
-                        var path = context.HttpContext.Request.Path;
+                    // If the request is for our hub...
+                    var path = context.HttpContext.Request.Path;
                     if (!string.IsNullOrEmpty(accessToken) &&
                         (path.StartsWithSegments("/api/signalr")))
                     {
-                            // Read the token out of the query string
-                            context.Token = accessToken;
+                        // Read the token out of the query string
+                        context.Token = accessToken;
                     }
                     return Task.CompletedTask;
                 }

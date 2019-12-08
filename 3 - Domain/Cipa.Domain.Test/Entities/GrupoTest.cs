@@ -1,7 +1,4 @@
-using System;
 using Cipa.Domain.Entities;
-using Cipa.Domain.Exceptions;
-using Cipa.Domain.Helpers;
 using Xunit;
 
 namespace Cipa.Domain.Test.Entities
@@ -21,7 +18,7 @@ namespace Cipa.Domain.Test.Entities
         {
             var grupo = new Grupo("C-Teste");
             grupo.Dimensionamentos.Add(new LinhaDimensionamento(5000, 2501, 12, 9));
-            grupo.Dimensionamentos.Add(new LinhaDimensionamento( 10000, 5001, 15, 12));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(10000, 5001, 15, 12));
             grupo.LimiteDimensionamento = new LimiteDimensionamento(10000, 2500, 2, 3);
 
             var dimensionamento = grupo.CalcularDimensionamento(qtdaEleitores);
@@ -30,7 +27,7 @@ namespace Cipa.Domain.Test.Entities
             Assert.Equal(maximo, dimensionamento.Maximo);
             Assert.Equal(qtdaEfetivosEsperado, dimensionamento.QtdaEfetivos);
             Assert.Equal(qtdaSuplentesEsperado, dimensionamento.QtdaSuplentes);
-            
+
         }
 
     }

@@ -1,7 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Cipa.WebApi.ViewModels {
+namespace Cipa.WebApi.ViewModels
+{
     public class ReprovacaoViewModel
     {
         public int Id { get; set; }

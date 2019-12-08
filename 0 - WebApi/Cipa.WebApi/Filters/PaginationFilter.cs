@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Mvc.Filters;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using Cipa.WebApi.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipa.WebApi.Filters
 {
@@ -20,7 +20,7 @@ namespace Cipa.WebApi.Filters
             int pageNumber = 1;
             if (urlQuery.ContainsKey("pagenumber"))
                 pageNumber = int.Parse(urlQuery["pagenumber"]);
-            
+
             if (pageNumber == 0) pageNumber = 1;
             var rowCount = response.Count();
             var pageCount = (int)Math.Ceiling((double)rowCount / pageSize);

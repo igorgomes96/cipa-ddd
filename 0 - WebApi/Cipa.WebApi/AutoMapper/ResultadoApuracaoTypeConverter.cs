@@ -2,10 +2,8 @@
 using AutoMapper.QueryableExtensions;
 using Cipa.Domain.Entities;
 using Cipa.WebApi.ViewModels;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Cipa.WebApi.AutoMapper
 {

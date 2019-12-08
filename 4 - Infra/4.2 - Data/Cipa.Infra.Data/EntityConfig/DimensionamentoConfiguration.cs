@@ -1,14 +1,15 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class DimensionamentoConfiguration : DimensionamentoBaseConfiguration<Dimensionamento>
     {
         public override void Configure(EntityTypeBuilder<Dimensionamento> builder)
         {
             base.Configure(builder);
-            
+
             builder.ToTable("Eleicoes");
 
             builder.Property(e => e.Minimo).HasColumnName("DimensionamentoMinEleitores");

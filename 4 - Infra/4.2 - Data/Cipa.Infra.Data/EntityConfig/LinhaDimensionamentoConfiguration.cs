@@ -1,8 +1,8 @@
 using Cipa.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class LinhaDimensionamentoConfiguration : DimensionamentoBaseConfiguration<LinhaDimensionamento>
     {
         public override void Configure(EntityTypeBuilder<LinhaDimensionamento> builder)

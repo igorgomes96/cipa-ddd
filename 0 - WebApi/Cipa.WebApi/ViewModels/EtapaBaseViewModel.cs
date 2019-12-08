@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Cipa.WebApi.ViewModels {
+namespace Cipa.WebApi.ViewModels
+{
 
     public class EtapaBaseViewModel
     {
@@ -13,6 +14,6 @@ namespace Cipa.WebApi.ViewModels {
         public string Descricao { get; set; }
         [Required(ErrorMessage = "A posição/ordem da etapa no cronograma deve ser informada.")]
         public int Ordem { get; set; }
-        
+
     }
 }

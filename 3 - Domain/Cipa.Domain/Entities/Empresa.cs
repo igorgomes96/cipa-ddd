@@ -1,14 +1,15 @@
+using Cipa.Domain.Exceptions;
+using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Cipa.Domain.Exceptions;
-using Cipa.Domain.Helpers;
 
 namespace Cipa.Domain.Entities
 {
     public class Empresa : Entity<int>
     {
-        public Empresa(string razaoSocial, string cnpj) {
+        public Empresa(string razaoSocial, string cnpj)
+        {
             RazaoSocial = razaoSocial;
             Cnpj = cnpj;
             Ativa = true;
@@ -33,7 +34,8 @@ namespace Cipa.Domain.Entities
             get => Estabelecimentos.Where(e => e.Ativo).ToList();
         }
 
-        public void Inativar() {
+        public void Inativar()
+        {
             if (EstabelecimentosAtivos.Any())
                 throw new CustomException("Há estabelecimentos cadastrados para essa empresa.");
             Ativa = false;

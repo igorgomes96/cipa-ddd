@@ -2,7 +2,8 @@ using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class EleitorConfiguration : IEntityTypeConfiguration<Eleitor>
     {
         public void Configure(EntityTypeBuilder<Eleitor> builder)
@@ -17,11 +18,11 @@ namespace Cipa.Infra.Data.EntityConfig {
                 .HasMaxLength(100)
                 .IsRequired();
 
-             builder.Property(e => e.Matricula)
-                .HasMaxLength(50);
+            builder.Property(e => e.Matricula)
+               .HasMaxLength(50);
 
-             builder.Property(e => e.Area)
-                .HasMaxLength(255);
+            builder.Property(e => e.Area)
+               .HasMaxLength(255);
 
             builder.Property(e => e.Cargo)
                 .HasMaxLength(255);

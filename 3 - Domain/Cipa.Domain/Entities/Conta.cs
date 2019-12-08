@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Cipa.Domain.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Cipa.Domain.Exceptions;
 
 namespace Cipa.Domain.Entities
 {

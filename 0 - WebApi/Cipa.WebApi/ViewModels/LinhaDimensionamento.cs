@@ -1,6 +1,6 @@
 namespace Cipa.WebApi.ViewModels
 {
-    public class LinhaDimensionamentoViewModel: DimensionamentoBaseViewModel
+    public class LinhaDimensionamentoViewModel : DimensionamentoBaseViewModel
     {
     }
 }

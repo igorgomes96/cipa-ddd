@@ -1,7 +1,8 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 
-namespace Cipa.WebApi.Authentication {
+namespace Cipa.WebApi.Authentication
+{
     public class TokenConfigurations
     {
         public string Audience { get; set; }

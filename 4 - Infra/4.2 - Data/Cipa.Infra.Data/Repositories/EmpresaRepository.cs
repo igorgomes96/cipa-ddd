@@ -1,9 +1,8 @@
-using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Infra.Data.Context;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -18,7 +17,7 @@ namespace Cipa.Infra.Data.Repositories
                 return pesquisa.Where(e => e.Ativa == ativa.Value);
 
             return pesquisa;
-        }        
+        }
 
 
     }

@@ -1,6 +1,6 @@
+using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
-using Cipa.Domain.Helpers;
 
 namespace Cipa.Domain.Entities
 {

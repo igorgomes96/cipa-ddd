@@ -1,7 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Cipa.WebApi.ViewModels {
+namespace Cipa.WebApi.ViewModels
+{
     public class EleitorViewModel
     {
         public int Id { get; set; }
@@ -25,6 +26,6 @@ namespace Cipa.WebApi.ViewModels {
         public string NomeGestor { get; set; }
         [StringLength(255, ErrorMessage = "O e-mail do gestor do eleitor não pode conter mais de {1} caracteres.")]
         public string EmailGestor { get; set; }
-        
+
     }
 }

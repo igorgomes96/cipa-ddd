@@ -1,8 +1,8 @@
-using System;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using Cipa.Domain.Entities;
 using Cipa.Infra.Data.EntityConfig;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace Cipa.Infra.Data.Context
 {

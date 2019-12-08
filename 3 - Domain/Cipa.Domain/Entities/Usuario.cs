@@ -38,7 +38,8 @@ namespace Cipa.Domain.Entities
             Conta = null;
         }
 
-        public void AlterarParaPerfilSESMT(Conta conta) {
+        public void AlterarParaPerfilSESMT(Conta conta)
+        {
             Perfil = PerfilUsuario.SESMT;
             ContaId = conta.Id;
             Conta = conta;

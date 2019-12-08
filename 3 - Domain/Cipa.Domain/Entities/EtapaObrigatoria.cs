@@ -2,7 +2,7 @@ using Cipa.Domain.Helpers;
 
 namespace Cipa.Domain.Entities
 {
-    public class EtapaObrigatoria: Entity<CodigoEtapaObrigatoria>
+    public class EtapaObrigatoria : Entity<CodigoEtapaObrigatoria>
     {
         public string Nome { get; set; }
         public string Descricao { get; set; }

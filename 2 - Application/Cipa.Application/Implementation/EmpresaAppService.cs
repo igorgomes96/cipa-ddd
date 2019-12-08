@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Repositories;
+using System.Collections.Generic;
 
 namespace Cipa.Application
 {

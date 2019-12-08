@@ -1,14 +1,14 @@
 using Cipa.Domain.Entities;
-using Cipa.Domain.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class EtapaObrigatoriaConfiguration : IEntityTypeConfiguration<EtapaObrigatoria>
     {
         public void Configure(EntityTypeBuilder<EtapaObrigatoria> builder)
-        {  
-            builder.HasKey(e => e.Id);            
+        {
+            builder.HasKey(e => e.Id);
             builder.Property(e => e.Id).ValueGeneratedNever();
 
             builder.Property(e => e.Nome)

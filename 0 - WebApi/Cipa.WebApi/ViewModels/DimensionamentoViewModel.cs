@@ -1,6 +1,6 @@
 namespace Cipa.WebApi.ViewModels
 {
-    public class DimensionamentoViewModel: DimensionamentoBaseViewModel
+    public class DimensionamentoViewModel : DimensionamentoBaseViewModel
     {
         public int QtdaEleitores { get; set; }
         public int QtdaInscricoes { get; set; }

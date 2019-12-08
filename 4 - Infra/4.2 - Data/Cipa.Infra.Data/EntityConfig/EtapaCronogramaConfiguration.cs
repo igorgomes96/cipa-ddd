@@ -2,7 +2,8 @@ using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class EtapaCronogramaConfiguration : IEntityTypeConfiguration<EtapaCronograma>
     {
         public void Configure(EntityTypeBuilder<EtapaCronograma> builder)
@@ -38,7 +39,7 @@ namespace Cipa.Infra.Data.EntityConfig {
                 .HasMaxLength(10000);
 
             builder.HasIndex(e => new { e.EleicaoId, e.Ordem }).IsUnique();
-            
+
         }
     }
 }

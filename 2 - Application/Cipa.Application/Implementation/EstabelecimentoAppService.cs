@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Repositories;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipa.Application
 {
@@ -50,12 +50,14 @@ namespace Cipa.Application
             var estabelecimento = (_repositoryBase as IEstabelecimentoRepository).BuscarPeloId(id); //.BuscarPeloIdCarregarEleicoes(id);
             if (estabelecimento == null) throw new NotFoundException("Estabelecimento não encontrado.");
 
-            if (estabelecimento.Eleicoes.Any()) {
+            if (estabelecimento.Eleicoes.Any())
+            {
                 estabelecimento.Inativar();
                 base.Atualizar(estabelecimento);
-            } else
+            }
+            else
                 base.Excluir(estabelecimento);
-            
+
             return estabelecimento;
         }
     }

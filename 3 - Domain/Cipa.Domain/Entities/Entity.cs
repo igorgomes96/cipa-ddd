@@ -14,7 +14,7 @@ namespace Cipa.Domain.Entities
             return Id.Equals(compareTo.Id);
         }
 
-        public static bool operator == (Entity<TKey> a, Entity<TKey> b)
+        public static bool operator ==(Entity<TKey> a, Entity<TKey> b)
         {
             if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
                 return true;

@@ -1,11 +1,11 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Services.Helpers;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Cipa.Application
 {
@@ -13,7 +13,7 @@ namespace Cipa.Application
     {
         private const string PATH_FOTOS = @"StaticFiles\Fotos\";
 
-        public EleicaoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.EleicaoRepository){ }
+        public EleicaoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.EleicaoRepository) { }
 
         public override Eleicao Adicionar(Eleicao eleicao)
         {
@@ -302,7 +302,7 @@ namespace Cipa.Application
 
             if (!Directory.Exists(absolutePath))
                 Directory.CreateDirectory(absolutePath);
-            
+
             if (!Directory.Exists(tempPath))
                 Directory.CreateDirectory(tempPath);
 

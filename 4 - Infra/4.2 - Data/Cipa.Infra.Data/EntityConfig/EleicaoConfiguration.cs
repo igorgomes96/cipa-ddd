@@ -1,6 +1,6 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
 namespace Cipa.Infra.Data.EntityConfig
 {
@@ -16,7 +16,7 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.Property(e => e.DuracaoGestao)
                 .IsRequired();
-            
+
             builder.HasOne(e => e.Estabelecimento)
                 .WithMany(e => e.Eleicoes)
                 .HasForeignKey(e => e.EstabelecimentoId)
@@ -34,7 +34,7 @@ namespace Cipa.Infra.Data.EntityConfig
                 .WithMany()
                 .HasForeignKey(e => e.ContaId)
                 .IsRequired();
-            
+
             builder.Property(e => e.DataCadastro)
                 .IsRequired();
 
@@ -52,7 +52,7 @@ namespace Cipa.Infra.Data.EntityConfig
             builder.HasIndex(e => new { e.EstabelecimentoId, e.Gestao }).IsUnique();
 
             builder.Ignore(e => e.UsuarioEleitor);
-            
+
         }
     }
 }

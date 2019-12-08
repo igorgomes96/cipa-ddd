@@ -16,7 +16,7 @@ namespace Cipa.WebApi.ViewModels
         public int EmpresaId { get; set; }
         public int GrupoId { get; set; }
         public string Grupo { get; set; }
-        
+
         public EmpresaViewModel Empresa { get; set; }
     }
 }

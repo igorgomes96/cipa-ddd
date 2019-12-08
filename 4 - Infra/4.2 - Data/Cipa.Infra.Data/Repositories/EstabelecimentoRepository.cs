@@ -1,10 +1,8 @@
-using System;
+using Cipa.Domain.Entities;
+using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Infra.Data.Context;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Cipa.Domain.Interfaces.Repositories;
-using Cipa.Domain.Entities;
-using Cipa.Infra.Data.Context;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -12,7 +10,7 @@ namespace Cipa.Infra.Data.Repositories
     {
         public EstabelecimentoRepository(CipaContext db) : base(db) { }
 
-        private IQueryable<Estabelecimento> QueryEstabelecimentos => 
+        private IQueryable<Estabelecimento> QueryEstabelecimentos =>
             DbSet.Where(e => e.Ativo);
 
         public IEnumerable<Estabelecimento> BuscarEstabelecimentosPorConta(int contaId) =>

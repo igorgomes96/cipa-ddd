@@ -2,14 +2,15 @@ using System;
 
 namespace Cipa.Domain.Entities
 {
-    public enum StatusImportacao {
+    public enum StatusImportacao
+    {
         Aguardando,
         Processando,
         FinalizadoComSucesso,
         FinalizadoComFalha
     }
 
-    public class Importacao: Entity<int>
+    public class Importacao : Entity<int>
     {
         public DateTime Horario { get; set; }
         public int ArquivoId { get; set; }

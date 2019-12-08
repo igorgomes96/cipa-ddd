@@ -1,10 +1,11 @@
+using Cipa.Domain.Helpers;
 using System;
 using System.ComponentModel.DataAnnotations;
-using Cipa.Domain.Helpers;
 
-namespace Cipa.WebApi.ViewModels {
+namespace Cipa.WebApi.ViewModels
+{
 
-    public class EtapaCronogramaViewModel: EtapaBaseViewModel
+    public class EtapaCronogramaViewModel : EtapaBaseViewModel
     {
         public int EleicaoId { get; set; }
         [Required(ErrorMessage = "A data prevista para essa etapa deve ser informada.")]

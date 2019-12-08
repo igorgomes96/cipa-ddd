@@ -1,6 +1,6 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
 namespace Cipa.Infra.Data.EntityConfig
 {
@@ -17,8 +17,8 @@ namespace Cipa.Infra.Data.EntityConfig
             builder.Property(e => e.Cnpj)
                 .HasMaxLength(14);
 
-             builder.Property(e => e.InformacoesGerais)
-                .HasMaxLength(255);
+            builder.Property(e => e.InformacoesGerais)
+               .HasMaxLength(255);
 
             builder.HasOne(e => e.Conta)
                 .WithMany(e => e.Empresas)
@@ -31,7 +31,7 @@ namespace Cipa.Infra.Data.EntityConfig
             builder.Property(e => e.DataCadastro)
                 .IsRequired();
 
-            builder.Ignore(e => e.CnpjFormatado).Ignore(e => e.EstabelecimentosAtivos);  
+            builder.Ignore(e => e.CnpjFormatado).Ignore(e => e.EstabelecimentosAtivos);
         }
     }
 }

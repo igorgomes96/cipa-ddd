@@ -1,6 +1,6 @@
-using System.Linq;
 using Cipa.Domain.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace Cipa.WebApi.Controllers
 {
@@ -13,7 +13,7 @@ namespace Cipa.WebApi.Controllers
                 return Request.HttpContext.Connection.RemoteIpAddress.ToString();
             }
         }
-        
+
         protected int ContaId
         {
             get

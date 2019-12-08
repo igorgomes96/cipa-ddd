@@ -1,6 +1,6 @@
-using System;
 using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Infra.Data.Context;
+using System;
 
 namespace Cipa.Infra.Data.Repositories
 {

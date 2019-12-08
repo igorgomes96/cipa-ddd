@@ -1,6 +1,7 @@
 using System.Data;
 
-namespace Cipa.Services.Interfaces {
+namespace Cipa.Services.Interfaces
+{
     public interface IExcelService
     {
         DataTable LerTabela(string fileName, int colunaInicial, int colunaFinal, int linhaInicial = 1, bool temCabecalho = true);

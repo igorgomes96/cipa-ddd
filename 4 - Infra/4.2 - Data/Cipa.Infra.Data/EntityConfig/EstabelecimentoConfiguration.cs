@@ -1,6 +1,6 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
 namespace Cipa.Infra.Data.EntityConfig
 {

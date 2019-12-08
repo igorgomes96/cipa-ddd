@@ -38,7 +38,7 @@ namespace Cipa.Services.Helpers
                 myBitmap.Save(novoNome, myImageCodecInfo, myEncoderParameters);
                 return novoNome;
             }
-            
+
         }
 
         private static ImageCodecInfo GetEncoderInfo(String mimeType)

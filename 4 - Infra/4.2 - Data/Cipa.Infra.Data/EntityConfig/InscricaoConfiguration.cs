@@ -1,6 +1,6 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
 namespace Cipa.Infra.Data.EntityConfig
 {
@@ -30,13 +30,13 @@ namespace Cipa.Infra.Data.EntityConfig
                 .HasMaxLength(255);
 
             builder.Property(i => i.Objetivos)
-                .HasMaxLength(255); 
+                .HasMaxLength(255);
 
             builder.Property(i => i.EmailAprovador)
-                .HasMaxLength(100); 
+                .HasMaxLength(100);
 
             builder.Property(i => i.NomeAprovador)
-                .HasMaxLength(255); 
+                .HasMaxLength(255);
 
             builder.HasIndex(i => i.EleitorId).IsUnique();
         }

@@ -11,13 +11,14 @@ namespace Cipa.WebApi.Controllers
     public class AutenticacaoController : Controller
     {
         private readonly ILoginService _loginService;
-        public AutenticacaoController(ILoginService loginService) {
+        public AutenticacaoController(ILoginService loginService)
+        {
             _loginService = loginService;
         }
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public ActionResult<AuthInfoViewModel> Login(Usuario usuario) => 
+        public ActionResult<AuthInfoViewModel> Login(Usuario usuario) =>
             _loginService.Login(usuario.Email, usuario.Senha);
     }
 }

@@ -1,18 +1,18 @@
-using System.Security.Claims;
-using System.Linq;
-using System.Security.Principal;
-using System.IdentityModel.Tokens.Jwt;
-using System;
-using Microsoft.IdentityModel.Tokens;
-using Cipa.Domain.Entities;
 using Cipa.Application.Interfaces;
+using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
 using Cipa.WebApi.ViewModels;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
 
 namespace Cipa.WebApi.Authentication
 {
-    public class LoginService: ILoginService
+    public class LoginService : ILoginService
     {
         private IUsuarioAppService _usuarioAppService;
         private readonly SigningConfigurations _signingConfigurations;

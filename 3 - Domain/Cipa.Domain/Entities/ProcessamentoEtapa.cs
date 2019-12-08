@@ -2,7 +2,7 @@
 
 namespace Cipa.Domain.Entities
 {
-    public class ProcessamentoEtapa: Entity<int>
+    public class ProcessamentoEtapa : Entity<int>
     {
         public int? EtapaAnteriorId { get; set; } // Será null quando iniciar a eleição.
         public int? EtapaAtualId { get; set; }  // Será null quando terminar a eleição.

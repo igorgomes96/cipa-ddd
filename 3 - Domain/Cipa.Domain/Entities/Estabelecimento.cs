@@ -1,7 +1,7 @@
+using Cipa.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Cipa.Domain.Exceptions;
 
 namespace Cipa.Domain.Entities
 {

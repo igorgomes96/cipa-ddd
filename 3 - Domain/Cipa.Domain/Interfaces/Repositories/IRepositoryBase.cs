@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Cipa.Domain.Interfaces.Repositories
 {
-    public interface IRepositoryBase<TEntity>: IDisposable where TEntity : class
+    public interface IRepositoryBase<TEntity> : IDisposable where TEntity : class
     {
         TEntity Adicionar(TEntity obj);
         IEnumerable<TEntity> BuscarTodos();

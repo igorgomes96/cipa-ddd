@@ -1,16 +1,18 @@
-using System;
-using System.Collections.Generic;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Repositories;
+using System;
+using System.Collections.Generic;
 
-namespace Cipa.Application {
+namespace Cipa.Application
+{
     public class AppServiceBase<TEntity> : IDisposable, IAppServiceBase<TEntity> where TEntity : class
     {
         protected readonly IRepositoryBase<TEntity> _repositoryBase;
         protected readonly IUnitOfWork _unitOfWork;
 
-        public AppServiceBase(IUnitOfWork unitOfWork, IRepositoryBase<TEntity> repositoryBase) {
+        public AppServiceBase(IUnitOfWork unitOfWork, IRepositoryBase<TEntity> repositoryBase)
+        {
             _repositoryBase = repositoryBase;
             _unitOfWork = unitOfWork;
         }

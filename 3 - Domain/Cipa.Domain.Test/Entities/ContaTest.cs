@@ -1,7 +1,7 @@
-using Xunit;
 using Cipa.Domain.Entities;
-using Cipa.Domain.Helpers;
 using Cipa.Domain.Exceptions;
+using Cipa.Domain.Helpers;
+using Xunit;
 
 namespace Cipa.Domain.Test.Entities
 {
@@ -73,7 +73,7 @@ namespace Cipa.Domain.Test.Entities
 
             var exception = Assert.Throws<CustomException>(() => conta.RemoverEtapaPadrao(new EtapaPadraoConta("", "", 2, 1, 1)));
             Assert.Equal("Não é permitido remover uma etapa obrigatória.", exception.Message);
-            
+
         }
 
         [Fact]

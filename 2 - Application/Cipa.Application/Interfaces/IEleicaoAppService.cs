@@ -1,9 +1,10 @@
+using Cipa.Domain.Entities;
 using System.Collections.Generic;
 using System.IO;
-using Cipa.Domain.Entities;
 
-namespace Cipa.Application.Interfaces {
-    public interface IEleicaoAppService: IAppServiceBase<Eleicao>
+namespace Cipa.Application.Interfaces
+{
+    public interface IEleicaoAppService : IAppServiceBase<Eleicao>
     {
         IEnumerable<Eleicao> BuscarPelaConta(int contaId);
         IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId);
@@ -28,6 +29,6 @@ namespace Cipa.Application.Interfaces {
         Voto BuscarVotoUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Inscricao> ApurarVotos(int eleicaoId);
         Inscricao AtualizarFotoInscricao(int eleicaoId, int usuarioId, byte[] foto, string fotoFileName);
-        Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId); 
+        Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId);
     }
 }

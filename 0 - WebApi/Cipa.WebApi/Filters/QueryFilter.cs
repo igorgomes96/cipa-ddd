@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc.Filters;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipa.WebApi.Filters
 {
@@ -18,7 +18,8 @@ namespace Cipa.WebApi.Filters
         {
             object value = src;
             string[] tree = propName.Split('.');
-            foreach (var prop in tree) {
+            foreach (var prop in tree)
+            {
                 value = value.GetType().GetProperty(prop).GetValue(value, null);
             }
             return value.ToString();
@@ -48,7 +49,7 @@ namespace Cipa.WebApi.Filters
                 }
             }
             catch
-            { 
+            {
                 // Qualquer erro deve ser ignorado, e o Pipeline Request deve prosseguir.
             }
             base.OnResultExecuting(context);

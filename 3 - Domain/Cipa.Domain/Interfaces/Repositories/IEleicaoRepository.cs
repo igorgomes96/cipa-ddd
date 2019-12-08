@@ -1,8 +1,9 @@
-using System.Collections.Generic;
 using Cipa.Domain.Entities;
+using System.Collections.Generic;
 
-namespace Cipa.Domain.Interfaces.Repositories {
-    public interface IEleicaoRepository: IRepositoryBase<Eleicao>
+namespace Cipa.Domain.Interfaces.Repositories
+{
+    public interface IEleicaoRepository : IRepositoryBase<Eleicao>
     {
         // Eleicao BuscarPeloIdCarregarEleitores(int id);
         // Eleicao BuscarPeloIdCarregarVotos(int id);

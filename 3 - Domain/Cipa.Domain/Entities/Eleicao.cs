@@ -1,9 +1,9 @@
+using Cipa.Domain.Exceptions;
+using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Cipa.Domain.Exceptions;
-using Cipa.Domain.Helpers;
 
 namespace Cipa.Domain.Entities
 {
@@ -20,13 +20,13 @@ namespace Cipa.Domain.Entities
             DataInicio = dataInicio;
             DuracaoGestao = duracaoGestao;
             TerminoMandatoAnterior = terminoMandatoAnterior;
-            Estabelecimento = estabelecimento ?? throw new CustomException("O estabelecimento deve ser informado."); ;
+            Estabelecimento = estabelecimento ?? throw new CustomException("O estabelecimento deve ser informado.");
             if (Estabelecimento.EleicoesDoAnoCorrente.Any())
                 throw new CustomException($"Já há uma eleição cadastrada para este estabelecimento no ano de {Gestao}.");
             if (Estabelecimento.EleicoesEmAndamento.Any())
                 throw new CustomException($"Existe uma eleição aberta para este estabelecimento.");
             Usuario = usuarioCriacao ?? throw new CustomException("O usuário de criação deve ser informado.");
-            this._grupo = grupo ?? estabelecimento.Grupo ?? throw new CustomException("O grupo deve ser informado.");
+            _grupo = grupo ?? estabelecimento.Grupo ?? throw new CustomException("O grupo deve ser informado.");
             Conta = usuarioCriacao.Conta ?? throw new CustomException("O usuário de criação da eleição deve estar vinculado à uma conta.");
             _dimensionamento = new Dimensionamento(0, 0, 0, 0);
         }
@@ -474,7 +474,7 @@ namespace Cipa.Domain.Entities
             foreach (var inscricaoApurada in ApurarVotos())
             {
                 var inscricao = Inscricoes.FirstOrDefault(i => i == inscricaoApurada);
-                if (inscricao != null) inscricao.ResultadoApuracao = inscricao.ResultadoApuracao;
+                if (inscricao != null) inscricao.ResultadoApuracao = inscricaoApurada.ResultadoApuracao;
             }
         }
 

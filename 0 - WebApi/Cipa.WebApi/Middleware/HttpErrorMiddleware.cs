@@ -1,9 +1,9 @@
-using System;
-using System.Threading.Tasks;
 using Cipa.Domain.Exceptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace Cipa.WebApi.Middleware
 {
