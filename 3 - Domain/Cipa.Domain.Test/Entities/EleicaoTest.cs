@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Cipa.Domain.Test.Entities
 {
-    public class eleicao
+    public class EleicaoTest
     {
         #region Funções Auxiliares
         private Conta ContaPadrao()

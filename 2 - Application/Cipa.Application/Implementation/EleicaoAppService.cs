@@ -1,8 +1,8 @@
 using Cipa.Application.Interfaces;
+using Cipa.Application.Services.Helpers;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Repositories;
-using Cipa.Services.Helpers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,11 +17,11 @@ namespace Cipa.Application
 
         public override Eleicao Adicionar(Eleicao eleicao)
         {
-            var estabelecimento = _unitOfWork.EstabelecimentoRepository.BuscarPeloId(eleicao.EstabelecimentoId); // .BuscarPeloIdCarregarEleicoes(eleicao.EstabelecimentoId);
+            var estabelecimento = _unitOfWork.EstabelecimentoRepository.BuscarPeloId(eleicao.EstabelecimentoId);
             if (estabelecimento == null)
                 throw new NotFoundException($"Estabelecimento {eleicao.EstabelecimentoId} não encontrado.");
 
-            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(eleicao.UsuarioCriacaoId); // BuscarPeloIdCarregarAgregadoConta(eleicao.UsuarioCriacaoId);
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(eleicao.UsuarioCriacaoId);
             if (usuario == null)
                 throw new NotFoundException($"Usuário {eleicao.UsuarioCriacaoId} não encontrado.");
 
@@ -89,7 +89,7 @@ namespace Cipa.Application
             return eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
         }
 
-        public IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status = null) =>
+        public IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status) =>
             _unitOfWork.EleicaoRepository.BuscarInscricoes(eleicaoId, status);
 
         public Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId)
@@ -180,12 +180,12 @@ namespace Cipa.Application
             return inscricao;
         }
 
-        public Inscricao AprovarInscricao(int eleicaoId, int inscricaoId, int usuarioAprovadorId)
+        public Inscricao AprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
-            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioAprovadorId);
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
             if (usuario == null) throw new CustomException("Usuário inválido!");
 
             var inscricaoAprovada = eleicao.AprovarInscricao(inscricaoId, usuario);
@@ -193,12 +193,12 @@ namespace Cipa.Application
             return inscricaoAprovada;
         }
 
-        public Inscricao ReprovarInscricao(int eleicaoId, int inscricaoId, int usuarioAprovadorId, string motivoReprovacao)
+        public Inscricao ReprovarInscricao(int eleicaoId, int inscricaoId, int usuarioId, string motivoReprovacao)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
 
-            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioAprovadorId);
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
             if (usuario == null) throw new CustomException("Usuário inválido!");
 
             var inscricaoReprovacao = eleicao.ReprovarInscricao(inscricaoId, usuario, motivoReprovacao);
@@ -295,7 +295,6 @@ namespace Cipa.Application
             var inscricao = eleicao.BuscarEleitorPeloUsuarioId(usuarioId)?.Inscricao;
             if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
 
-            // FileSystemHelpers.GetRelativeFileName();
             string relativePath = $@"{PATH_FOTOS}{eleicaoId.ToString()}";
             string absolutePath = @FileSystemHelpers.GetAbsolutePath(relativePath);
             string tempPath = FileSystemHelpers.GetAbsolutePath($@"{relativePath}/temp");

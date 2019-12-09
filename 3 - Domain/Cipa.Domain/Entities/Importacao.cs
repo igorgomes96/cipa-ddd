@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Cipa.Domain.Entities
 {
@@ -12,7 +13,6 @@ namespace Cipa.Domain.Entities
 
     public class Importacao : Entity<int>
     {
-        public DateTime Horario { get; set; }
         public int ArquivoId { get; set; }
         public StatusImportacao Status { get; set; } = StatusImportacao.Aguardando;
         public int EleicaoId { get; set; }
@@ -20,5 +20,6 @@ namespace Cipa.Domain.Entities
 
         public virtual Arquivo Arquivo { get; set; }
         public virtual Eleicao Eleicao { get; set; }
+        public virtual ICollection<Inconsistencia> Inconsistencias { get; set; }
     }
 }

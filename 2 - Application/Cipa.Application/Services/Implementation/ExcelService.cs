@@ -1,15 +1,14 @@
 using Cipa.Domain.Exceptions;
-using Cipa.Services.Interfaces;
+using Cipa.Application.Services.Interfaces;
 using ClosedXML.Excel;
 using System.Data;
 using System.IO;
 using System.Linq;
 
-namespace Cipa.Services.Implementation
+namespace Cipa.Application.Services.Implementation
 {
     public class ExcelService : IExcelService
     {
-
         public DataTable LerTabela(string fileName, int colunaInicial, int colunaFinal, int linhaInicial = 1, bool temCabecalho = true)
         {
             if (!File.Exists(fileName)) throw new CustomException("Arquivo não encontrado.");

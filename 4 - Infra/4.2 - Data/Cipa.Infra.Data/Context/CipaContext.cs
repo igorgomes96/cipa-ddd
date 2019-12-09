@@ -31,6 +31,9 @@ namespace Cipa.Infra.Data.Context
             modelBuilder.ApplyConfiguration(new ContaConfiguration());
             modelBuilder.ApplyConfiguration(new DimensionamentoConfiguration());
             modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
+            modelBuilder.ApplyConfiguration(new ArquivoConfiguration());
+            modelBuilder.ApplyConfiguration(new ImportacaoConfiguration());
+            modelBuilder.ApplyConfiguration(new InconsistenciaConfiguration());
             modelBuilder.Seed();
             base.OnModelCreating(modelBuilder);
         }
@@ -46,9 +49,9 @@ namespace Cipa.Infra.Data.Context
         public virtual DbSet<EtapaObrigatoria> EtapasObrigatorias { get; set; }
         public virtual DbSet<EtapaCronograma> EtapasCronogramas { get; set; }
         public virtual DbSet<Usuario> Usuarios { get; set; }
-        // public virtual DbSet<Arquivo> Arquivos { get; set; }
-        // public virtual DbSet<Importacao> Importacoes { get; set; }
-        // public virtual DbSet<Inconsistencia> Inconsistencias { get; set; }
+        public virtual DbSet<Arquivo> Arquivos { get; set; }
+        public virtual DbSet<Importacao> Importacoes { get; set; }
+        public virtual DbSet<Inconsistencia> Inconsistencias { get; set; }
         public virtual DbSet<Voto> Votos { get; set; }
         public virtual DbSet<Grupo> Grupos { get; set; }
         public virtual DbSet<LinhaDimensionamento> LinhasDimensionamentos { get; set; }

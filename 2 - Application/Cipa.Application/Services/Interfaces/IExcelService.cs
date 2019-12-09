@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace Cipa.Services.Interfaces
+namespace Cipa.Application.Services.Interfaces
 {
     public interface IExcelService
     {

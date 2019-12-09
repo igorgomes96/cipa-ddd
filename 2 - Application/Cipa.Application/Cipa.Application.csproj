@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.94.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\3 - Domain\Cipa.Domain\Cipa.Domain.csproj" />
-    <ProjectReference Include="..\..\1 - Services\Cipa.Services\Cipa.Services.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

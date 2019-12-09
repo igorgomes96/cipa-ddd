@@ -3,19 +3,59 @@ using System;
 using Cipa.Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Cipa.WebApi.Migrations
 {
     [DbContext(typeof(CipaContext))]
-    partial class CipaContextModelSnapshot : ModelSnapshot
+    [Migration("20191209165045_Importacao")]
+    partial class Importacao
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            modelBuilder.Entity("Cipa.Domain.Entities.Arquivo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(255);
+
+                    b.Property<DateTime>("DataCadastro");
+
+                    b.Property<int>("DependencyId");
+
+                    b.Property<int>("DependencyType");
+
+                    b.Property<string>("EmailUsuario")
+                        .IsRequired()
+                        .HasMaxLength(100);
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100);
+
+                    b.Property<string>("NomeUsuario")
+                        .IsRequired()
+                        .HasMaxLength(255);
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(255);
+
+                    b.Property<long>("Tamanho");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Arquivos");
+                });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Conta", b =>
                 {
@@ -45,7 +85,7 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Ativa = true,
-                            DataCadastro = new DateTime(2019, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DataFim = new DateTime(2020, 12, 31, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DataInicio = new DateTime(2019, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             QtdaEstabelecimentos = 2
@@ -202,7 +242,7 @@ namespace Cipa.WebApi.Migrations
                             Ativa = true,
                             Cnpj = "01540533000390",
                             ContaId = 1,
-                            DataCadastro = new DateTime(2019, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             RazaoSocial = "Empresa Teste"
                         });
                 });
@@ -245,7 +285,7 @@ namespace Cipa.WebApi.Migrations
                             Id = 1,
                             Ativo = true,
                             Cidade = "Uberlândia",
-                            DataCadastro = new DateTime(2019, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Descricao = "Teste",
                             EmpresaId = 1,
                             Endereco = "Teste",
@@ -697,6 +737,50 @@ namespace Cipa.WebApi.Migrations
                             Id = 45,
                             CodigoGrupo = "C-35"
                         });
+                });
+
+            modelBuilder.Entity("Cipa.Domain.Entities.Importacao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<int>("ArquivoId");
+
+                    b.Property<DateTime>("DataCadastro");
+
+                    b.Property<int>("EleicaoId");
+
+                    b.Property<int>("Status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArquivoId");
+
+                    b.HasIndex("EleicaoId");
+
+                    b.ToTable("Importacoes");
+                });
+
+            modelBuilder.Entity("Cipa.Domain.Entities.Inconsistencia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Coluna")
+                        .HasMaxLength(100);
+
+                    b.Property<int>("ImportacaoId");
+
+                    b.Property<int>("Linha");
+
+                    b.Property<string>("Mensagem")
+                        .HasMaxLength(255);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImportacaoId");
+
+                    b.ToTable("Inconsistencias");
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Inscricao", b =>
@@ -4529,11 +4613,11 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Cargo = "Cargo Teste",
-                            CodigoRecuperacao = new Guid("4c693a97-42b4-4f3b-8495-c5bfd8345780"),
+                            CodigoRecuperacao = new Guid("45a5b620-cdde-426d-90e3-422cd5272e26"),
                             ContaId = 1,
                             DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
-                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 11, 24, 14, 8, 35, 404, DateTimeKind.Local).AddTicks(2900),
+                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 10, 13, 50, 44, 796, DateTimeKind.Local).AddTicks(370),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"
@@ -4588,7 +4672,7 @@ namespace Cipa.WebApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Cipa.Domain.Entities.Estabelecimento", "Estabelecimento")
-                        .WithMany()
+                        .WithMany("Eleicoes")
                         .HasForeignKey("EstabelecimentoId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -4611,7 +4695,7 @@ namespace Cipa.WebApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Cipa.Domain.Entities.Usuario", "Usuario")
-                        .WithMany()
+                        .WithMany("Eleitores")
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -4658,6 +4742,27 @@ namespace Cipa.WebApi.Migrations
                     b.HasOne("Cipa.Domain.Entities.EtapaObrigatoria", "EtapaObrigatoria")
                         .WithMany()
                         .HasForeignKey("EtapaObrigatoriaId");
+                });
+
+            modelBuilder.Entity("Cipa.Domain.Entities.Importacao", b =>
+                {
+                    b.HasOne("Cipa.Domain.Entities.Arquivo", "Arquivo")
+                        .WithMany()
+                        .HasForeignKey("ArquivoId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Cipa.Domain.Entities.Eleicao", "Eleicao")
+                        .WithMany()
+                        .HasForeignKey("EleicaoId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Cipa.Domain.Entities.Inconsistencia", b =>
+                {
+                    b.HasOne("Cipa.Domain.Entities.Importacao", "Importacao")
+                        .WithMany("Inconsistencias")
+                        .HasForeignKey("ImportacaoId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Inscricao", b =>

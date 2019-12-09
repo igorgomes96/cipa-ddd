@@ -12,7 +12,6 @@ namespace Cipa.Domain.Entities
     {
         public string Path { get; set; }
         public DateTime DataCadastro { get; set; }
-        public DateTime DataCriacao { get; set; }
         public string Nome { get; set; }
         public long Tamanho { get; set; }
         public string ContentType { get; set; }

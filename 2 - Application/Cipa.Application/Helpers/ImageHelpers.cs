@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace Cipa.Services.Helpers
+namespace Cipa.Application.Services.Helpers
 {
     public static class ImageHelpers
     {
