@@ -119,6 +119,7 @@ namespace Cipa.Domain.Entities
         }
         public virtual ICollection<Eleitor> Eleitores { get; } = new List<Eleitor>();
         public virtual ICollection<Voto> Votos { get; } = new List<Voto>();
+        public virtual ICollection<Importacao> Importacoes { get; } = new List<Importacao>();
 
         public bool RegistrarSeUsuarioEhEleitor(int usuarioId) =>
             UsuarioEleitor = Eleitores.Any(e => e.UsuarioId == usuarioId); // Indica se o usuário solicitante é eleitor
@@ -296,6 +297,8 @@ namespace Cipa.Domain.Entities
             Inscricoes.Count(i => i.StatusInscricao == statusInscricao);
 
         public Eleitor BuscarEleitor(int id) => Eleitores.FirstOrDefault(e => e.Id == id);
+
+        public Eleitor BuscarEleitorPeloEmail(string email) => Eleitores.FirstOrDefault(e => e.Email == email);
 
         public Eleitor BuscarEleitorPeloUsuarioId(int id) => Eleitores.FirstOrDefault(e => e.UsuarioId == id);
 

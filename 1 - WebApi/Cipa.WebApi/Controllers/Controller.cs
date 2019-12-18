@@ -37,5 +37,13 @@ namespace Cipa.WebApi.Controllers
                 return User.Claims.First(c => c.Type == CustomClaimTypes.NomeUsuario).Value;
             }
         }
+
+        protected string EmailUsuario
+        {
+            get
+            {
+                return User.Identity.Name;
+            }
+        }
     }
 }

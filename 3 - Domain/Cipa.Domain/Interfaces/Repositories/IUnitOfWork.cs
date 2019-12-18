@@ -9,6 +9,8 @@ namespace Cipa.Domain.Interfaces.Repositories
         IEstabelecimentoRepository EstabelecimentoRepository { get; }
         IUsuarioRepository UsuarioRepository { get; }
         IEmpresaRepository EmpresaRepository { get; }
+        IImportacaoRepository ImportacaoRepository { get; }
+        IArquivoRepository ArquivoRepository { get; }
         void Commit();
     }
 }

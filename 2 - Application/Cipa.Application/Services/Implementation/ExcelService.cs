@@ -9,6 +9,7 @@ namespace Cipa.Application.Services.Implementation
 {
     public class ExcelService : IExcelService
     {
+        public ExcelService() {}
         public DataTable LerTabela(string fileName, int colunaInicial, int colunaFinal, int linhaInicial = 1, bool temCabecalho = true)
         {
             if (!File.Exists(fileName)) throw new CustomException("Arquivo não encontrado.");

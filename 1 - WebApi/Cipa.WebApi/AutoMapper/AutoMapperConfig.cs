@@ -1,4 +1,5 @@
 using AutoMapper;
+using Cipa.Application.Events.EventsArgs;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
 using Cipa.WebApi.ViewModels;
@@ -69,6 +70,14 @@ namespace Cipa.WebApi.AutoMapper
                 cfg.CreateMap<Conta, ContaViewModel>();
                 cfg.CreateMap<IEnumerable<Inscricao>, ResultadoApuracaoViewModel>()
                     .ConvertUsing<ResultadoApuracaoTypeConverter>();
+                cfg.CreateMap<Inconsistencia, InconsistenciaViewModel>();
+                cfg.CreateMap<Importacao, ImportacaoViewModel>()
+                    .ForMember(dest => dest.Horario, opt => opt.MapFrom(src => src.DataCadastro))
+                    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => StatusImportacaoResolver.MapStatus(src.Status)));
+                cfg.CreateMap<FinalizacaoImportacaoStatusEventArgs, FinalizacaoImportacaoStatusViewModel>()
+                    .ForMember(dest => dest.Status, opt => opt.MapFrom(src => StatusImportacaoResolver.MapStatus(src.Status)));
+                cfg.CreateMap<Arquivo, ArquivoViewModel>()
+                    .ForMember(dest => dest.DataUpload, opt => opt.MapFrom(src => src.DataCadastro));
             });
             return config.CreateMapper();
         }

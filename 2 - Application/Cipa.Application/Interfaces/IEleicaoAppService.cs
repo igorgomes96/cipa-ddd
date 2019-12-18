@@ -30,5 +30,7 @@ namespace Cipa.Application.Interfaces
         IEnumerable<Inscricao> ApurarVotos(int eleicaoId);
         Inscricao AtualizarFotoInscricao(int eleicaoId, int usuarioId, byte[] foto, string fotoFileName);
         Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId);
+        Importacao ImportarEleitores(int eleicaoId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType);
+        Arquivo FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType);
     }
 }

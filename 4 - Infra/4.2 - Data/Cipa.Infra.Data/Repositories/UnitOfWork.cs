@@ -36,15 +36,14 @@ namespace Cipa.Infra.Data.Repositories
 
         #region Public Properties  
 
-        // private IContaRepository _contaRepository;
-        // public IContaRepository ContaRepository => _contaRepository ?? (_contaRepository = (IContaRepository)_serviceProvider.GetService(typeof(IContaRepository)));
         public IContaRepository ContaRepository => (IContaRepository)_serviceProvider.GetService(typeof(IContaRepository));
         public IEleicaoRepository EleicaoRepository => (IEleicaoRepository)_serviceProvider.GetService(typeof(IEleicaoRepository));
         public IGrupoRepository GrupoRepository => (IGrupoRepository)_serviceProvider.GetService(typeof(IGrupoRepository));
         public IEstabelecimentoRepository EstabelecimentoRepository => (IEstabelecimentoRepository)_serviceProvider.GetService(typeof(IEstabelecimentoRepository));
         public IUsuarioRepository UsuarioRepository => (IUsuarioRepository)_serviceProvider.GetService(typeof(IUsuarioRepository));
         public IEmpresaRepository EmpresaRepository => (IEmpresaRepository)_serviceProvider.GetService(typeof(IEmpresaRepository));
-
+        public IImportacaoRepository ImportacaoRepository => (IImportacaoRepository)_serviceProvider.GetService(typeof(IImportacaoRepository));
+        public IArquivoRepository ArquivoRepository => (IArquivoRepository)_serviceProvider.GetService(typeof(IArquivoRepository));
         #endregion
 
 

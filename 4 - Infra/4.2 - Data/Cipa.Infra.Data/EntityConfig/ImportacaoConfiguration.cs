@@ -12,14 +12,14 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.HasOne(i => i.Arquivo)
                 .WithMany()
-                .HasForeignKey(i => i.ArquivoId)
+                // .HasForeignKey(i => i.ArquivoId)
                 .IsRequired();
 
             builder.Property(i => i.Status)
                 .IsRequired();
 
             builder.HasOne(i => i.Eleicao)
-                .WithMany()
+                .WithMany(e => e.Importacoes)
                 .HasForeignKey(i => i.EleicaoId)
                 .IsRequired();
 

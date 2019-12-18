@@ -1,7 +1,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace Cipa.Application.Services.Helpers
+namespace Cipa.Application.Helpers
 {
     public static class FileSystemHelpers
     {

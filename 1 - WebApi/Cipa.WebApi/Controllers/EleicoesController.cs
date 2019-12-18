@@ -20,11 +20,19 @@ namespace Cipa.WebApi.Controllers
     {
         #region Serviços e Construtor
         private readonly IEleicaoAppService _eleicaoAppService;
+        private readonly IArquivoAppService _arquivoAppService;
+        private readonly IImportacaoAppService _importacaoAppService;
         private readonly IMapper _mapper;
-        public EleicoesController(IEleicaoAppService eleicaoAppService, IMapper mapper)
+        public EleicoesController(
+            IEleicaoAppService eleicaoAppService,
+            IMapper mapper,
+            IArquivoAppService arquivoAppService,
+            IImportacaoAppService importacaoAppService)
         {
             _eleicaoAppService = eleicaoAppService;
             _mapper = mapper;
+            _arquivoAppService = arquivoAppService;
+            _importacaoAppService = importacaoAppService;
         }
         #endregion
 
@@ -97,6 +105,29 @@ namespace Cipa.WebApi.Controllers
         [HttpPut("{id}/cronograma")]
         public IEnumerable<EtapaCronogramaViewModel> AtualizarCronograma(int id, EtapaCronogramaViewModel etapaCronograma) =>
             _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.AtualizarCronograma(id, _mapper.Map<EtapaCronograma>(etapaCronograma)));
+
+        [HttpPost("{id}/cronograma/{etapaId}/arquivos"), DisableRequestSizeLimit]
+        public ActionResult UploadArquivos(int id, int etapaId)
+        {
+            if (Request.Form.Files == null || Request.Form.Files.Count == 0)
+                return BadRequest("Nenhum arquivo foi enviado.");
+            foreach (var formFile in Request.Form.Files)
+            {
+                var fileName = formFile.FileName;
+                byte[] arquivo = null;
+                using (var ms = new MemoryStream())
+                {
+                    formFile.CopyTo(ms);
+                    arquivo = ms.ToArray();
+                }
+                _eleicaoAppService.FazerUploadArquivo(id, etapaId, UsuarioId, arquivo, fileName, formFile.ContentType);
+            }
+            return Ok();
+        }
+
+        [HttpGet("{id}/cronograma/{etapaId}/arquivos")]
+        public IEnumerable<ArquivoViewModel> BuscarArquivos(int id, int etapaId) =>
+            _mapper.Map<List<ArquivoViewModel>>(_arquivoAppService.BuscaArquivos(DependencyFileType.DocumentoCronograma, etapaId));
         #endregion
 
         #region Eleitores
@@ -251,5 +282,37 @@ namespace Cipa.WebApi.Controllers
         public ResultadoApuracaoViewModel GetResultadoApuracao(int id) =>
             _mapper.Map<ResultadoApuracaoViewModel>(_eleicaoAppService.ApurarVotos(id));
         #endregion
+
+        #region Importação
+        [HttpGet("{id}/importacoes/ultima")]
+        public ImportacaoViewModel GetUltimaImportacao(int id) =>
+            _mapper.Map<ImportacaoViewModel>(_importacaoAppService.RetornarUltimaImportacaoDaEleicao(id));
+
+        [HttpGet("{id}/importacoes/{idImportacao}/inconsistencias")]
+        public IEnumerable<InconsistenciaViewModel> GetInconsistenciasImportacao(int id, int idImportacao) =>
+            _mapper.Map<List<InconsistenciaViewModel>>(_importacaoAppService.RetornarInconsistenciasDaImportacao(idImportacao));
+
+        [HttpPost("{id}/importacoes"), DisableRequestSizeLimit]
+        public ActionResult<ImportacaoViewModel> ImportarFuncionarios(int id)
+        {
+            if (Request.Form.Files == null || Request.Form.Files.Count == 0)
+                return BadRequest("Nenhum arquivo foi enviado.");
+
+            if (Request.Form.Files.Count > 1)
+                return BadRequest("Somente um arquivo pode ser enviado.");
+
+            var formFile = Request.Form.Files.First();
+            var fileName = formFile.FileName;
+            byte[] arquivo = null;
+            using (var ms = new MemoryStream())
+            {
+                formFile.CopyTo(ms);
+                arquivo = ms.ToArray();
+            }
+            return _mapper.Map<ImportacaoViewModel>(_eleicaoAppService
+                .ImportarEleitores(id, UsuarioId, arquivo, fileName, formFile.ContentType));
+        }
+        #endregion
+
     }
 }

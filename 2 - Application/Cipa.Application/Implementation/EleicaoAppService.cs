@@ -1,5 +1,5 @@
+using Cipa.Application.Helpers;
 using Cipa.Application.Interfaces;
-using Cipa.Application.Services.Helpers;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Interfaces.Repositories;
@@ -11,9 +11,13 @@ namespace Cipa.Application
 {
     public class EleicaoAppService : AppServiceBase<Eleicao>, IEleicaoAppService
     {
+        private readonly IArquivoAppService _arquivoAppService;
         private const string PATH_FOTOS = @"StaticFiles\Fotos\";
 
-        public EleicaoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.EleicaoRepository) { }
+        public EleicaoAppService(IUnitOfWork unitOfWork, IArquivoAppService arquivoAppService) : base(unitOfWork, unitOfWork.EleicaoRepository)
+        {
+            _arquivoAppService = arquivoAppService;
+        }
 
         public override Eleicao Adicionar(Eleicao eleicao)
         {
@@ -340,5 +344,50 @@ namespace Cipa.Application
 
             return new FileStream(file, FileMode.Open);
         }
+
+        private void ValidaFormatoPlanilha(string file)
+        {
+            string[] extensoesSuportadas = new string[] { ".xlsx", ".xlsm", ".xltx", ".xltm" };
+            if (!extensoesSuportadas.Contains(Path.GetExtension(file)))
+            {
+                var extensoes = extensoesSuportadas.Aggregate("", (acc, cur) => $"{acc}{cur}, ");
+                extensoes = extensoes.Substring(0, extensoes.Length - 2);
+                throw new CustomException($"A extensão do arquivo é inválida. Somente as extensões {extensoes} são suportadas.");
+            }
+        }
+
+        public Importacao ImportarEleitores(int eleicaoId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
+            if (usuario == null) throw new CustomException("Usuário inválido!");
+
+            var arquivo = _arquivoAppService.SalvarArquivo(
+                DependencyFileType.Importacao, eleicao.Id, usuario.Email, usuario.Nome,
+                conteudoArquivo, nomeArquivo, contentType);
+
+            ValidaFormatoPlanilha(arquivo.Path);
+
+            var importacao = new Importacao(arquivo, eleicao);
+            importacao = _unitOfWork.ImportacaoRepository.Adicionar(importacao);
+            _unitOfWork.Commit();
+            return importacao;
+        }
+
+        public Arquivo FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
+            if (usuario == null) throw new CustomException("Usuário inválido!");
+
+            return _arquivoAppService.SalvarArquivo(
+                DependencyFileType.DocumentoCronograma, etapaId, usuario.Email, usuario.Nome,
+                conteudoArquivo, nomeArquivo, contentType);
+        }
+
     }
 }
