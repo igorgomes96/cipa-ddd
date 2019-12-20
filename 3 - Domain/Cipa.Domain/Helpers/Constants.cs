@@ -70,17 +70,17 @@ namespace Cipa.Domain.Helpers
 
     public static class ArquivosEmails
     {
-        public const string EditalConvocacao = @"AppData/Emails/EditalConvocacao.html";
-        public const string ConviteInscricao = @"AppData/Emails/ConviteInscricao.html";
-        public const string ConviteVotacao = @"AppData/Emails/ConviteVotacao.html";
-        public const string InscricaoRealizada = @"AppData/Emails/InscricaoRealizada.html";
-        public const string InscricaoAprovada = @"AppData/Emails/InscricaoAprovada.html";
-        public const string InscricaoReprovada = @"AppData/Emails/InscricaoReprovada.html";
-        public const string InscricaoReanalise = @"AppData/Emails/InscricaoReanalise.html";
-        public const string CadastroSESMT = @"AppData/Emails/CadastroSESMT.html";
-        public const string MudancaEtapaSucesso = @"AppData/Emails/MudancaEtapaSucesso.html";
-        public const string MudancaEtapaErro = @"AppData/Emails/MudancaEtapaErro.html";
-        public const string ResetSenha = @"AppData/Emails/ResetSenha.html";
+        public const string EditalConvocacao = @"Assets/TemplatesEmails/EditalConvocacao.html";
+        public const string ConviteInscricao = @"Assets/TemplatesEmails/ConviteInscricao.html";
+        public const string ConviteVotacao = @"Assets/TemplatesEmails/ConviteVotacao.html";
+        public const string InscricaoRealizada = @"Assets/TemplatesEmails/InscricaoRealizada.html";
+        public const string InscricaoAprovada = @"Assets/TemplatesEmails/InscricaoAprovada.html";
+        public const string InscricaoReprovada = @"Assets/TemplatesEmails/InscricaoReprovada.html";
+        public const string InscricaoReanalise = @"Assets/TemplatesEmails/InscricaoReanalise.html";
+        public const string CadastroSESMT = @"Assets/TemplatesEmails/CadastroSESMT.html";
+        public const string MudancaEtapaSucesso = @"Assets/TemplatesEmails/MudancaEtapaSucesso.html";
+        public const string MudancaEtapaErro = @"Assets/TemplatesEmails/MudancaEtapaErro.html";
+        public const string ResetSenha = @"Assets/TemplatesEmails/ResetSenha.html";
 
     }
 

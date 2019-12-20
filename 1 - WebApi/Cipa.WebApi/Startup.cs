@@ -5,6 +5,9 @@ using Cipa.Application.Events.EventsArgs;
 using Cipa.Application.Interfaces;
 using Cipa.Application.Services.Implementation;
 using Cipa.Application.Services.Interfaces;
+using Cipa.Domain.Factories;
+using Cipa.Domain.Factories.Interfaces;
+using Cipa.Domain.Helpers;
 using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Infra.Data.Context;
 using Cipa.Infra.Data.Repositories;
@@ -57,13 +60,19 @@ namespace Cipa.WebApi
             new ConfigureFromConfigurationOptions<TokenConfigurations>(
                 Configuration.GetSection("TokenConfigurations"))
                     .Configure(tokenConfigurations);
-            services.AddSingleton(tokenConfigurations);
+            services.AddSingleton<TokenConfigurations>(tokenConfigurations);
 
             var importacaoConfiguration = new ImportacaoServiceConfiguration();
             new ConfigureFromConfigurationOptions<ImportacaoServiceConfiguration>(
                 Configuration.GetSection("Importacao"))
                     .Configure(importacaoConfiguration);
             services.AddSingleton<IImportacaoServiceConfiguration>(importacaoConfiguration);
+
+            var emailConfiguration = new EmailConfiguration();
+            new ConfigureFromConfigurationOptions<EmailConfiguration>(
+                Configuration.GetSection("Email"))
+                    .Configure(emailConfiguration);
+            services.AddSingleton(emailConfiguration);
 
             services.AddAuthentication(authOptions =>
             {
@@ -85,8 +94,11 @@ namespace Cipa.WebApi
                     .AllowCredentials()
                     .WithOrigins("http://localhost:4200")));
 
-            
+
             services.AddHostedService<ImportacaoHostedService>();
+            // services.AddHostedService<EmailHostedService>();
+            services.AddHostedService<ProcesssamentoEtapasHostedService>();
+
 
             services.AddResponseCompression();
 
@@ -99,7 +111,6 @@ namespace Cipa.WebApi
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddDebug();
             });
-
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
@@ -126,11 +137,13 @@ namespace Cipa.WebApi
             app.UseAuthentication();
             app.UseResponseCompression();
 
-            ProgressoImportacaoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) => {
+            ProgressoImportacaoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) =>
+            {
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("progressoimportacao", args);
             };
 
-            ProgressoImportacaoEvent.ImportacaoFinalizada += (object sender, FinalizacaoImportacaoStatusEventArgs args) => {
+            ProgressoImportacaoEvent.ImportacaoFinalizada += (object sender, FinalizacaoImportacaoStatusEventArgs args) =>
+            {
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("importacaofinalizada", mapper.Map<FinalizacaoImportacaoStatusViewModel>(args));
             };
 
@@ -183,6 +196,15 @@ namespace Cipa.WebApi
             // Arquivos
             services.AddScoped<IArquivoAppService, ArquivoAppService>();
             services.AddScoped<IArquivoRepository, ArquivoRepository>();
+
+            // Emails
+            services.AddScoped<IEmailRepository, EmailRepository>();
+            services.AddScoped<IEmailAppService, EmailAppService>();
+            services.AddSingleton<IFormatadorEmailServiceFactory, FormatadorEmailServiceFactory>();
+
+            // Processamento de Etapas
+            services.AddScoped<IProcessamentoEtapaRepository, ProcessamentoEtapaRepository>();
+            services.AddScoped<IProcessamentoEtapaAppService, ProcessamentoEtapaAppService>();
         }
 
     }

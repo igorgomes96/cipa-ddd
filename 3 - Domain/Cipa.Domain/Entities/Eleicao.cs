@@ -50,6 +50,7 @@ namespace Cipa.Domain.Entities
             ContaId = contaId;
             GrupoId = grupoId == 0 ? throw new CustomException("O grupo precisa ser informado para a abertura da eleição.") : grupoId;
             TerminoMandatoAnterior = terminoMandatoAnterior;
+            DataFinalizacaoPrevista = dataInicio.AddDays(60);
         }
 
         private int _gestao;
@@ -74,6 +75,7 @@ namespace Cipa.Domain.Entities
         public int ContaId { get; private set; }
         public DateTime DataCadastro { get; private set; }
         public DateTime? DataFinalizacao { get; private set; }
+        public DateTime DataFinalizacaoPrevista { get; private set; }
         public int GrupoId { get; private set; }
         private DateTime? terminoMandatoAnterior;
         public DateTime? TerminoMandatoAnterior
@@ -120,6 +122,7 @@ namespace Cipa.Domain.Entities
         public virtual ICollection<Eleitor> Eleitores { get; } = new List<Eleitor>();
         public virtual ICollection<Voto> Votos { get; } = new List<Voto>();
         public virtual ICollection<Importacao> Importacoes { get; } = new List<Importacao>();
+        public virtual ICollection<ProcessamentoEtapa> ProcessamentosEtapas { get; } = new List<ProcessamentoEtapa>();
 
         public bool RegistrarSeUsuarioEhEleitor(int usuarioId) =>
             UsuarioEleitor = Eleitores.Any(e => e.UsuarioId == usuarioId); // Indica se o usuário solicitante é eleitor
@@ -165,6 +168,7 @@ namespace Cipa.Domain.Entities
                 data = data.AddDays(etapaPadrao.DuracaoPadrao);
                 ordem++;
             }
+            DataFinalizacaoPrevista = data.AddDays(-1);
         }
 
         public void AtualizarCronograma(EtapaCronograma etapaCronograma)
@@ -258,7 +262,7 @@ namespace Cipa.Domain.Entities
             return etapa.PosicaoEtapa == PosicaoEtapa.Futura;
         }
 
-        public EtapaCronograma BuscaEtapaObrigatoria(CodigoEtapaObrigatoria etapaObrigatoria)
+        public EtapaCronograma BuscarEtapaObrigatoria(CodigoEtapaObrigatoria etapaObrigatoria)
         {
             var etapa = Cronograma.FirstOrDefault(e => e.EtapaObrigatoriaId == etapaObrigatoria);
             if (etapa == null) throw new CustomException("Etapa não encontrada.");
@@ -282,7 +286,7 @@ namespace Cipa.Domain.Entities
             {
                 if (etapa == UltimaEtapa)
                 {
-                    return DataFinalizacao.Value;
+                    return DataFinalizacao ?? DataFinalizacaoPrevista;
                 }
                 else
                 {
@@ -338,6 +342,7 @@ namespace Cipa.Domain.Entities
 
             if (proximaEtapa != null)
             {
+                ProcessamentosEtapas.Add(new ProcessamentoEtapa(this, proximaEtapa, EtapaAtual));
                 proximaEtapa.DataRealizada = data;
                 proximaEtapa.PosicaoEtapa = PosicaoEtapa.Atual;
             }

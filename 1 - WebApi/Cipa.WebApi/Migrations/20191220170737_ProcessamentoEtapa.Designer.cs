@@ -3,14 +3,16 @@ using System;
 using Cipa.Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Cipa.WebApi.Migrations
 {
     [DbContext(typeof(CipaContext))]
-    partial class CipaContextModelSnapshot : ModelSnapshot
+    [Migration("20191220170737_ProcessamentoEtapa")]
+    partial class ProcessamentoEtapa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

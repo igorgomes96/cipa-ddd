@@ -38,6 +38,9 @@ namespace Cipa.Infra.Data.EntityConfig
             builder.Property(e => e.DataCadastro)
                 .IsRequired();
 
+            builder.Property(e => e.DataFinalizacaoPrevista)
+                .IsRequired();
+
             builder.HasOne(e => e.Grupo)
                 .WithMany()
                 .HasForeignKey(e => e.GrupoId)

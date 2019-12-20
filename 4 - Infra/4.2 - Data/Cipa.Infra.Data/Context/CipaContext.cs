@@ -34,6 +34,7 @@ namespace Cipa.Infra.Data.Context
             modelBuilder.ApplyConfiguration(new ArquivoConfiguration());
             modelBuilder.ApplyConfiguration(new ImportacaoConfiguration());
             modelBuilder.ApplyConfiguration(new InconsistenciaConfiguration());
+            modelBuilder.ApplyConfiguration(new EmailConfiguration());
             modelBuilder.Seed();
             base.OnModelCreating(modelBuilder);
         }
@@ -57,8 +58,7 @@ namespace Cipa.Infra.Data.Context
         public virtual DbSet<LinhaDimensionamento> LinhasDimensionamentos { get; set; }
         public virtual DbSet<LimiteDimensionamento> LimitesDimensionamentos { get; set; }
         public virtual DbSet<Dimensionamento> Dimensionamentos { get; set; }
-
-        // public virtual DbSet<Email> Emails { get; set; }
+        public virtual DbSet<Email> Emails { get; set; }
         // public virtual DbSet<ProcessamentoEtapa> ProcessamentoEtapas { get; set; }
         public virtual DbSet<EtapaPadraoConta> EtapasPadroesContas { get; set; }
 

@@ -42,6 +42,5 @@ namespace Cipa.Domain.Entities
             Ativo = false;
         }
 
-
     }
 }

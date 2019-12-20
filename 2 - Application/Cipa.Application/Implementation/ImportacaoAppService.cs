@@ -154,6 +154,8 @@ namespace Cipa.Application
                             NotificarProgresso(3, linha, eleitores.Count, importacao.Arquivo.EmailUsuario);
                         }
                         FinalizarImportacaoComSucesso(importacao);
+                        _unitOfWork.EleicaoRepository.Atualizar(eleicao);
+                        _unitOfWork.Commit();
                     }
                 }
 

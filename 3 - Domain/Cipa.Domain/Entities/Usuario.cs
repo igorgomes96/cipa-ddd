@@ -44,5 +44,7 @@ namespace Cipa.Domain.Entities
             ContaId = conta.Id;
             Conta = conta;
         }
+
+        public bool JaCadastrouSenha => !string.IsNullOrWhiteSpace(Senha);
     }
 }

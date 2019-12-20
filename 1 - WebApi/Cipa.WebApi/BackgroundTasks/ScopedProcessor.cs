@@ -14,13 +14,20 @@ namespace Cipa.WebApi.BackgroundTasks
             _serviceProvider = serviceScopeFactory;
         }
 
-        protected override int Delay { get; } 
+        protected override int Delay { get; }
 
         protected override async Task Process()
         {
-            using (var scope = _serviceProvider.CreateScope())
+            try
             {
-                await ProcessInScope(scope.ServiceProvider);
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    await ProcessInScope(scope.ServiceProvider);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Erro ao processar Background Tasks.");
             }
         }
 

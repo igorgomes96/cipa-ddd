@@ -44,6 +44,9 @@ namespace Cipa.Infra.Data.Repositories
         public IEmpresaRepository EmpresaRepository => (IEmpresaRepository)_serviceProvider.GetService(typeof(IEmpresaRepository));
         public IImportacaoRepository ImportacaoRepository => (IImportacaoRepository)_serviceProvider.GetService(typeof(IImportacaoRepository));
         public IArquivoRepository ArquivoRepository => (IArquivoRepository)_serviceProvider.GetService(typeof(IArquivoRepository));
+        public IEmailRepository EmailRepository => (IEmailRepository)_serviceProvider.GetService(typeof(IEmailRepository));
+        public IProcessamentoEtapaRepository ProcessamentoEtapaRepository => (IProcessamentoEtapaRepository)_serviceProvider.GetService(typeof(IProcessamentoEtapaRepository));
+
         #endregion
 
 

@@ -238,7 +238,7 @@ namespace Cipa.Domain.Test.Entities
         public void BuscaEtapaObrigatoria_EtapaNaoEncontrada_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var exception = Assert.Throws<CustomException>(() => eleicao.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.EditalInscricao));
+            var exception = Assert.Throws<CustomException>(() => eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
@@ -246,7 +246,7 @@ namespace Cipa.Domain.Test.Entities
         public void BuscaEtapaObrigatoria_EtapaEncontrada_RetornaEtapa()
         {
             var eleicao = CriarEleicao();
-            var etapa = eleicao.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Inscricao);
+            var etapa = eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.Inscricao);
             Assert.Equal(CodigoEtapaObrigatoria.Inscricao, etapa.EtapaObrigatoriaId);
         }
 
@@ -307,7 +307,7 @@ namespace Cipa.Domain.Test.Entities
         public void DataTerminoEtapa_PrimeiraEtapa_RetornaDataTerminoEtapa()
         {
             var eleicao = CriarEleicao();
-            var retorno = eleicao.DataTerminoEtapa(eleicao.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Convocacao));
+            var retorno = eleicao.DataTerminoEtapa(eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.Convocacao));
             Assert.Equal(new DateTime(2019, 1, 10), retorno);
         }
 

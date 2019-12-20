@@ -11,6 +11,8 @@ namespace Cipa.Domain.Interfaces.Repositories
         IEmpresaRepository EmpresaRepository { get; }
         IImportacaoRepository ImportacaoRepository { get; }
         IArquivoRepository ArquivoRepository { get; }
+        IEmailRepository EmailRepository { get; }
+        IProcessamentoEtapaRepository ProcessamentoEtapaRepository { get; }
         void Commit();
     }
 }

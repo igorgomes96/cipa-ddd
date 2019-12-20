@@ -3,14 +3,16 @@ using System;
 using Cipa.Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Cipa.WebApi.Migrations
 {
     [DbContext(typeof(CipaContext))]
-    partial class CipaContextModelSnapshot : ModelSnapshot
+    [Migration("20191220151745_DatafinalizacaoPrevistaEleicao")]
+    partial class DatafinalizacaoPrevistaEleicao
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4568,38 +4570,6 @@ namespace Cipa.WebApi.Migrations
                     b.ToTable("Plano");
                 });
 
-            modelBuilder.Entity("Cipa.Domain.Entities.ProcessamentoEtapa", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DataCadastro");
-
-                    b.Property<int?>("EleicaoId");
-
-                    b.Property<int?>("EtapaCronogramaAnteriorId");
-
-                    b.Property<int?>("EtapaCronogramaId");
-
-                    b.Property<DateTime>("HorarioMudancaEtapa");
-
-                    b.Property<string>("MensagemErro");
-
-                    b.Property<int>("StatusProcessamentoEtapa");
-
-                    b.Property<DateTime?>("TerminoProcessamento");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EleicaoId");
-
-                    b.HasIndex("EtapaCronogramaAnteriorId");
-
-                    b.HasIndex("EtapaCronogramaId");
-
-                    b.ToTable("ProcessamentoEtapa");
-                });
-
             modelBuilder.Entity("Cipa.Domain.Entities.Reprovacao", b =>
                 {
                     b.Property<int>("Id")
@@ -4670,11 +4640,11 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Cargo = "Cargo Teste",
-                            CodigoRecuperacao = new Guid("16591b8f-ea5e-471a-9be5-b6d266a49f79"),
+                            CodigoRecuperacao = new Guid("f798e45f-0a86-4f87-ba07-c297bb3c3176"),
                             ContaId = 1,
                             DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
-                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 21, 14, 7, 37, 112, DateTimeKind.Local).AddTicks(6382),
+                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 21, 12, 17, 45, 57, DateTimeKind.Local).AddTicks(5778),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"
@@ -4849,21 +4819,6 @@ namespace Cipa.WebApi.Migrations
                         .WithMany("Dimensionamentos")
                         .HasForeignKey("GrupoId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Cipa.Domain.Entities.ProcessamentoEtapa", b =>
-                {
-                    b.HasOne("Cipa.Domain.Entities.Eleicao", "Eleicao")
-                        .WithMany("ProcessamentosEtapas")
-                        .HasForeignKey("EleicaoId");
-
-                    b.HasOne("Cipa.Domain.Entities.EtapaCronograma", "EtapaCronogramaAnterior")
-                        .WithMany()
-                        .HasForeignKey("EtapaCronogramaAnteriorId");
-
-                    b.HasOne("Cipa.Domain.Entities.EtapaCronograma", "EtapaCronograma")
-                        .WithMany()
-                        .HasForeignKey("EtapaCronogramaId");
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Reprovacao", b =>
