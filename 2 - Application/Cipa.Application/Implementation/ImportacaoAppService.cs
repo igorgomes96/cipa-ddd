@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Cipa.Application.Events;
 using Cipa.Application.Events.EventsArgs;
 using Cipa.Application.Interfaces;
@@ -20,6 +21,7 @@ namespace Cipa.Application
     {
         private readonly IExcelService _excelService;
         private readonly DataColumnValidator[] _dataColumnValidators;
+        private readonly IProgressoImportacaoEvent _progressoEvent;
         private const int LINHA_INICIAL_ARQUIVO = 1;
         private const int QTDA_MAX_ERROS = 10;
         private const int QTDA_ETAPAS_PPROCESSAMENTO = 3;
@@ -27,10 +29,12 @@ namespace Cipa.Application
         public ImportacaoAppService(
             IUnitOfWork unitOfWork,
             IExcelService excelService,
-            IImportacaoServiceConfiguration importacaoConfiguration) : base(unitOfWork, unitOfWork.ImportacaoRepository)
+            IImportacaoServiceConfiguration importacaoConfiguration,
+            IProgressoImportacaoEvent progressoEvent) : base(unitOfWork, unitOfWork.ImportacaoRepository)
         {
             _excelService = excelService;
             _dataColumnValidators = importacaoConfiguration.Validators;
+            _progressoEvent = progressoEvent;
         }
 
         private IEnumerable<string> ColunasObrigatoriasNaoEncontradas(DataTable dataTable, IEnumerable<DataColumnValidator> colunasObrigatorias)
@@ -172,7 +176,7 @@ namespace Cipa.Application
             {
                 importacao.FinalizarImportacaoComFalha(inconsistencias);
                 base.Atualizar(importacao);
-                ProgressoImportacaoEvent.OnImportacaoFinalizada(this,
+                _progressoEvent.OnImportacaoFinalizada(this,
                     new FinalizacaoImportacaoStatusEventArgs
                     {
                         Status = StatusImportacao.FinalizadoComFalha,
@@ -188,7 +192,7 @@ namespace Cipa.Application
         {
             importacao.FinalizarProcessamentoComSucesso();
             base.Atualizar(importacao);
-            ProgressoImportacaoEvent.OnImportacaoFinalizada(this,
+            _progressoEvent.OnImportacaoFinalizada(this,
                 new FinalizacaoImportacaoStatusEventArgs
                 {
                     Status = StatusImportacao.FinalizadoComSucesso,
@@ -199,7 +203,7 @@ namespace Cipa.Application
 
         private void NotificarProgresso(int numEtapa, int linhasProcessadas, int totalLinhas, string emailUsuario)
         {
-            ProgressoImportacaoEvent.OnNotificacaoProgresso(this, new ProgressoImportacaoEventArgs
+            _progressoEvent.OnNotificacaoProgresso(this, new ProgressoImportacaoEventArgs
             {
                 EtapaAtual = numEtapa,
                 LinhasProcessadas = linhasProcessadas,

@@ -65,24 +65,24 @@ namespace Cipa.Domain.Entities
             }
             catch (Exception e)
             {
-                var mensagem = $"Erro ao processar mudança de etapa/envio de e-mail. Contate o suporte.\n{e.Message}\n{e.StackTrace}";
+                var mensagem = $"Erro ao processar mudança de etapa/envio de e-mail. Contate o suporte.\r\n{e.Message}";
                 FinalizarProcessamento(EStatusProcessamentoEtapa.ErroProcessamento, mensagem);
                 return new List<Email>();
             }
         }
 
         private IFormatadorEmailService ObterFomatadorEmail(
-            CodigoEtapaObrigatoria? codigoEtapaObrigatoria,
+            ECodigoEtapaObrigatoria? codigoEtapaObrigatoria,
             IFormatadorEmailServiceFactory formatadorFactory)
         {
             switch (EtapaCronograma.EtapaObrigatoriaId)
             {
-                case (CodigoEtapaObrigatoria.Convocacao):
-                    return formatadorFactory.ObterFormatadorEmail(EComunicado.EditalConvocacao, Eleicao);
-                case (CodigoEtapaObrigatoria.Inscricao):
-                    return formatadorFactory.ObterFormatadorEmail(EComunicado.ConviteInscricao, Eleicao);
-                case (CodigoEtapaObrigatoria.Votacao):
-                    return formatadorFactory.ObterFormatadorEmail(EComunicado.ConviteVotacao, Eleicao);
+                case (ECodigoEtapaObrigatoria.Convocacao):
+                    return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.EditalConvocacao, Eleicao);
+                case (ECodigoEtapaObrigatoria.Inscricao):
+                    return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.ConviteParaInscricao, Eleicao);
+                case (ECodigoEtapaObrigatoria.Votacao):
+                    return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.ConviteParaVotacao, Eleicao);
                 default:
                     return null;
             }

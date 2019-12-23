@@ -1,4 +1,4 @@
-using Cipa.Domain.Helpers;
+using Cipa.Domain.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -11,7 +11,7 @@ namespace Cipa.WebApi.ViewModels
         [Required(ErrorMessage = "A data prevista para essa etapa deve ser informada.")]
         public DateTime DataPrevista { get; set; }
         public DateTime? DataRealizada { get; set; }
-        public CodigoEtapaObrigatoria? EtapaObrigatoriaId { get; set; }
+        public ECodigoEtapaObrigatoria? EtapaObrigatoriaId { get; set; }
         public string PosicaoEtapa { get; set; }
         public string ErroMudancaEtapa { get; set; }
         public bool PossuiTemplates { get; set; }

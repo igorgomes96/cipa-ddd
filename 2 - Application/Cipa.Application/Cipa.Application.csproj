@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.94.2" />
+    <PackageReference Include="System.Reactive" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup>

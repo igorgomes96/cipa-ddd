@@ -9,11 +9,6 @@
         <ProjectReference Include="..\..\2 - Application\Cipa.Application\Cipa.Application.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <Content Include="Assets\**">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-    <ItemGroup>
         <PackageReference Include="AutoMapper" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />

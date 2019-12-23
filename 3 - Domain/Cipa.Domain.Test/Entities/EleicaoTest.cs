@@ -1,4 +1,5 @@
 using Cipa.Domain.Entities;
+using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
 using System;
@@ -14,10 +15,10 @@ namespace Cipa.Domain.Test.Entities
         private Conta ContaPadrao()
         {
             var conta = new Conta();
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 1", null, 1, 1, 10, CodigoEtapaObrigatoria.Convocacao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 5 } });
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 2", null, 2, 1, 10, CodigoEtapaObrigatoria.Inscricao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 7 } });
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 3", null, 3, 1, 10, CodigoEtapaObrigatoria.Votacao) { EtapaObrigatoria = new EtapaObrigatoria() });
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 4", null, 4, 1, 10, CodigoEtapaObrigatoria.Ata) { EtapaObrigatoria = new EtapaObrigatoria() });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 1", null, 1, 1, 10, ECodigoEtapaObrigatoria.Convocacao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 5 } });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 2", null, 2, 1, 10, ECodigoEtapaObrigatoria.Inscricao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 7 } });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 3", null, 3, 1, 10, ECodigoEtapaObrigatoria.Votacao) { EtapaObrigatoria = new EtapaObrigatoria() });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 4", null, 4, 1, 10, ECodigoEtapaObrigatoria.Ata) { EtapaObrigatoria = new EtapaObrigatoria() });
             return conta;
         }
 
@@ -63,7 +64,7 @@ namespace Cipa.Domain.Test.Entities
                 eleicao.PassarParaProximaEtapa();
         }
 
-        private void PassarEtapaAte(Eleicao eleicao, CodigoEtapaObrigatoria codigoEtapaObrigatoria)
+        private void PassarEtapaAte(Eleicao eleicao, ECodigoEtapaObrigatoria codigoEtapaObrigatoria)
         {
             while (eleicao.EtapaAtual?.EtapaObrigatoriaId != codigoEtapaObrigatoria)
             {
@@ -99,28 +100,28 @@ namespace Cipa.Domain.Test.Entities
                     Assert.Equal(new DateTime(2019, 1, 1), etapa.DataPrevista);
                     Assert.Equal("Etapa 1", etapa.Nome);
                     Assert.Equal(1, etapa.Ordem);
-                    Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
                 },
                 etapa =>
                 {
                     Assert.Equal(new DateTime(2019, 1, 11), etapa.DataPrevista);
                     Assert.Equal("Etapa 2", etapa.Nome);
                     Assert.Equal(2, etapa.Ordem);
-                    Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
                 },
                 etapa =>
                 {
                     Assert.Equal(new DateTime(2019, 1, 21), etapa.DataPrevista);
                     Assert.Equal("Etapa 3", etapa.Nome);
                     Assert.Equal(3, etapa.Ordem);
-                    Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
                 },
                 etapa =>
                 {
                     Assert.Equal(new DateTime(2019, 1, 31), etapa.DataPrevista);
                     Assert.Equal("Etapa 4", etapa.Nome);
                     Assert.Equal(4, etapa.Ordem);
-                    Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
                 }
             );
         }
@@ -129,7 +130,7 @@ namespace Cipa.Domain.Test.Entities
         public void JaUltrapassouEtapa_ProcessoNaoIniciado_RetornaFalse()
         {
             var eleicao = CriarEleicao();
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.False(retorno);
         }
 
@@ -138,7 +139,7 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             FinalizarEleicao(eleicao);
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.True(retorno);
             Assert.NotNull(eleicao.DataFinalizacao);
         }
@@ -147,7 +148,7 @@ namespace Cipa.Domain.Test.Entities
         public void JaUltrapassouEtapa_EtapaNaoEncontrada_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var exception = Assert.Throws<NotFoundException>(() => eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.EditalInscricao));
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
@@ -157,7 +158,7 @@ namespace Cipa.Domain.Test.Entities
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
             eleicao.PassarParaProximaEtapa();
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
             Assert.True(retorno);
         }
 
@@ -166,8 +167,8 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
-            Assert.Equal(PosicaoEtapa.Atual, eleicao.EtapaAtual.PosicaoEtapa);
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
+            Assert.Equal(EPosicaoEtapa.Atual, eleicao.EtapaAtual.PosicaoEtapa);
             Assert.False(retorno);
         }
 
@@ -176,7 +177,7 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao);
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao);
             Assert.False(retorno);
         }
 
@@ -184,7 +185,7 @@ namespace Cipa.Domain.Test.Entities
         public void AindaNaoUltrapassouEtapa_ProcessoNaoIniciado_RetornaTrue()
         {
             var eleicao = CriarEleicao();
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.True(retorno);
         }
 
@@ -193,7 +194,7 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             FinalizarEleicao(eleicao);
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.False(retorno);
         }
 
@@ -201,7 +202,7 @@ namespace Cipa.Domain.Test.Entities
         public void AindaNaoUltrapassouEtapa_EtapaNaoEncontrada_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var exception = Assert.Throws<CustomException>(() => eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.EditalInscricao));
+            var exception = Assert.Throws<CustomException>(() => eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
@@ -210,7 +211,7 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao);
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao);
             Assert.True(retorno);
         }
 
@@ -219,9 +220,9 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
             Assert.False(retorno);
-            Assert.Equal(CodigoEtapaObrigatoria.Convocacao, eleicao.EtapaAtual.EtapaObrigatoriaId);
+            Assert.Equal(ECodigoEtapaObrigatoria.Convocacao, eleicao.EtapaAtual.EtapaObrigatoriaId);
         }
 
         [Fact]
@@ -230,7 +231,7 @@ namespace Cipa.Domain.Test.Entities
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
             eleicao.PassarParaProximaEtapa();
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
             Assert.False(retorno);
         }
 
@@ -238,7 +239,7 @@ namespace Cipa.Domain.Test.Entities
         public void BuscaEtapaObrigatoria_EtapaNaoEncontrada_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var exception = Assert.Throws<CustomException>(() => eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.EditalInscricao));
+            var exception = Assert.Throws<CustomException>(() => eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
@@ -246,8 +247,8 @@ namespace Cipa.Domain.Test.Entities
         public void BuscaEtapaObrigatoria_EtapaEncontrada_RetornaEtapa()
         {
             var eleicao = CriarEleicao();
-            var etapa = eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.Inscricao);
-            Assert.Equal(CodigoEtapaObrigatoria.Inscricao, etapa.EtapaObrigatoriaId);
+            var etapa = eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao);
+            Assert.Equal(ECodigoEtapaObrigatoria.Inscricao, etapa.EtapaObrigatoriaId);
         }
 
         [Fact]
@@ -264,7 +265,7 @@ namespace Cipa.Domain.Test.Entities
             var eleicao = CriarEleicao();
             var retorno = eleicao.RetonarEtapaAnterior(new EtapaCronograma("Etapa", null, 2, eleicao.Id, DateTime.Today, null));
             Assert.Equal(1, retorno.Ordem);
-            Assert.Equal(CodigoEtapaObrigatoria.Convocacao, retorno.EtapaObrigatoriaId);
+            Assert.Equal(ECodigoEtapaObrigatoria.Convocacao, retorno.EtapaObrigatoriaId);
         }
 
         [Fact]
@@ -283,7 +284,7 @@ namespace Cipa.Domain.Test.Entities
             var eleicao = CriarEleicao();
             var retorno = eleicao.RetornarEtapaPosterior(new EtapaCronograma("Etapa", null, 1, eleicao.Id, DateTime.Today, null));
             Assert.Equal(2, retorno.Ordem);
-            Assert.Equal(CodigoEtapaObrigatoria.Inscricao, retorno.EtapaObrigatoriaId);
+            Assert.Equal(ECodigoEtapaObrigatoria.Inscricao, retorno.EtapaObrigatoriaId);
         }
 
         [Fact]
@@ -307,7 +308,7 @@ namespace Cipa.Domain.Test.Entities
         public void DataTerminoEtapa_PrimeiraEtapa_RetornaDataTerminoEtapa()
         {
             var eleicao = CriarEleicao();
-            var retorno = eleicao.DataTerminoEtapa(eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.Convocacao));
+            var retorno = eleicao.DataTerminoEtapa(eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Convocacao));
             Assert.Equal(new DateTime(2019, 1, 10), retorno);
         }
 
@@ -322,7 +323,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaNaoEncontrada_ThrowsNotFoundException()
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 5", null, 5, 1, DateTime.Today, CodigoEtapaObrigatoria.Convocacao);
+            var etapa = new EtapaCronograma("Etapa 5", null, 5, 1, DateTime.Today, ECodigoEtapaObrigatoria.Convocacao);
 
             var exception = Assert.Throws<NotFoundException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal("Etapa não encontrada no cronograma.", exception.Message);
@@ -333,7 +334,7 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value, CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value, ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataRealizada.Value.ToString("dd/MM/yyyy")})!", exception.Message);
@@ -344,7 +345,7 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             eleicao.PassarParaProximaEtapa();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value.AddDays(-1), CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value.AddDays(-1), ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataRealizada.Value.ToString("dd/MM/yyyy")})!", exception.Message);
@@ -354,7 +355,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaDataMenorQuePrevistaAnterior_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista.AddDays(-1), CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista.AddDays(-1), ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
@@ -364,7 +365,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaDataIgualPrevistaAnterior_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista, CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista, ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
@@ -379,7 +380,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaAnteriorComDuracaoMenorQueDuracaoMinimaObrigatoria_ThrowsCustomException(DateTime dataPrevista)
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal("A etapa anterior (Etapa 1) deve ter a duração mínima de 5 dias!", exception.Message);
@@ -389,7 +390,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaDataIgualPrevistaPosterior_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista, CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista, ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal($"A data deve ser menor que a data da próxima etapa ({eleicao.Cronograma.ElementAt(2).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
@@ -399,7 +400,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaDataMaiorPrevistaPosterior_ThrowsCustomException()
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista.AddDays(1), CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista.AddDays(1), ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal($"A data deve ser menor que a data da próxima etapa ({eleicao.Cronograma.ElementAt(2).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
@@ -414,7 +415,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaComDuracaoMenorQueDuracaoMinimaObrigatoria_ThrowsCustomException(DateTime dataPrevista)
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, ECodigoEtapaObrigatoria.Inscricao);
 
             var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal("Essa etapa deve ter a duração mínima de 7 dias!", exception.Message);
@@ -429,7 +430,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_DataConsistente_AtualizaCronograma(DateTime dataPrevista)
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 2 Atualizada", "Nova Descrição", 2, 1, dataPrevista, CodigoEtapaObrigatoria.Inscricao);
+            var etapa = new EtapaCronograma("Etapa 2 Atualizada", "Nova Descrição", 2, 1, dataPrevista, ECodigoEtapaObrigatoria.Inscricao);
 
             eleicao.AtualizarCronograma(etapa);
             Assert.Equal("Etapa 2 Atualizada", eleicao.Cronograma.ElementAt(1).Nome);
@@ -444,7 +445,7 @@ namespace Cipa.Domain.Test.Entities
         public void QtdaInscricoes_InscricoesCarregadas_RetornaQtda(StatusInscricao statusInscricao, int qtdaExperada)
         {
             var eleicao = CriarEleicao();
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
             var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
             var usuario3 = new Usuario("eleitor3@email.com", "Eleitor 3", "Cargo");
@@ -525,7 +526,7 @@ namespace Cipa.Domain.Test.Entities
             int qtdaInscricoesAprovadas, int qtdaInscricoesPendentes, string mensagemErro)
         {
             var eleicao = CriarEleicao();
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Adiciona os eleitores
             List<Eleitor> eleitores = new List<Eleitor>();
@@ -576,7 +577,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var qtdaInscricoes = 27;
@@ -588,7 +589,7 @@ namespace Cipa.Domain.Test.Entities
                 eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             for (int i = 0; i < qtdaVotos; i++)
                 eleicao.RegistrarVoto((i % qtdaInscricoes) + 1, eleitores.ElementAt(i), "::1");
@@ -599,30 +600,30 @@ namespace Cipa.Domain.Test.Entities
 
         public static object[][] InlineDataCronograma = new object[][] {
             new object[] {
-                1, PosicaoEtapa.Atual, PosicaoEtapa.Futura, PosicaoEtapa.Futura, PosicaoEtapa.Futura,
+                1, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura,
                 DateTime.Today, null, null, null, null
             },
             new object[] {
-                2, PosicaoEtapa.Passada, PosicaoEtapa.Atual, PosicaoEtapa.Futura, PosicaoEtapa.Futura,
+                2, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura,
                 DateTime.Today, DateTime.Today, null, null, null
             },
             new object[] {
-                3, PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Atual, PosicaoEtapa.Futura,
+                3, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura,
                 DateTime.Today, DateTime.Today, DateTime.Today, null, null
             },
             new object[] {
-                4, PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Atual,
+                4, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual,
                 DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Today, null
             },
              new object[] {
-                5, PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Passada,
+                5, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada,
                 DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Now
             }
         };
         [Theory, MemberData(nameof(InlineDataCronograma))]
         public void PassarParaProximaEtapa_NenhumaInsconsistencia_CronogramaAtualizado(
             int passarEtapaNVezes,
-            PosicaoEtapa posicaoEtapaEsperada1, PosicaoEtapa posicaoEtapaEsperada2, PosicaoEtapa posicaoEtapaEsperada3, PosicaoEtapa posicaoEtapaEsperada4,
+            EPosicaoEtapa posicaoEtapaEsperada1, EPosicaoEtapa posicaoEtapaEsperada2, EPosicaoEtapa posicaoEtapaEsperada3, EPosicaoEtapa posicaoEtapaEsperada4,
             DateTime? dataRealizada1, DateTime? dataRealizada2, DateTime? dataRealizada3, DateTime? dataRealizada4, DateTime? dataFinalizacaoEleicao
         )
         {
@@ -636,7 +637,7 @@ namespace Cipa.Domain.Test.Entities
 
             for (int n = 0; n < passarEtapaNVezes; n++)
             {
-                if (eleicao.EtapaAtual?.EtapaObrigatoriaId == CodigoEtapaObrigatoria.Convocacao)
+                if (eleicao.EtapaAtual?.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Convocacao)
                 {
                     for (int i = 0; i < qtdaEleitores; i++)
                     {
@@ -646,7 +647,7 @@ namespace Cipa.Domain.Test.Entities
                         eleitores.Add(eleitor);
                     }
                 }
-                else if (eleicao.EtapaAtual?.EtapaObrigatoriaId == CodigoEtapaObrigatoria.Inscricao)
+                else if (eleicao.EtapaAtual?.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Inscricao)
                 {
                     // Faz as inscrições
                     var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -657,7 +658,7 @@ namespace Cipa.Domain.Test.Entities
                         eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
                     }
                 }
-                else if (eleicao.EtapaAtual?.EtapaObrigatoriaId == CodigoEtapaObrigatoria.Votacao)
+                else if (eleicao.EtapaAtual?.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Votacao)
                 {
                     // Registra os votos
                     for (int i = 0; i < qtdaVotos; i++)
@@ -735,7 +736,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
             for (int i = 0; i < qtdaInscricoes; i++)
@@ -745,7 +746,7 @@ namespace Cipa.Domain.Test.Entities
                 eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
             // Registra os votos
             for (int i = 0; i < qtdaVotos; i++)
                 eleicao.RegistrarVoto((i % qtdaInscricoes) + 1, eleitores.ElementAt(i), "::1");
@@ -774,7 +775,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -850,7 +851,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -907,7 +908,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -942,7 +943,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -976,7 +977,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1011,7 +1012,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1044,7 +1045,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1078,7 +1079,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1110,7 +1111,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1151,7 +1152,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1184,7 +1185,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1216,7 +1217,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
@@ -1251,7 +1252,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
             for (int i = 0; i < qtdaInscricoes; i++)
@@ -1261,7 +1262,7 @@ namespace Cipa.Domain.Test.Entities
                 eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             eleicao.RegistrarVoto(1, eleitores.ElementAt(0), "::1");
             var exception = Assert.Throws<CustomException>(() => eleicao.RegistrarVoto(1, eleitores.ElementAt(0), "::1"));
@@ -1284,7 +1285,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
             for (int i = 0; i < qtdaInscricoes; i++)
@@ -1314,7 +1315,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
             for (int i = 0; i < qtdaInscricoes; i++)
@@ -1324,7 +1325,7 @@ namespace Cipa.Domain.Test.Entities
                 eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             var exception = Assert.Throws<NotFoundException>(() => eleicao.RegistrarVoto(qtdaInscricoes + 1, eleitores.ElementAt(0), "::1"));
             Assert.Equal("Inscrição não encontrada.", exception.Message);
@@ -1346,7 +1347,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
             for (int i = 0; i < qtdaInscricoes; i++)
@@ -1360,7 +1361,7 @@ namespace Cipa.Domain.Test.Entities
             inscricaoReprovada.Id = qtdaInscricoes + 1;
             eleicao.ReprovarInscricao(inscricaoReprovada.Id, usuarioAprovador, "Motivo Reprovação");
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             var exception = Assert.Throws<NotFoundException>(() => eleicao.RegistrarVoto(inscricaoReprovada.Id, eleitores.ElementAt(0), "::1"));
             Assert.Equal("Inscrição não encontrada.", exception.Message);
@@ -1383,7 +1384,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
             for (int i = 0; i < qtdaInscricoes; i++)
@@ -1393,7 +1394,7 @@ namespace Cipa.Domain.Test.Entities
                 eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             var votoRetornado = eleicao.RegistrarVoto(2, eleitores.ElementAt(0), "::1");
             Assert.Collection(eleicao.Inscricoes,
@@ -1423,7 +1424,7 @@ namespace Cipa.Domain.Test.Entities
             var eleitor = new Eleitor(usuario) { Id = 1 };
             eleicao.AdicionarEleitor(eleitor);
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
             eleicao.VotarEmBranco(eleitor, "::1");
 
             var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
@@ -1438,14 +1439,14 @@ namespace Cipa.Domain.Test.Entities
             var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
             var eleitor = new Eleitor(usuario) { Id = 1 };
             eleicao.AdicionarEleitor(eleitor);
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             var inscricao = eleicao.FazerInscricao(eleitor, "Objetivos");
             inscricao.Id = 1;
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
             eleicao.ReprovarInscricao(inscricao.Id, usuarioAprovador, "Motivo Reprovação");
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
             eleicao.VotarEmBranco(eleitor, "::1");
 
             var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
@@ -1459,7 +1460,7 @@ namespace Cipa.Domain.Test.Entities
             var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
             var eleitor = new Eleitor(usuario) { Id = 1 };
             eleicao.AdicionarEleitor(eleitor);
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
             var inscricao = eleicao.FazerInscricao(eleitor, "Objetivos");
             inscricao.Id = 1;
@@ -1564,13 +1565,13 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(0), "Objetivos");
             inscricao.Id = 1;
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
             eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             var novoGrupo = new Grupo("C-Teste 2")
             {
@@ -1598,13 +1599,13 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(0), "Objetivos");
             inscricao.Id = 1;
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
             eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             var novoGrupo = new Grupo("C-Teste 2")
             {
@@ -1642,7 +1643,7 @@ namespace Cipa.Domain.Test.Entities
                 eleitores.Add(eleitor);
             }
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Inscricao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
             // Faz as inscrições
             var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
             var inscricao1 = eleicao.FazerInscricao(new Eleitor("Eleitor 1", "eleitor1@email.com") { Id = 1 }, "Meus objetivos");
@@ -1657,7 +1658,7 @@ namespace Cipa.Domain.Test.Entities
             inscricao3.Id = 3;
             eleicao.AprovarInscricao(inscricao3.Id, usuarioAprovador);
 
-            PassarEtapaAte(eleicao, CodigoEtapaObrigatoria.Votacao);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
 
             // Registra os votos
             eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(0), "::1");

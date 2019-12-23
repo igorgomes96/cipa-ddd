@@ -25,9 +25,9 @@ namespace Cipa.Domain.Test.Entities
                 Empresa = empresa
             };
             var conta = new Conta { Id = 1 };
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Convocação", "Convocação", 1, conta.Id, 1, CodigoEtapaObrigatoria.Convocacao));
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Inscrição", "Inscrição", 2, conta.Id, 2, CodigoEtapaObrigatoria.Inscricao));
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Votação", "Votação", 3, conta.Id, 1, CodigoEtapaObrigatoria.Votacao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Convocação", "Convocação", 1, conta.Id, 1, ECodigoEtapaObrigatoria.Convocacao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Inscrição", "Inscrição", 2, conta.Id, 2, ECodigoEtapaObrigatoria.Inscricao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Votação", "Votação", 3, conta.Id, 1, ECodigoEtapaObrigatoria.Votacao));
             var usuarioCriacao = new Usuario("gestor@email.com", "Gestor", "Técnico do SESMT")
             {
                 Conta = conta
@@ -37,7 +37,7 @@ namespace Cipa.Domain.Test.Entities
             grupo.LimiteDimensionamento = new LimiteDimensionamento(5, 1, 1, 1);
             var eleicao = new Eleicao(new DateTime(2020, 1, 1), 2, new DateTime(2020, 2, 28), usuarioCriacao, estabelecimento, grupo);
             eleicao.GerarCronograma();
-            var etapaInscricao = eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.Inscricao);
+            var etapaInscricao = eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao);
             processamentoEtapa = new ProcessamentoEtapa(
                 eleicao,
                 etapaInscricao,
@@ -55,21 +55,21 @@ namespace Cipa.Domain.Test.Entities
         [Fact]
         public void RealizarProcessamento_ErroAoProcessar_AtualizaStatusMensagemErro()
         {
-            formatadorFactory.Setup(f => f.ObterFormatadorEmail(It.IsAny<EComunicado>(), It.IsAny<Eleicao>()))
+            formatadorFactory.Setup(f => f.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(It.IsAny<ETipoTemplateEmail>(), It.IsAny<Eleicao>()))
                 .Throws(new Exception("Erro"));
 
             processamentoEtapa.IniciarProcessamento();
             var retorno = processamentoEtapa.RealizarProcessamentoGerarEmails(new EmailConfiguration(), formatadorFactory.Object);
             Assert.Empty(retorno);
             Assert.Equal(EStatusProcessamentoEtapa.ErroProcessamento, processamentoEtapa.StatusProcessamentoEtapa);
-            Assert.StartsWith("Erro ao processar mudança de etapa/envio de e-mail. Contate o suporte.\nErro", processamentoEtapa.MensagemErro);
+            Assert.StartsWith("Erro ao processar mudança de etapa/envio de e-mail. Contate o suporte.\r\nErro", processamentoEtapa.MensagemErro);
         }
 
         [Fact]
         public void RealizarProcessamento_ProcessadoComSucesso_AtualizaStatusRetornaEmails()
         {
             var formatador = new Mock<IFormatadorEmailService>();
-            formatadorFactory.Setup(f => f.ObterFormatadorEmail(It.IsAny<EComunicado>(), It.IsAny<Eleicao>()))
+            formatadorFactory.Setup(f => f.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(It.IsAny<ETipoTemplateEmail>(), It.IsAny<Eleicao>()))
                 .Returns(formatador.Object);
             
             formatador.Setup(f => f.FormatarEmails()).Returns(new List<Email> { new Email("", "", "", "") } );

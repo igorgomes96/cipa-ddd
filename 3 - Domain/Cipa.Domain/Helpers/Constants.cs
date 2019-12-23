@@ -17,23 +17,6 @@ namespace Cipa.Domain.Helpers
         public const string NomeUsuario = "username";
     }
 
-    public enum PosicaoEtapa
-    {
-        Passada,
-        Atual,
-        Futura
-    }
-
-    public enum CodigoEtapaObrigatoria
-    {
-        Convocacao = 1,
-        FormacaoComissao = 2,
-        EditalInscricao = 3,
-        Inscricao = 4,
-        Votacao = 5,
-        Ata = 6
-    }
-
     public static class EtapaProcessamentoArquivo
     {
         public const string ValidacaoDados = "Validação lógica dos dados";
@@ -60,43 +43,6 @@ namespace Cipa.Domain.Helpers
         public const string Date = "Date";
         public const string Int = "Int";
         public const string Decimal = "Decimal";
-    }
-
-
-    public static class ArquivosEstaticos
-    {
-        public const string PATH = "StaticFiles";
-    }
-
-    public static class ArquivosEmails
-    {
-        public const string EditalConvocacao = @"Assets/TemplatesEmails/EditalConvocacao.html";
-        public const string ConviteInscricao = @"Assets/TemplatesEmails/ConviteInscricao.html";
-        public const string ConviteVotacao = @"Assets/TemplatesEmails/ConviteVotacao.html";
-        public const string InscricaoRealizada = @"Assets/TemplatesEmails/InscricaoRealizada.html";
-        public const string InscricaoAprovada = @"Assets/TemplatesEmails/InscricaoAprovada.html";
-        public const string InscricaoReprovada = @"Assets/TemplatesEmails/InscricaoReprovada.html";
-        public const string InscricaoReanalise = @"Assets/TemplatesEmails/InscricaoReanalise.html";
-        public const string CadastroSESMT = @"Assets/TemplatesEmails/CadastroSESMT.html";
-        public const string MudancaEtapaSucesso = @"Assets/TemplatesEmails/MudancaEtapaSucesso.html";
-        public const string MudancaEtapaErro = @"Assets/TemplatesEmails/MudancaEtapaErro.html";
-        public const string ResetSenha = @"Assets/TemplatesEmails/ResetSenha.html";
-
-    }
-
-    public static class AssuntosEmails
-    {
-        public const string EditalConvocacao = "[CIPA] Edital de Convocação";
-        public const string ConviteInscricao = "[CIPA] Inscrições Abertas";
-        public const string ConviteVotacao = "[CIPA] Início da Votação";
-        public const string InscricaoRealizada = @"[CIPA] Inscrição Realizada";
-        public const string InscricaoAprovada = @"[CIPA] Inscrição Aprovada";
-        public const string InscricaoReprovada = @"[CIPA] Inscrição Reprovada";
-        public const string InscricaoReanalise = @"[CIPA] Inscrição - Solicitação de Reanálise";
-        public const string CadastroSESMT = @"[CIPA] Cadastro no Sistema";
-        public const string MudancaEtapaSucesso = @"[CIPA] Mudança de Etapa com Sucesso";
-        public const string MudancaEtapaErro = @"[CIPA] Erro ao Realizar Mudança de Etapa";
-        public const string ResetSenha = @"[CIPA] Reset de Senha";
     }
 
     public static class Links

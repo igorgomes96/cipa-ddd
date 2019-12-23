@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 using Cipa.Domain.Entities;
-using Cipa.Domain.Helpers;
+using Cipa.Domain.Enums;
 using Cipa.Domain.Services.Implementations;
 using Cipa.Domain.Test.Mocks;
 using Xunit;
@@ -20,13 +20,14 @@ namespace Cipa.Domain.Test.Services
         public ComunicadoEleicaoBaseServiceTest()
         {
             empresa = new Empresa("Soluções TI", "30271795000133") { Id = 1 };
-            estabelecimento = new Estabelecimento("Uberlândia", "Av. Teste, 777, Bairro Santa Mônica", empresa.Id) {
+            estabelecimento = new Estabelecimento("Uberlândia", "Av. Teste, 777, Bairro Santa Mônica", empresa.Id)
+            {
                 Empresa = empresa
             };
             var conta = new Conta { Id = 1 };
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Convocação", "Convocação", 1, conta.Id, 1, CodigoEtapaObrigatoria.Convocacao));
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Inscrição", "Inscrição", 2, conta.Id, 2, CodigoEtapaObrigatoria.Inscricao));
-            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Votação", "Votação", 3, conta.Id, 1, CodigoEtapaObrigatoria.Votacao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Convocação", "Convocação", 1, conta.Id, 1, ECodigoEtapaObrigatoria.Convocacao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Inscrição", "Inscrição", 2, conta.Id, 2, ECodigoEtapaObrigatoria.Inscricao));
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Votação", "Votação", 3, conta.Id, 1, ECodigoEtapaObrigatoria.Votacao));
             usuarioCriacao = new Usuario("gestor@email.com", "Gestor", "Técnico do SESMT")
             {
                 Conta = conta
@@ -41,7 +42,11 @@ namespace Cipa.Domain.Test.Services
             templateEmailBuilder.Append("@PERIODO_INSCRICAO, @PERIODO_VOTACAO, ");
             templateEmailBuilder.Append("@TECNICO_SESMT, @TECNICO_CARGO, @FIM_INSCRICAO, ");
             templateEmailBuilder.Append("@CANDIDATOS, @LINK");
-            comunicadoEleicao = new ComunicadoEleicaoBaseServiceMock(eleicao, templateEmailBuilder.ToString(), "Assunto Teste");
+            comunicadoEleicao = new ComunicadoEleicaoBaseServiceMock(eleicao,
+                new TemplateEmail(ETipoTemplateEmail.EditalConvocacao, "Assunto Teste")
+                {
+                    Template = templateEmailBuilder.ToString()
+                });
         }
 
         [Fact]
@@ -95,7 +100,7 @@ namespace Cipa.Domain.Test.Services
             mensagemSenhaNaoCadastrada2.Append("<ol><li><strong>Eleitor 1</strong><br><small>Cargo 1</small></li>");
             mensagemSenhaNaoCadastrada2.Append("<li><strong>Eleitor 3</strong><br><small>Cargo 3</small></li></ol>, ");
             mensagemSenhaNaoCadastrada2.Append($"http://localhost:4200/autenticacao/cadastro/{usuario3.CodigoRecuperacao.ToString()}");
-            
+
             Assert.Collection(emails,
                 (Email email) =>
                 {

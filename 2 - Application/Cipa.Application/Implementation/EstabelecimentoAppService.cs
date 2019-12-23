@@ -17,15 +17,15 @@ namespace Cipa.Application
         public IEnumerable<Estabelecimento> BuscarEstabelecimentosPorEmpresa(int empresaId) =>
             (_repositoryBase as IEstabelecimentoRepository).BuscarEstabelecimentosPorEmpresa(empresaId);
 
-        public override Estabelecimento Adicionar(Estabelecimento estabalecimento)
+        public override Estabelecimento Adicionar(Estabelecimento estabelecimento)
         {
-            var empresa = _unitOfWork.EmpresaRepository.BuscarPeloId(estabalecimento.EmpresaId);
+            var empresa = _unitOfWork.EmpresaRepository.BuscarPeloId(estabelecimento.EmpresaId);
             if (empresa == null) throw new NotFoundException("Empresa não encontrada.");
 
-            estabalecimento.Empresa = empresa;
-            estabalecimento.GrupoId = estabalecimento.GrupoId == 0 ? null : estabalecimento.GrupoId;
-            estabalecimento.Grupo = BuscarGrupo(estabalecimento.GrupoId);
-            return base.Adicionar(estabalecimento);
+            estabelecimento.Empresa = empresa;
+            estabelecimento.GrupoId = estabelecimento.GrupoId == 0 ? null : estabelecimento.GrupoId;
+            estabelecimento.Grupo = BuscarGrupo(estabelecimento.GrupoId);
+            return base.Adicionar(estabelecimento);
         }
 
         private Grupo BuscarGrupo(int? grupoId) =>
@@ -33,9 +33,14 @@ namespace Cipa.Application
 
         public override void Atualizar(Estabelecimento estabelecimento)
         {
-            var estabelecimentoExistente = (_repositoryBase as IEstabelecimentoRepository).BuscarPeloId(estabelecimento.Id);
+            var estabelecimentoExistente = _repositoryBase.BuscarPeloId(estabelecimento.Id);
             if (estabelecimentoExistente == null) throw new NotFoundException("Estabelecimento não encontrado.");
 
+            var empresa = _unitOfWork.EmpresaRepository.BuscarPeloId(estabelecimento.EmpresaId);
+            if (empresa == null) throw new NotFoundException("Empresa não encontrada.");
+
+            estabelecimentoExistente.Empresa = empresa;
+            estabelecimentoExistente.EmpresaId = empresa.Id;
             estabelecimentoExistente.GrupoId = estabelecimento.GrupoId == 0 ? null : estabelecimento.GrupoId;
             estabelecimentoExistente.Grupo = BuscarGrupo(estabelecimento.GrupoId);
             estabelecimentoExistente.Descricao = estabelecimento.Descricao;
@@ -47,7 +52,7 @@ namespace Cipa.Application
 
         public override Estabelecimento Excluir(int id)
         {
-            var estabelecimento = (_repositoryBase as IEstabelecimentoRepository).BuscarPeloId(id); //.BuscarPeloIdCarregarEleicoes(id);
+            var estabelecimento = _repositoryBase.BuscarPeloId(id);
             if (estabelecimento == null) throw new NotFoundException("Estabelecimento não encontrado.");
 
             if (estabelecimento.Eleicoes.Any())

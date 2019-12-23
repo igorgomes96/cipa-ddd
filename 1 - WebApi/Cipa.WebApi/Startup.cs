@@ -116,7 +116,12 @@ namespace Cipa.WebApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IHubContext<ProgressHub> hubContext, IMapper mapper)
+        public void Configure(
+            IApplicationBuilder app,
+            IHostingEnvironment env,
+            IHubContext<ProgressHub> hubContext,
+            IProgressoImportacaoEvent notificacaoProgressoEvent,
+            IMapper mapper)
         {
             if (env.IsDevelopment())
             {
@@ -137,12 +142,12 @@ namespace Cipa.WebApi
             app.UseAuthentication();
             app.UseResponseCompression();
 
-            ProgressoImportacaoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) =>
+            notificacaoProgressoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) =>
             {
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("progressoimportacao", args);
             };
 
-            ProgressoImportacaoEvent.ImportacaoFinalizada += (object sender, FinalizacaoImportacaoStatusEventArgs args) =>
+            notificacaoProgressoEvent.ImportacaoFinalizada += (object sender, FinalizacaoImportacaoStatusEventArgs args) =>
             {
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("importacaofinalizada", mapper.Map<FinalizacaoImportacaoStatusViewModel>(args));
             };
@@ -205,6 +210,9 @@ namespace Cipa.WebApi
             // Processamento de Etapas
             services.AddScoped<IProcessamentoEtapaRepository, ProcessamentoEtapaRepository>();
             services.AddScoped<IProcessamentoEtapaAppService, ProcessamentoEtapaAppService>();
+
+            // Notificação de Progresso
+            services.AddSingleton<IProgressoImportacaoEvent, ProgressoImportacaoEvent>();
         }
 
     }

@@ -1,4 +1,5 @@
-﻿using Cipa.Domain.Exceptions;
+﻿using Cipa.Domain.Enums;
+using Cipa.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,6 +23,18 @@ namespace Cipa.Domain.Entities
         public virtual IReadOnlyCollection<EtapaPadraoConta> EtapasPadroes
         {
             get => new ReadOnlyCollection<EtapaPadraoConta>(_etapasPadroes.OrderBy(e => e.Ordem).ToList());
+        }
+        private List<TemplateEmail> _templatesEmails = new List<TemplateEmail>();
+        public virtual IReadOnlyCollection<TemplateEmail> TemplateEmails
+        {
+            get => new ReadOnlyCollection<TemplateEmail>(_templatesEmails.ToList());
+        }
+
+        public TemplateEmail BuscarTemplateEmail(ETipoTemplateEmail tipoTemplateEmail) =>
+            _templatesEmails.FirstOrDefault(t => t.TipoTemplateEmail == tipoTemplateEmail);
+
+        public void AdicionarTempateEmail(TemplateEmail templateEmail) {
+            _templatesEmails.Add(templateEmail);
         }
 
         public void AdicionarEtapaPadrao(EtapaPadraoConta etapaPadrao)

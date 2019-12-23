@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipa.Domain.Entities
 {
@@ -77,5 +78,9 @@ namespace Cipa.Domain.Entities
                 NomeAprovador = usuarioAprovador.Nome
             });
         }
+
+
+        public Reprovacao BuscarUltimaReprovacao() =>
+            Reprovacoes.OrderBy(r => r.DataCadastro).LastOrDefault();
     }
 }

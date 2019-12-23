@@ -6,6 +6,8 @@ namespace Cipa.Domain.Factories.Interfaces
 {
     public interface IFormatadorEmailServiceFactory
     {
-        IFormatadorEmailService ObterFormatadorEmail(EComunicado comunicado, Eleicao eleicao);
+        IFormatadorEmailService ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail tipoTemplate, Eleicao eleicao);
+        IFormatadorEmailService ObterFormatadorEmailParaNotificacoesInscricoes(ETipoTemplateEmail tipoTemplate, Inscricao inscricao);
+        IFormatadorEmailService ObterFormatadorEmailParaAcesso(ETipoTemplateEmail tipoTemplate, Usuario usuario);
     }
 }

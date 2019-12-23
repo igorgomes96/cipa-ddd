@@ -1,73 +1,71 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Cipa.Domain.Entities;
+using Cipa.Domain.Enums;
+using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
-using Cipa.Domain.Services.Interfaces;
 
 namespace Cipa.Domain.Services.Implementations
 {
-    public abstract class ComunicadoEleicaoBaseService : IFormatadorEmailService
+    public abstract class ComunicadoEleicaoBaseService : ComunicadoBaseService
     {
         public ComunicadoEleicaoBaseService(Eleicao eleicao)
         {
             Eleicao = eleicao;
-            MapeamentoParametros = new Dictionary<string, Func<string>> {
-                { "@ANO", () => Eleicao.Gestao.ToString() },
-                { "@GESTAO", ObterGestao },
-                { "@ENDERECO", RetornarEnderecoEstabelecimento },
-                { "@DATA_COMPLETA", () => RetornarDataCompleta(Eleicao.DataInicio) },
-                { "@EMPRESA_CNPJ", RetornarEmpresaCNPJ },
-                { "@PERIODO_INSCRICAO", () => RetornarPeriodo(CodigoEtapaObrigatoria.Inscricao) },
-                { "@PERIODO_VOTACAO", () => RetornarPeriodo(CodigoEtapaObrigatoria.Votacao) },
-                { "@TECNICO_SESMT", () => Eleicao.Usuario.Nome },
-                { "@TECNICO_CARGO", () => eleicao.Usuario.Cargo ?? "Técnico em Segurança do Trabalho" },
-                { "@FIM_INSCRICAO", () =>
-                    {
-                        var etapaInscricao = Eleicao.BuscarEtapaObrigatoria(CodigoEtapaObrigatoria.Inscricao);
-                        return RetornarDataAbreviada(Eleicao.DataTerminoEtapa(etapaInscricao));
-                    }
-                },
-                { "@CANDIDATOS", RetornarListaInscricoesHTML }
-            };
+            MapeamentoParametros.Add("@ANO", () => Eleicao.Gestao.ToString());
+            MapeamentoParametros.Add("@GESTAO", ObterGestao);
+            MapeamentoParametros.Add("@ENDERECO", RetornarEnderecoEstabelecimento);
+            MapeamentoParametros.Add("@DATA_COMPLETA", () => RetornarDataCompleta(Eleicao.DataInicio));
+            MapeamentoParametros.Add("@EMPRESA_CNPJ", RetornarEmpresaCNPJ);
+            MapeamentoParametros.Add("@PERIODO_INSCRICAO", () => RetornarPeriodo(ECodigoEtapaObrigatoria.Inscricao));
+            MapeamentoParametros.Add("@PERIODO_VOTACAO", () => RetornarPeriodo(ECodigoEtapaObrigatoria.Votacao));
+            MapeamentoParametros.Add("@TECNICO_SESMT", () => Eleicao.Usuario.Nome);
+            MapeamentoParametros.Add("@TECNICO_CARGO", () => Eleicao.Usuario.Cargo);
+            MapeamentoParametros.Add("@FIM_INSCRICAO", RetornarDataFimInscricao);
+            MapeamentoParametros.Add("@CANDIDATOS", RetornarListaInscricoesHTML);
         }
 
         protected Eleicao Eleicao { get; private set; }
-        protected Dictionary<string, Func<string>> MapeamentoParametros { get; }
-        protected abstract ICollection<string> ParametrosUtilizados { get; }
+
         protected IEnumerable<Usuario> UsuariosComSenhaCadastrada =>
             Eleicao.Eleitores.Where(e => e.Usuario.JaCadastrouSenha).Select(e => e.Usuario);
         protected IEnumerable<Usuario> UsuariosSemSenhaCadastrada =>
             Eleicao.Eleitores.Where(e => !e.Usuario.JaCadastrouSenha).Select(e => e.Usuario);
-        public abstract ICollection<Email> FormatarEmails();
 
-        protected ICollection<Email> FormatarEmailPadrao(string templateEmail, string assunto)
+        protected string RetornarDataFimInscricao()
+        {
+            var etapaInscricao = Eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao);
+            return RetornarDataAbreviada(Eleicao.DataTerminoEtapa(etapaInscricao));
+        }
+
+        protected virtual ICollection<Email> FormatarEmailPadrao(TemplateEmail templateEmail)
         {
             List<Email> emails = new List<Email>();
             var destinatarios = string.Join(",", UsuariosComSenhaCadastrada.Select(u => u.Email));
-            var mensagemSemLink = SubstituirParametrosTemplate(templateEmail);
+            var mensagemSemLink = SubstituirParametrosTemplate(templateEmail.Template);
             var mensagem = mensagemSemLink.Replace("@LINK", LinkLogin);
-            emails.Add(new Email(destinatarios, "", assunto, mensagem));
+            emails.Add(new Email(destinatarios, "", templateEmail.Assunto, mensagem));
 
             foreach (var usuario in UsuariosSemSenhaCadastrada)
             {
                 mensagem = mensagemSemLink.Replace("@LINK", LinkCadastro(usuario));
-                emails.Add(new Email(usuario.Email, "", assunto, mensagem));
+                emails.Add(new Email(usuario.Email, "", templateEmail.Assunto, mensagem));
             }
             return emails;
         }
+
 
         protected string LinkLogin => $"{Links.URL}{Links.Login}";
         protected string LinkCadastro(Usuario usuario) =>
             $"{Links.URL}{Links.Cadastro}/{usuario.CodigoRecuperacao.ToString()}";
 
-        protected virtual string SubstituirParametrosTemplate(string templateEmail)
+        protected virtual TemplateEmail BuscarTemplateEmail(ETipoTemplateEmail tipoTemplateEmail)
         {
-            foreach (var parametro in ParametrosUtilizados)
-                templateEmail = templateEmail.Replace(parametro, MapeamentoParametros[parametro]());
-
-            return templateEmail;
+            var template = Eleicao.Conta.BuscarTemplateEmail(tipoTemplateEmail);
+            if (template == null)
+                throw new CustomException("Template de e-mail não localizado.");
+            return template;
         }
 
         protected virtual string RetornarDataAbreviada(DateTime data) =>
@@ -97,7 +95,9 @@ namespace Cipa.Domain.Services.Implementations
             return dataStr;
         }
 
-        protected virtual string RetornarPeriodo(CodigoEtapaObrigatoria etapaObrigatoria)
+        protected string ObterHorario(DateTime? data) => data.HasValue ? data.Value.ToString("dd/MM/yyyy HH:mm") : "";
+
+        protected virtual string RetornarPeriodo(ECodigoEtapaObrigatoria etapaObrigatoria)
         {
             var etapa = Eleicao.BuscarEtapaObrigatoria(etapaObrigatoria);
             return RetornarPeriodo(etapa.DataPrevista, Eleicao.DataTerminoEtapa(etapa));

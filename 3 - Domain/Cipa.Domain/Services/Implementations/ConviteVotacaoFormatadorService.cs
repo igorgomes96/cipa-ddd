@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using Cipa.Domain.Entities;
-using Cipa.Domain.Helpers;
+using Cipa.Domain.Enums;
 
 namespace Cipa.Domain.Services.Implementations
 {
@@ -9,16 +8,19 @@ namespace Cipa.Domain.Services.Implementations
     {
         public ConviteVotacaoFormatadorService(Eleicao eleicao) : base(eleicao)
         {
+            ParametrosUtilizados.Add("@EMPRESA_CNPJ");
+            ParametrosUtilizados.Add("@GESTAO");
+            ParametrosUtilizados.Add("@ENDERECO");
+            ParametrosUtilizados.Add("@CANDIDATOS");
+            ParametrosUtilizados.Add("@PERIODO_VOTACAO");
+            ParametrosUtilizados.Add("@TECNICO_SESMT");
+            ParametrosUtilizados.Add("@TECNICO_CARGO");
         }
 
-        protected override ICollection<string> ParametrosUtilizados =>
-            new HashSet<string> {
-                "@EMPRESA_CNPJ", "@GESTAO", "@ENDERECO", "@CANDIDATOS",
-                "@PERIODO_VOTACAO", "@TECNICO_SESMT", "@TECNICO_CARGO"
-            };
         public override ICollection<Email> FormatarEmails()
         {
-           return FormatarEmailPadrao(ArquivosEmails.ConviteVotacao, AssuntosEmails.ConviteVotacao);
+            var templateEmail = BuscarTemplateEmail(ETipoTemplateEmail.ConviteParaVotacao);
+           return FormatarEmailPadrao(templateEmail);
         }
     }
 }

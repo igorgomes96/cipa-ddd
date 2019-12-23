@@ -1,3 +1,4 @@
+using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
 using System;
@@ -104,7 +105,7 @@ namespace Cipa.Domain.Entities
                     var novoDimensionamento = value.CalcularDimensionamento(Dimensionamento.QtdaEleitores);
                     if (novoDimensionamento == null)
                         throw new CustomException("Não foi encontrado o dimensionamento adequado para a eleição. Por favor, contate o suporte.");
-                    if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao) && novoDimensionamento.TotalCipeiros > Dimensionamento.QtdaInscricoesAprovadas)
+                    if (JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao) && novoDimensionamento.TotalCipeiros > Dimensionamento.QtdaInscricoesAprovadas)
                         throw new CustomException($"Para o grupo {value.CodigoGrupo}, o mínimo de inscrições necessária é {novoDimensionamento.TotalCipeiros}, e só houveram {Dimensionamento.QtdaInscricoesAprovadas} inscrições aprovadas nessa eleição.");
                     AtualizarDimensionamento(novoDimensionamento);
                 }
@@ -129,7 +130,7 @@ namespace Cipa.Domain.Entities
 
         public EtapaCronograma EtapaAtual
         {
-            get => Cronograma.FirstOrDefault(c => c.PosicaoEtapa == PosicaoEtapa.Atual);
+            get => Cronograma.FirstOrDefault(c => c.PosicaoEtapa == EPosicaoEtapa.Atual);
         }
 
         public EtapaCronograma UltimaEtapa
@@ -146,9 +147,16 @@ namespace Cipa.Domain.Entities
         {
             get
             {
-                // Se ainda não iniciou o processo, a próxima etapa é a primeira etapa do cronograma
-                if (EtapaAtual == null && Cronograma.All(e => e.PosicaoEtapa == PosicaoEtapa.Futura))
-                    return Cronograma.FirstOrDefault();
+                if (EtapaAtual == null)
+                {
+                    // Se ainda não iniciou o processo, a próxima etapa é a primeira etapa do cronograma
+                    if (Cronograma.All(e => e.PosicaoEtapa == EPosicaoEtapa.Futura))
+                        return Cronograma.FirstOrDefault();
+                    else if (Cronograma.All(e => e.PosicaoEtapa == EPosicaoEtapa.Passada))
+                        return null;
+                    else
+                        throw new CustomException("Cronograma inconsistente.");
+                }
                 return RetornarEtapaPosterior(EtapaAtual);
             }
         }
@@ -248,21 +256,21 @@ namespace Cipa.Domain.Entities
             AtualizarDimensionamento();
         }
 
-        public bool JaUltrapassouEtapa(CodigoEtapaObrigatoria etapaObrigatoria)
+        public bool JaUltrapassouEtapa(ECodigoEtapaObrigatoria etapaObrigatoria)
         {
             var etapa = Cronograma.FirstOrDefault(e => e.EtapaObrigatoriaId == etapaObrigatoria);
             if (etapa == null) throw new NotFoundException("Etapa não encontrada.");
-            return etapa.PosicaoEtapa == PosicaoEtapa.Passada;
+            return etapa.PosicaoEtapa == EPosicaoEtapa.Passada;
         }
 
-        public bool AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria etapaObrigatoria)
+        public bool AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria etapaObrigatoria)
         {
             var etapa = Cronograma.FirstOrDefault(e => e.EtapaObrigatoriaId == etapaObrigatoria);
             if (etapa == null) throw new CustomException("Etapa não encontrada.");
-            return etapa.PosicaoEtapa == PosicaoEtapa.Futura;
+            return etapa.PosicaoEtapa == EPosicaoEtapa.Futura;
         }
 
-        public EtapaCronograma BuscarEtapaObrigatoria(CodigoEtapaObrigatoria etapaObrigatoria)
+        public EtapaCronograma BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria etapaObrigatoria)
         {
             var etapa = Cronograma.FirstOrDefault(e => e.EtapaObrigatoriaId == etapaObrigatoria);
             if (etapa == null) throw new CustomException("Etapa não encontrada.");
@@ -309,7 +317,7 @@ namespace Cipa.Domain.Entities
         private void ValidarMudancaEtapa()
         {
             if (EtapaAtual == null) return;
-            if (EtapaAtual.EtapaObrigatoriaId == CodigoEtapaObrigatoria.Inscricao)
+            if (EtapaAtual.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Inscricao)
             {
                 if (!Dimensionamento.PossuiQtdaMinimaInscritos)
                     throw new CustomException("Esta eleição ainda não possui a quantidade mínima de inscritos!");
@@ -321,34 +329,43 @@ namespace Cipa.Domain.Entities
                 _dimensionamento = Dimensionamento;
             }
 
-            if (EtapaAtual.EtapaObrigatoriaId == CodigoEtapaObrigatoria.Votacao && !Dimensionamento.PossuiQtdaMinimaVotos)
+            if (EtapaAtual.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Votacao && !Dimensionamento.PossuiQtdaMinimaVotos)
             {
                 throw new CustomException("Esta eleição ainda não atingiu os 50% de participação de todos os funcionários, conforme exigido pela NR-5.");
             }
         }
 
-        public void PassarParaProximaEtapa()
+        public void PassarParaProximaEtapa(bool registrarErro = false)
         {
-            ValidarMudancaEtapa();
-            var data = DateTime.Today;
-            var proximaEtapa = EtapaPosterior;
-            if (EtapaAtual != null)
+            try
             {
-                if (EtapaAtual.EtapaObrigatoriaId == CodigoEtapaObrigatoria.Votacao)
-                    RegistrarResultadoApuracao();
-                EtapaAtual.ErroMudancaEtapa = null;
-                EtapaAtual.PosicaoEtapa = PosicaoEtapa.Passada;
-            }
+                ValidarMudancaEtapa();
+                var data = DateTime.Today;
+                var proximaEtapa = EtapaPosterior;
+                if (EtapaAtual != null)
+                {
+                    if (EtapaAtual.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Votacao)
+                        RegistrarResultadoApuracao();
+                    EtapaAtual.ErroMudancaEtapa = null;
+                    EtapaAtual.PosicaoEtapa = EPosicaoEtapa.Passada;
+                }
 
-            if (proximaEtapa != null)
-            {
-                ProcessamentosEtapas.Add(new ProcessamentoEtapa(this, proximaEtapa, EtapaAtual));
-                proximaEtapa.DataRealizada = data;
-                proximaEtapa.PosicaoEtapa = PosicaoEtapa.Atual;
+                if (proximaEtapa != null)
+                {
+                    ProcessamentosEtapas.Add(new ProcessamentoEtapa(this, proximaEtapa, EtapaAtual));
+                    proximaEtapa.DataRealizada = data;
+                    proximaEtapa.PosicaoEtapa = EPosicaoEtapa.Atual;
+                }
+                else // Eleição finalizada
+                {
+                    DataFinalizacao = DateTime.Now;
+                }
             }
-            else // Eleição finalizada
+            catch (Exception ex)
             {
-                DataFinalizacao = DateTime.Now;
+                if (registrarErro && EtapaAtual != null)
+                    EtapaAtual.ErroMudancaEtapa = ex.Message;
+                throw;
             }
         }
 
@@ -356,14 +373,14 @@ namespace Cipa.Domain.Entities
         {
             eleitor.Email = eleitor.Email.Trim().ToLower();
 
-            if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Votacao))
+            if (JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Votacao))
                 throw new CustomException("Não é permitido cadastrar eleitores após o período de votação.");
 
             if (Eleitores.Any(e => e.Email == eleitor.Email))
                 throw new CustomException("Já existe um eleitor cadastrado com o mesmo e-mail para essa eleição.");
 
             LinhaDimensionamento novoDimensionamento = Grupo.CalcularDimensionamento(Dimensionamento.QtdaEleitores + 1);
-            if (JaUltrapassouEtapa(CodigoEtapaObrigatoria.Inscricao) && Dimensionamento.QtdaInscricoesAprovadas < novoDimensionamento.TotalCipeiros)
+            if (JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao) && Dimensionamento.QtdaInscricoesAprovadas < novoDimensionamento.TotalCipeiros)
                 throw new CustomException($"Não é possível adicionar esse novo eleitor, pois sua inclusão altera o dimensionamento da eleição e com isso a quantidade mínima de inscritos passa a ser superior à quantidade atual de inscritos.");
 
             Eleitores.Add(eleitor);
@@ -374,7 +391,7 @@ namespace Cipa.Domain.Entities
 
         public Inscricao FazerInscricao(Eleitor eleitor, string objetivos)
         {
-            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+            if (EtapaAtual?.EtapaObrigatoriaId != ECodigoEtapaObrigatoria.Inscricao)
                 throw new CustomException("As inscrições podem ser realizadas somente no período de inscrição. Confira o cronograma da eleição.");
 
             if (Inscricoes.Any(i => i.Eleitor == eleitor))
@@ -392,7 +409,7 @@ namespace Cipa.Domain.Entities
 
         public Inscricao AtualizarInscricao(int eleitorId, string objetivos)
         {
-            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+            if (EtapaAtual?.EtapaObrigatoriaId != ECodigoEtapaObrigatoria.Inscricao)
                 throw new CustomException("As inscrições não podem ser alteradas fora do período de inscrição.");
 
             var inscricao = BuscarInscricaoPeloEleitorId(eleitorId);
@@ -404,7 +421,7 @@ namespace Cipa.Domain.Entities
 
         public Inscricao AprovarInscricao(int inscricaoId, Usuario usuarioAprovador)
         {
-            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+            if (EtapaAtual?.EtapaObrigatoriaId != ECodigoEtapaObrigatoria.Inscricao)
                 throw new CustomException("As inscrições não podem ser aprovadas fora do período de inscrição.");
 
             var inscricao = BuscarInscricaoPeloId(inscricaoId);
@@ -416,7 +433,7 @@ namespace Cipa.Domain.Entities
 
         public Inscricao ReprovarInscricao(int inscricaoId, Usuario usuarioAprovador, string motivoReprovacao)
         {
-            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Inscricao)
+            if (EtapaAtual?.EtapaObrigatoriaId != ECodigoEtapaObrigatoria.Inscricao)
                 throw new CustomException("As inscrições não podem ser reprovadas fora do período de inscrição.");
 
             var inscricao = BuscarInscricaoPeloId(inscricaoId);
@@ -450,7 +467,7 @@ namespace Cipa.Domain.Entities
             if (EleitorJaVotou(eleitor))
                 throw new CustomException("Eleitor já registrou seu voto nessa eleição. Não é possível votar mais de uma vez.");
 
-            if (EtapaAtual?.EtapaObrigatoriaId != CodigoEtapaObrigatoria.Votacao)
+            if (EtapaAtual?.EtapaObrigatoriaId != ECodigoEtapaObrigatoria.Votacao)
                 throw new CustomException("Essa eleição não está no período de votação.");
 
             var registroVoto = new Voto(eleitor, ip);
@@ -533,6 +550,9 @@ namespace Cipa.Domain.Entities
 
             return eleitorExistente;
         }
+
+        public ProcessamentoEtapa RetornarUltimoProcessamentoEtapa() =>
+            ProcessamentosEtapas.OrderBy(p => p.HorarioMudancaEtapa).LastOrDefault();
     }
 
 }

@@ -1,3 +1,4 @@
+using Cipa.Domain.Enums;
 using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
@@ -6,20 +7,20 @@ namespace Cipa.Domain.Entities
 {
     public class EtapaCronograma : EtapaBase
     {
-        public EtapaCronograma(string nome, string descricao, int ordem, int eleicaoId, DateTime dataPrevista, CodigoEtapaObrigatoria? etapaObrigatoriaId = null)
+        public EtapaCronograma(string nome, string descricao, int ordem, int eleicaoId, DateTime dataPrevista, ECodigoEtapaObrigatoria? etapaObrigatoriaId = null)
             : base(nome, descricao, ordem)
         {
             EleicaoId = eleicaoId;
             DataPrevista = dataPrevista;
-            PosicaoEtapa = PosicaoEtapa.Futura;
+            PosicaoEtapa = EPosicaoEtapa.Futura;
             EtapaObrigatoriaId = etapaObrigatoriaId;
         }
 
         public int EleicaoId { get; private set; }
         public DateTime DataPrevista { get; set; }
         public DateTime? DataRealizada { get; set; }
-        public CodigoEtapaObrigatoria? EtapaObrigatoriaId { get; set; }
-        public PosicaoEtapa PosicaoEtapa { get; set; }
+        public ECodigoEtapaObrigatoria? EtapaObrigatoriaId { get; set; }
+        public EPosicaoEtapa PosicaoEtapa { get; set; }
         public string ErroMudancaEtapa { get; set; }
 
         public virtual EtapaObrigatoria EtapaObrigatoria { get; set; }

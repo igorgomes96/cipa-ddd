@@ -1,4 +1,5 @@
 using Cipa.Domain.Entities;
+using Cipa.Domain.Enums;
 using Cipa.Domain.Helpers;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -509,50 +510,50 @@ namespace Cipa.Infra.Data.Context
             var etapasObrigatorias = new EtapaObrigatoria[6] {
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Convocacao,
+                    Id = ECodigoEtapaObrigatoria.Convocacao,
                     Nome = "Convocação para a Eleição",
                     Descricao = "No início do processo eleitoral, o empregador deve convocar as eleições para a escolha dos representantes dos empregados na CIPA. Essa convocação precisa ocorrer no prazo mínimo de 60 dias antes do término do mandato em curso (NR-05 - 5.38)",
-                    Ordem = (int)CodigoEtapaObrigatoria.Convocacao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.Convocacao,
                     PrazoMandatoAnterior = 60
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.FormacaoComissao,
+                    Id = ECodigoEtapaObrigatoria.FormacaoComissao,
                     Nome = "Formação da Comissão Eleitoral",
                     Descricao = "A Norma Regulamentadora 05 também determina que, no prazo mínimo de 55 dias antes do término do mandato em curso, seja constituída a Comissão Eleitoral (CE). Essa comissão deve ser formada pelos membros atuais da CIPA e será responsável pela organização e acompanhamento do processo eleitoral (NR-05 5.39). O edital de convocação também deve ser enviado para o sindicatos 5 dias após sua publicação.",
-                    Ordem = (int)CodigoEtapaObrigatoria.FormacaoComissao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.FormacaoComissao,
                     PrazoMandatoAnterior = 55
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.EditalInscricao,
+                    Id = ECodigoEtapaObrigatoria.EditalInscricao,
                     Nome = "Edital de Inscrição dos Candidatos",
                     Descricao = "Nessa etapa, é preciso publicar e divulgar o edital de inscrição para a CIPA, em locais de fácil acesso e visualização. Atente-se ao prazo! A NR-5 determina que a publicação ocorra no prazo mínimo de 45 dias antes do término do mandato em curso. (NR-05 - 5.40 a)",
-                    Ordem = (int)CodigoEtapaObrigatoria.EditalInscricao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.EditalInscricao,
                     PrazoMandatoAnterior = 45
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Inscricao,
+                    Id = ECodigoEtapaObrigatoria.Inscricao,
                     Nome = "Inscrição dos Candidatos",
                     Descricao = "Nessa etapa, o sistema libera acesso aos eleitores cadastrados nessa eleição para eles realizarem sua inscrição. Essa etapa deve ter duração mínima de 15 dias. É importante lembrar que qualquer empregado do estabelecimento, independentemente do setor ou local de trabalho, pode se inscrever. (NR-05 5.40 b. c.)",
                     DuracaoMinima = 15,
-                    Ordem = (int)CodigoEtapaObrigatoria.Inscricao
+                    Ordem = (int)ECodigoEtapaObrigatoria.Inscricao
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Votacao,
+                    Id = ECodigoEtapaObrigatoria.Votacao,
                     Nome = "Votação",
                     Descricao = "Nessa etapa, todos os eleitores podem acessar o sistema e escolher um dos candidatos como representante para o próximo mandato da CIPA. A eleição deve ser realizada em um dia normal de trabalho e 30 dias antes do término do mandato em curso, no mínimo. (NR-05 5.40 e. f.)",
-                    Ordem = (int)CodigoEtapaObrigatoria.Votacao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.Votacao,
                     PrazoMandatoAnterior = 30
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Ata,
+                    Id = ECodigoEtapaObrigatoria.Ata,
                     Nome = "Ata de Eleição",
                     Descricao = "Os candidatos votados e não eleitos devem estar relacionados nessa ata, em ordem decrescente de votos para nomeação posterior, em caso de vacância de suplentes. Não se preocupe, a criação desse documento é por nossa conta!",
-                    Ordem = (int)CodigoEtapaObrigatoria.Ata
+                    Ordem = (int)ECodigoEtapaObrigatoria.Ata
                 }
             };
 
