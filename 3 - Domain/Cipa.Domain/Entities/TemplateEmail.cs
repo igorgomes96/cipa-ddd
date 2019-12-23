@@ -11,6 +11,7 @@ namespace Cipa.Domain.Entities
         }
 
         public ETipoTemplateEmail TipoTemplateEmail { get; set; }
+        public int ContaId { get; set; }
         public string Assunto { get; set; }
         public string Template { get; set; }
 

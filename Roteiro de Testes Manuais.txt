@@ -1,0 +1,76 @@
+* Acesso e Conta
+- Realizar Login.
+- Realizar Logout.
+- Reset de Senha.
+- Criação de Usuário do SESMT (Tela de Conta do Usuário).
+- Alteração do Cronograma Padrão das Eleições (Tela de Conta do Usuário).
+    - Alteração de Título.
+    - Alteração de Descrição.
+    - Alteração de Duração Padrão.
+    - Adição de novas etapas.
+    - Exclusão de etapas não obrigatórias.
+
+* Cadastros
+- Criação de Eleição.
+- Alteração do Grupo da Eleição.
+- Cadastro de Empresa.
+- Alteração de Empresa.
+- Exclusão de Empresa.
+- Cadastro de Estabelecimento.
+- Alteração de Estabelecimento.
+- Exclusão de Estabelecimento.
+
+* Cronograma da Eleição
+- Alteração de Título.
+- Alteração de Descrição.
+- Alteração de Data.
+- Upload de Arquivos.
+- Exclusão de Arquivos.
+- Testar incosistências.
+    - Alterar data da etapa para uma data superior à da próxima etapa.
+    - Alterar data da etapa para uma data inferior à da etapa anterior.
+- Testar Mudança automática de etapa.
+    - Testar um caso de sucesso.
+    - Testar casos de erros (Visualizar mensagem de Erro ao lado do título da etapa):
+        - Término das inscrições sem a quantidade mínima de inscritos.
+        - Término das inscrições com inscrições pendentes de aprovação.
+        - Término da votação sem a quantidade mínima de votos.
+- Testar Mudança de Etapa manual.
+- Conferir o dimensionamento nas etapas de Inscrições e Votação.
+
+* Cadastro de Eleitores
+- Download do Template de Importação.
+- Importação de Eleitores.
+    - Casos de erro.
+        - E-mails inválidos.
+        - Nomes não informados.
+        - Data em formato inválido.
+        - E-mails duplicados.
+    - Casos de sucesso.
+- Cadastro de Eleitor.
+- Alteração de Eleitor.
+- Exclusão de Eleitor.
+    - Tentar excluir eleitor inscrito.
+    - Tentar excluir eleitor não inscrito, mas que já tenha votado.
+- Exclusão de Todos os eleitores ao mesmo tempo.
+- Filtro de eleitores.
+
+* Inscrições (Testar com o usuário do SESMT sendo um dos eleitores e também com um eleitor que não seja usuário do SESMT)
+- Fazer inscrição.
+- Atualizar inscrição (enquanto estiver pendente de aprovação).
+- Aprovar inscrição.
+- Reprovar inscrição.
+- Atualizar inscrição (após reprovação).
+- Tentar atualizar inscrição após Aprovada.
+
+* Votação
+- Verificar se as inscrições são listadas aleatóriamente na tela de Votação (a cada vez que a tela é carregada).
+- Buscar Inscritos.
+- Votar em Inscrito.
+- Votar em Branco.
+- Tentar votar 2 vezes.
+
+* Dashboard
+- Verificar dimensionamento nos Widgets na parte superior da tela.
+- Conferir gráfico de qtda. de votos.
+- Relatório de votos (fazer download).

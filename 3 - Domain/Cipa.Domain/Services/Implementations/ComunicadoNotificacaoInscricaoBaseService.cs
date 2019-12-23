@@ -10,6 +10,8 @@ namespace Cipa.Domain.Services.Implementations
             Inscricao = inscricao;
             MapeamentoParametros.Add("@CANDIDATO_NOME", () => Inscricao.Eleitor.Nome);
             MapeamentoParametros.Add("@CANDIDATO_DADOS", RetornarDadosInscricao);
+            ParametrosUtilizados.Add("@CANDIDATO_NOME");
+            ParametrosUtilizados.Add("@CANDIDATO_DADOS");
         }
 
         private string RetornarDadosInscricao()

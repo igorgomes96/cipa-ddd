@@ -6,8 +6,68 @@ using System;
 
 namespace Cipa.Infra.Data.Context
 {
+
     public static class ModelBuilderExtensions
     {
+
+        private static string mensagemEditalConvocacao =
+@"@DATA_COMPLETA, a empresa @EMPRESA_CNPJ, situada na @ENDERECO, através de seu SESMT – Serviço Especializado em Engenharia de Segurança e Medicina do Trabalho - informa a todos os funcionários que na data de hoje tem início o processo de constituição da CIPA – Comissão Interna de Prevenção de Acidentes – de acordo com o item 5.38 da Norma Regulamentadora – 05, aprovada pela portaria nº3. 214 de 08 de Junho de 1978 com alteração da Portaria SIT n.º 247, de 12 de Julho de 2011.<br>
+Todo o processo atenderá ao disposto na legislação citada acima.<br><br>
+As inscrições serão aceitas <strong>@PERIODO_INSCRICAO</strong>.<br>
+A votação será realizada <strong>@PERIODO_VOTACAO</strong>.<br><br>
+Todos os eventos do processo serão comunicados através de e-mails.<br><br>
+Link de Acesso: <a href=""@LINK"">@LINK</a><br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO";
+
+        private static string mensagemConviteInscricao =
+@"A empresa @EMPRESA_CNPJ, situada na @ENDERECO, convida seus funcionários a realizarem suas inscrições para eleição dos membros representantes dos Empregados da Comissão Interna de Prevenção de Acidentes – CIPA – Gestão @GESTAO, de acordo com o item 5.40, alínea a, b e c, da Norma Regulamentadora – Nº 05, aprovada pela Portaria nº 3.214 de 08 de Junho de 1978, com alteração da Portaria SIT n.º 247, de 12 de julho de 2011.<br>
+<strong>As inscrições poderão ser realizadas @PERIODO_INSCRICAO.</strong><br><br>
+Link de Acesso: <a href=""@LINK"">@LINK</a><br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO";
+
+        private static string mensagemConviteVotacao =
+@"Ficam convocados os funcionários da empresa @EMPRESA_CNPJ, situada na @ENDERECO, para a eleição de seus representantes na Comissão Interna de Prevenção de Acidentes - CIPA Gestão @GESTAO, de acordo com a Norma Regulamentadora - NR 5, aprovada pela Portaria nº 3.214 de 8 de junho de 1978, baixada pelo Ministério do Trabalho, a ser realizada em escrutínio secreto @PERIODO_VOTACAO.<br><br>
+Apresentaram-se e estão aptos para serem votados os seguintes candidatos:<br><br>
+@CANDIDATOS<br><br>
+Link de Acesso: <a href=""@LINK"">@LINK</a><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO";
+
+        private static string mensagemMudancaEtapaSucesso = 
+@"O cronograma da eleição da CIPA, que está sendo realizada na empresa @EMPRESA_CNPJ, foi atualizado com sucesso!<br><br>
+Etapa Anterior: <strong>@ETAPA_ANTERIOR</strong><br>
+Etapa Atual: <strong>@ETAPA_ATUAL</strong>";
+
+        private static string mensagemMudancaEtapaErro = 
+@" Ocorreu um erro ao finalizar a etapa atual da eleição da CIPA, que está sendo realizada na empresa @EMPRESA_CNPJ. Por favor, verifique.<br><br>
+Mensagem de erro: <strong>@ERRO</strong><br>
+Etapa Atual: <strong>@ETAPA_ATUAL</strong><br>
+Etapa Posterior: <strong>@ETAPA_POSTERIOR</strong><br><br>
+Obs.: A etapa atual deverá ser finalizada manualmente. Para isso, clique no botão ""Próxima Etapa"" do cronograma.";
+
+        private static string mensagemInscricaoRealizada =
+@"Parabéns, @CANDIDATO_NOME, sua inscrição foi registrada com sucesso. Agora ela será submetida à aprovação do SESMT e você será
+notificado quando sua inscrição for aprovada ou reprovada.<br><br>
+Confira seus dados abaixo:<br>
+@CANDIDATO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO";
+
+        private static string mensagemInscricaoAprovada = 
+@"Parabéns, @CANDIDATO_NOME, sua inscrição foi aprovada pelo SESMT.<br>
+Dados da inscrição:<br><br>
+@CANDIDATO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO";
+
+        private static string mensagemInscricaoReprovada = 
+@"@CANDIDATO_NOME, sua inscrição foi reprovada pelo SESMT. Mas, não se preocupe: verifique o motivo da reprovação e submeta sua inscrição a uma nova aprovação, dentro do prazo de inscrição, que acontece até o dia @FIM_INSCRICAO.<br><br>
+@REPROVACAO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO";
+
+        private static string mensagemReanaliseInscricao = 
+@"@CANDIDATO_NOME, sua inscrição será novamente submetida à aprovação do SESMT para reanálise e você será notificado quando a mesma for aprovada ou reprovada.<br><br>
+Confira seus dados abaixo:<br>
+@CANDIDATO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO";
+
         public static void Seed(this ModelBuilder modelBuilder)
         {
             Conta conta = new Conta
@@ -18,6 +78,82 @@ namespace Cipa.Infra.Data.Context
                 DataFim = new DateTime(2020, 12, 31),
                 PlanoId = null,
                 QtdaEstabelecimentos = 2
+            };
+            
+            TemplateEmail templateEditalConvocao = 
+                new TemplateEmail(ETipoTemplateEmail.EditalConvocacao, "[CIPA] Edital de Convocação") {
+                    ContaId = 1,
+                    Template = mensagemEditalConvocacao,
+                    Id = 1
+                };
+
+            TemplateEmail templateConviteInscricao = 
+                new TemplateEmail(ETipoTemplateEmail.ConviteParaInscricao, "[CIPA] Inscrições Abertas") {
+                    ContaId = 1,
+                    Template = mensagemConviteInscricao,
+                    Id = 2
+                };
+
+            TemplateEmail templateConviteVotacao = 
+                new TemplateEmail(ETipoTemplateEmail.ConviteParaVotacao, "[CIPA] Início da Votação") {
+                    ContaId = 1,
+                    Template = mensagemConviteVotacao,
+                    Id = 3
+                };
+
+            TemplateEmail templateMudancaEtapaSucesso = 
+                new TemplateEmail(ETipoTemplateEmail.SucessoMudancaEtapaCronograma, "[CIPA] Mudança de Etapa Realizada com Sucesso") {
+                    ContaId = 1,
+                    Template = mensagemMudancaEtapaSucesso,
+                    Id = 4
+                };
+
+            TemplateEmail templateMudancaEtapaErro = 
+                new TemplateEmail(ETipoTemplateEmail.ErroMudancaEtapaCronograma, "[CIPA] Erro ao Realizar Mudança de Etapa") {
+                    ContaId = 1,
+                    Template = mensagemMudancaEtapaSucesso,
+                    Id = 5
+                };
+
+
+            TemplateEmail templateInscricaoRealizada = 
+                new TemplateEmail(ETipoTemplateEmail.InscricaoRealizada, "[CIPA] Inscrição Realizada") {
+                    ContaId = 1,
+                    Template = mensagemInscricaoRealizada,
+                    Id = 6
+                };
+
+            TemplateEmail templateInscricaoAprovada = 
+                new TemplateEmail(ETipoTemplateEmail.InscricaoAprovada, "[CIPA] Inscrição Aprovada") {
+                    ContaId = 1,
+                    Template = mensagemInscricaoAprovada,
+                    Id = 7
+                };
+
+            TemplateEmail templateInscricaoReprovada = 
+                new TemplateEmail(ETipoTemplateEmail.InscricaoReprovada, "[CIPA] Inscrição Reprovada") {
+                    ContaId = 1,
+                    Template = mensagemInscricaoReprovada,
+                    Id = 8
+                };
+
+            TemplateEmail templateReanaliseInscricao = 
+                new TemplateEmail(ETipoTemplateEmail.ReanaliseInscricao, "[CIPA] Inscrição - Solicitação de Reanálise") {
+                    ContaId = 1,
+                    Template = mensagemReanaliseInscricao,
+                    Id = 9
+                };
+
+            var templatesEmails = new TemplateEmail[9] {
+                templateEditalConvocao,
+                templateConviteInscricao,
+                templateConviteVotacao,
+                templateMudancaEtapaSucesso,
+                templateMudancaEtapaErro,
+                templateInscricaoRealizada,
+                templateInscricaoAprovada,
+                templateInscricaoReprovada,
+                templateReanaliseInscricao
             };
 
             Grupo[] grupos = new Grupo[45] {
@@ -568,6 +704,7 @@ namespace Cipa.Infra.Data.Context
             }
 
             modelBuilder.Entity<Conta>().HasData(conta);
+            modelBuilder.Entity<TemplateEmail>().HasData(templatesEmails);
             modelBuilder.Entity<Empresa>().HasData(empresa);
             modelBuilder.Entity<Grupo>().HasData(grupos);
             modelBuilder.Entity<LimiteDimensionamento>().HasData(limitesDimensionamentos);

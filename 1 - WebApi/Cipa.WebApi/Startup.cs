@@ -97,7 +97,7 @@ namespace Cipa.WebApi
 
             services.AddHostedService<ImportacaoHostedService>();
             // services.AddHostedService<EmailHostedService>();
-            services.AddHostedService<ProcesssamentoEtapasHostedService>();
+            // services.AddHostedService<ProcesssamentoEtapasHostedService>();
 
 
             services.AddResponseCompression();

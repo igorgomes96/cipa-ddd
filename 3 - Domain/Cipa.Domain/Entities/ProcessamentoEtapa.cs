@@ -21,7 +21,7 @@ namespace Cipa.Domain.Entities
             EtapaCronograma = etapaCronograma;
             EtapaCronogramaId = etapaCronograma.Id;
             EtapaCronogramaAnterior = etapaCronogramaAnterior;
-            EtapaCronogramaAnteriorId = etapaCronogramaAnterior.Id;
+            EtapaCronogramaAnteriorId = etapaCronogramaAnterior?.Id;
             Eleicao = eleicao;
             StatusProcessamentoEtapa = EStatusProcessamentoEtapa.Pendente;
             HorarioMudancaEtapa = DateTime.Now;
@@ -30,7 +30,7 @@ namespace Cipa.Domain.Entities
         public DateTime HorarioMudancaEtapa { get; private set; }
         public EStatusProcessamentoEtapa StatusProcessamentoEtapa { get; private set; }
         public int EtapaCronogramaId { get; private set; }
-        public int EtapaCronogramaAnteriorId { get; private set; }
+        public int? EtapaCronogramaAnteriorId { get; private set; }
         public DateTime? TerminoProcessamento { get; private set; }
         public string MensagemErro { get; private set; }
         public DateTime DataCadastro { get; private set; }
