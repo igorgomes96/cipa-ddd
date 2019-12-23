@@ -3,14 +3,16 @@ using System;
 using Cipa.Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Cipa.WebApi.Migrations
 {
     [DbContext(typeof(CipaContext))]
-    partial class CipaContextModelSnapshot : ModelSnapshot
+    [Migration("20191223171135_TemplatesEmails")]
+    partial class TemplatesEmails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4599,7 +4601,7 @@ namespace Cipa.WebApi.Migrations
                     b.HasIndex("EtapaCronogramaId")
                         .IsUnique();
 
-                    b.ToTable("ProcessamentosEtapas");
+                    b.ToTable("ProcessamentoEtapas");
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Reprovacao", b =>
@@ -4646,7 +4648,7 @@ namespace Cipa.WebApi.Migrations
 
                     b.HasIndex("ContaId");
 
-                    b.ToTable("TemplatesEmails");
+                    b.ToTable("TemplateEmails");
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Usuario", b =>
@@ -4694,11 +4696,11 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Cargo = "Cargo Teste",
-                            CodigoRecuperacao = new Guid("a8cd15d4-7998-4a2c-a821-9ee655bbe1ae"),
+                            CodigoRecuperacao = new Guid("e66536e5-488e-4faa-aa02-ccfe2798ef33"),
                             ContaId = 1,
                             DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
-                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 24, 14, 18, 38, 345, DateTimeKind.Local).AddTicks(3482),
+                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 24, 14, 11, 35, 87, DateTimeKind.Local).AddTicks(2120),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"

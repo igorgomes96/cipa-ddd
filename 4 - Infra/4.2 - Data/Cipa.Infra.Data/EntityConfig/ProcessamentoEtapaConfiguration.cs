@@ -21,16 +21,18 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.HasOne(p => p.EtapaCronograma)
                 .WithOne()
+                .HasForeignKey<ProcessamentoEtapa>(p => p.EtapaCronogramaId)
                 .IsRequired();
 
             builder.HasOne(p => p.EtapaCronogramaAnterior)
-                .WithOne();
+                .WithOne()
+                .HasForeignKey<ProcessamentoEtapa>(p => p.EtapaCronogramaAnteriorId);
 
             builder.HasOne(p => p.Eleicao)
                 .WithMany(e => e.ProcessamentosEtapas)
                 .IsRequired();
 
-            builder.HasIndex(p => p.EtapaCronograma).IsUnique();
+            builder.HasIndex("EtapaCronogramaId").IsUnique();
         }
     }
 }

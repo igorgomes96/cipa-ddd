@@ -25,7 +25,7 @@ namespace Cipa.Domain.Entities
             get => new ReadOnlyCollection<EtapaPadraoConta>(_etapasPadroes.OrderBy(e => e.Ordem).ToList());
         }
         private List<TemplateEmail> _templatesEmails = new List<TemplateEmail>();
-        public virtual IReadOnlyCollection<TemplateEmail> TemplateEmails
+        public virtual IReadOnlyCollection<TemplateEmail> TemplatesEmails
         {
             get => new ReadOnlyCollection<TemplateEmail>(_templatesEmails.ToList());
         }
