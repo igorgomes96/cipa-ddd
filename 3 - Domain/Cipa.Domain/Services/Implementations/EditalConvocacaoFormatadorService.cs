@@ -19,7 +19,7 @@ namespace Cipa.Domain.Services.Implementations
 
         public override ICollection<Email> FormatarEmails()
         {
-            var templateEmail = BuscarTemplateEmail(ETipoTemplateEmail.ConviteParaVotacao);
+            var templateEmail = BuscarTemplateEmail(ETipoTemplateEmail.EditalConvocacao);
             return FormatarEmailPadrao(templateEmail);
         }
     }

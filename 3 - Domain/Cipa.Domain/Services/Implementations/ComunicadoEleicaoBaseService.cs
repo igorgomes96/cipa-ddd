@@ -42,16 +42,20 @@ namespace Cipa.Domain.Services.Implementations
         protected virtual ICollection<Email> FormatarEmailPadrao(TemplateEmail templateEmail)
         {
             List<Email> emails = new List<Email>();
-            var destinatarios = string.Join(",", UsuariosComSenhaCadastrada.Select(u => u.Email));
             var mensagemSemLink = SubstituirParametrosTemplate(templateEmail.Template);
-            var mensagem = mensagemSemLink.Replace("@LINK", LinkLogin);
-            emails.Add(new Email(destinatarios, "", templateEmail.Assunto, mensagem));
+            if (UsuariosComSenhaCadastrada.Any())
+            {
+                var destinatarios = string.Join(",", UsuariosComSenhaCadastrada.Select(u => u.Email));
+                var mensagem = mensagemSemLink.Replace("@LINK", LinkLogin);
+                emails.Add(new Email(destinatarios, "", templateEmail.Assunto, mensagem));
+            }
 
             foreach (var usuario in UsuariosSemSenhaCadastrada)
             {
-                mensagem = mensagemSemLink.Replace("@LINK", LinkCadastro(usuario));
+                var mensagem = mensagemSemLink.Replace("@LINK", LinkCadastro(usuario));
                 emails.Add(new Email(usuario.Email, "", templateEmail.Assunto, mensagem));
             }
+
             return emails;
         }
 

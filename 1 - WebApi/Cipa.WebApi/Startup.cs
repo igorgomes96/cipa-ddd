@@ -8,7 +8,7 @@ using Cipa.Application.Services.Interfaces;
 using Cipa.Domain.Factories;
 using Cipa.Domain.Factories.Interfaces;
 using Cipa.Domain.Helpers;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 using Cipa.Infra.Data.Context;
 using Cipa.Infra.Data.Repositories;
 using Cipa.WebApi.Authentication;
@@ -98,7 +98,6 @@ namespace Cipa.WebApi
             services.AddHostedService<ImportacaoHostedService>();
             // services.AddHostedService<EmailHostedService>();
             // services.AddHostedService<ProcesssamentoEtapasHostedService>();
-
 
             services.AddResponseCompression();
 

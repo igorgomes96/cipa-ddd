@@ -17,12 +17,6 @@ namespace Cipa.Domain.Helpers
         public const string NomeUsuario = "username";
     }
 
-    public static class EtapaProcessamentoArquivo
-    {
-        public const string ValidacaoDados = "Validação lógica dos dados";
-        public const string Insercao = "Inserção dos dados na base";
-    }
-
     public static class ColunasArquivo
     {
         public const string Matricula = "Matrícula";
@@ -36,14 +30,6 @@ namespace Cipa.Domain.Helpers
         public const string EmailGestor = "Email do Gestor";
     }
 
-    public static class DataTypeImportacao
-    {
-        public const string String = "String";
-        public const string Email = "Email";
-        public const string Date = "Date";
-        public const string Int = "Int";
-        public const string Decimal = "Decimal";
-    }
 
     public static class Links
     {

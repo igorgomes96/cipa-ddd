@@ -91,15 +91,16 @@ namespace Cipa.WebApi.Authentication
             };
         }
 
-        // public string SolicitarReset(string email) {
-        //     var usuario = _db.Usuarios.FirstOrDefault(u => u.Email == email);
-        //     if (usuario == null) throw new NotFoundException("Usuário não encontrado!");
-        //     usuario.Senha = null;
-        //     usuario.CodigoRecuperacao = Guid.NewGuid();
-        //     usuario.ExpiracaoCodigoRecuperacao = DateTime.Now.HorarioBrasilia().AddHours(4);
-        //     _db.SaveChanges();
-        //     _comunicadosService.EnviaEmailResetSenha(usuario);
-        //     return usuario.CodigoRecuperacao.ToString();
-        // }
+        public AuthInfoViewModel CadastrarNovaSenha(Guid codigoRecuperacao, string senha)
+        {
+            var usuario = _usuarioAppService.CadastrarNovaSenha(codigoRecuperacao, CryptoService.ComputeSha256Hash(senha));
+            return Login(usuario.Email, senha);
+        }
+
+        public void ResetarSenha(string email)
+            => _usuarioAppService.ResetarSenha(email);
+
+        public Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigoRecuperacao)
+            => _usuarioAppService.BuscarUsuarioPeloCodigoRecuperacao(codigoRecuperacao);
     }
 }

@@ -3,14 +3,16 @@ using System;
 using Cipa.Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Cipa.WebApi.Migrations
 {
     [DbContext(typeof(CipaContext))]
-    partial class CipaContextModelSnapshot : ModelSnapshot
+    [Migration("20191223201429_Correcao_TemplatesEmails")]
+    partial class Correcao_TemplatesEmails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4655,12 +4657,12 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Edital de Convocação",
                             ContaId = 1,
                             Template = @"@DATA_COMPLETA, a empresa @EMPRESA_CNPJ, situada na @ENDERECO, através de seu SESMT – Serviço Especializado em Engenharia de Segurança e Medicina do Trabalho - informa a todos os funcionários que na data de hoje tem início o processo de constituição da CIPA – Comissão Interna de Prevenção de Acidentes – de acordo com o item 5.38 da Norma Regulamentadora – 05, aprovada pela portaria nº3. 214 de 08 de Junho de 1978 com alteração da Portaria SIT n.º 247, de 12 de Julho de 2011.<br>
-            Todo o processo atenderá ao disposto na legislação citada acima.<br><br>
-            As inscrições serão aceitas <strong>@PERIODO_INSCRICAO</strong>.<br>
-            A votação será realizada <strong>@PERIODO_VOTACAO</strong>.<br><br>
-            Todos os eventos do processo serão comunicados através de e-mails.<br><br>
-            Link de Acesso: <a href=""@LINK"">@LINK</a><br>
-            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>",
+Todo o processo atenderá ao disposto na legislação citada acima.<br><br>
+As inscrições serão aceitas <strong>@PERIODO_INSCRICAO</strong>.<br>
+A votação será realizada <strong>@PERIODO_VOTACAO</strong>.<br><br>
+Todos os eventos do processo serão comunicados através de e-mails.<br><br>
+Link de Acesso: <a href=""@LINK"">@LINK</a><br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO",
                             TipoTemplateEmail = 0
                         },
                         new
@@ -4669,9 +4671,9 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Inscrições Abertas",
                             ContaId = 1,
                             Template = @"A empresa @EMPRESA_CNPJ, situada na @ENDERECO, convida seus funcionários a realizarem suas inscrições para eleição dos membros representantes dos Empregados da Comissão Interna de Prevenção de Acidentes – CIPA – Gestão @GESTAO, de acordo com o item 5.40, alínea a, b e c, da Norma Regulamentadora – Nº 05, aprovada pela Portaria nº 3.214 de 08 de Junho de 1978, com alteração da Portaria SIT n.º 247, de 12 de julho de 2011.<br>
-            <strong>As inscrições poderão ser realizadas @PERIODO_INSCRICAO.</strong><br><br>
-            Link de Acesso: <a href=""@LINK"">@LINK</a><br>
-            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>",
+<strong>As inscrições poderão ser realizadas @PERIODO_INSCRICAO.</strong><br><br>
+Link de Acesso: <a href=""@LINK"">@LINK</a><br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO",
                             TipoTemplateEmail = 1
                         },
                         new
@@ -4680,10 +4682,10 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Início da Votação",
                             ContaId = 1,
                             Template = @"Ficam convocados os funcionários da empresa @EMPRESA_CNPJ, situada na @ENDERECO, para a eleição de seus representantes na Comissão Interna de Prevenção de Acidentes - CIPA Gestão @GESTAO, de acordo com a Norma Regulamentadora - NR 5, aprovada pela Portaria nº 3.214 de 8 de junho de 1978, baixada pelo Ministério do Trabalho, a ser realizada em escrutínio secreto @PERIODO_VOTACAO.<br><br>
-            Apresentaram-se e estão aptos para serem votados os seguintes candidatos:<br><br>
-            @CANDIDATOS<br><br>
-            Link de Acesso: <a href=""@LINK"">@LINK</a><br>
-            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>",
+Apresentaram-se e estão aptos para serem votados os seguintes candidatos:<br><br>
+@CANDIDATOS<br><br>
+Link de Acesso: <a href=""@LINK"">@LINK</a><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO",
                             TipoTemplateEmail = 2
                         },
                         new
@@ -4692,8 +4694,8 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Mudança de Etapa Realizada com Sucesso",
                             ContaId = 1,
                             Template = @"O cronograma da eleição da CIPA, que está sendo realizada na empresa @EMPRESA_CNPJ, foi atualizado com sucesso!<br><br>
-            Etapa Anterior: <strong>@ETAPA_ANTERIOR</strong><br>
-            Etapa Atual: <strong>@ETAPA_ATUAL</strong>",
+Etapa Anterior: <strong>@ETAPA_ANTERIOR</strong><br>
+Etapa Atual: <strong>@ETAPA_ATUAL</strong>",
                             TipoTemplateEmail = 10
                         },
                         new
@@ -4702,10 +4704,10 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Erro ao Realizar Mudança de Etapa",
                             ContaId = 1,
                             Template = @" Ocorreu um erro ao finalizar a etapa atual da eleição da CIPA, que está sendo realizada na empresa @EMPRESA_CNPJ. Por favor, verifique.<br><br>
-            Mensagem de erro: <strong>@ERRO</strong><br>
-            Etapa Atual: <strong>@ETAPA_ATUAL</strong><br>
-            Etapa Posterior: <strong>@ETAPA_POSTERIOR</strong><br><br>
-            Obs.: A etapa atual deverá ser finalizada manualmente. Para isso, clique no botão ""Próxima Etapa"" do cronograma.",
+Mensagem de erro: <strong>@ERRO</strong><br>
+Etapa Atual: <strong>@ETAPA_ATUAL</strong><br>
+Etapa Posterior: <strong>@ETAPA_POSTERIOR</strong><br><br>
+Obs.: A etapa atual deverá ser finalizada manualmente. Para isso, clique no botão ""Próxima Etapa"" do cronograma.",
                             TipoTemplateEmail = 9
                         },
                         new
@@ -4714,10 +4716,10 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Inscrição Realizada",
                             ContaId = 1,
                             Template = @"Parabéns, @CANDIDATO_NOME, sua inscrição foi registrada com sucesso. Agora ela será submetida à aprovação do SESMT e você será
-            notificado quando sua inscrição for aprovada ou reprovada.<br><br>
-            Confira seus dados abaixo:<br>
-            @CANDIDATO_DADOS<br>
-            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>",
+notificado quando sua inscrição for aprovada ou reprovada.<br><br>
+Confira seus dados abaixo:<br>
+@CANDIDATO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO",
                             TipoTemplateEmail = 5
                         },
                         new
@@ -4726,9 +4728,9 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Inscrição Aprovada",
                             ContaId = 1,
                             Template = @"Parabéns, @CANDIDATO_NOME, sua inscrição foi aprovada pelo SESMT.<br>
-            Dados da inscrição:<br><br>
-            @CANDIDATO_DADOS<br>
-            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>",
+Dados da inscrição:<br><br>
+@CANDIDATO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO",
                             TipoTemplateEmail = 6
                         },
                         new
@@ -4737,8 +4739,8 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Inscrição Reprovada",
                             ContaId = 1,
                             Template = @"@CANDIDATO_NOME, sua inscrição foi reprovada pelo SESMT. Mas, não se preocupe: verifique o motivo da reprovação e submeta sua inscrição a uma nova aprovação, dentro do prazo de inscrição, que acontece até o dia @FIM_INSCRICAO.<br><br>
-            @REPROVACAO_DADOS<br>
-            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>",
+@REPROVACAO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO",
                             TipoTemplateEmail = 7
                         },
                         new
@@ -4747,9 +4749,9 @@ namespace Cipa.WebApi.Migrations
                             Assunto = "[CIPA] Inscrição - Solicitação de Reanálise",
                             ContaId = 1,
                             Template = @"@CANDIDATO_NOME, sua inscrição será novamente submetida à aprovação do SESMT para reanálise e você será notificado quando a mesma for aprovada ou reprovada.<br><br>
-            Confira seus dados abaixo:<br>
-            @CANDIDATO_DADOS<br>
-            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>",
+Confira seus dados abaixo:<br>
+@CANDIDATO_DADOS<br><br><br>
+<strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO",
                             TipoTemplateEmail = 8
                         });
                 });
@@ -4799,11 +4801,11 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Cargo = "Cargo Teste",
-                            CodigoRecuperacao = new Guid("096c22bd-51f9-4100-a789-1576c85eb4cb"),
+                            CodigoRecuperacao = new Guid("56298cf1-3f1c-432f-8894-9d479462b5b3"),
                             ContaId = 1,
                             DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
-                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 24, 21, 17, 9, 585, DateTimeKind.Local).AddTicks(7680),
+                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 24, 17, 14, 28, 836, DateTimeKind.Local).AddTicks(2908),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"

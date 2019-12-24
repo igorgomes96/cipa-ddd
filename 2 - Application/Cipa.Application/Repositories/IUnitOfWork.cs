@@ -1,5 +1,5 @@
 using System;
-namespace Cipa.Domain.Interfaces.Repositories
+namespace Cipa.Application.Repositories
 {
     public interface IUnitOfWork : IDisposable
     {
@@ -14,5 +14,6 @@ namespace Cipa.Domain.Interfaces.Repositories
         IEmailRepository EmailRepository { get; }
         IProcessamentoEtapaRepository ProcessamentoEtapaRepository { get; }
         void Commit();
+        void Rollback();
     }
 }

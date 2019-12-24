@@ -1,6 +1,7 @@
 using Cipa.Domain.Entities;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 using Cipa.Infra.Data.Context;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,12 +13,17 @@ namespace Cipa.Infra.Data.Repositories
 
         public Usuario BuscarUsuario(string email, string senha)
         {
-            return DbSet.SingleOrDefault(u => u.Email == email && u.Senha == senha);
+            return DbSet.FirstOrDefault(u => u.Email == email && u.Senha == senha);
         }
 
         public Usuario BuscarUsuario(string email)
         {
-            return DbSet.SingleOrDefault(u => u.Email == email);
+            return DbSet.FirstOrDefault(u => u.Email == email);
+        }
+
+        public Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigo)
+        {
+            return DbSet.FirstOrDefault(u => u.CodigoRecuperacao == codigo);
         }
 
         public IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId)

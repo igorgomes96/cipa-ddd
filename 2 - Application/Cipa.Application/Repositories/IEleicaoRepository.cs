@@ -1,7 +1,7 @@
 using Cipa.Domain.Entities;
 using System.Collections.Generic;
 
-namespace Cipa.Domain.Interfaces.Repositories
+namespace Cipa.Application.Repositories
 {
     public interface IEleicaoRepository : IRepositoryBase<Eleicao>
     {

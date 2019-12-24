@@ -34,5 +34,12 @@ namespace Cipa.WebApi.Controllers
             return PhysicalFile(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), arquivo.Path), arquivo.ContentType);
         }
 
+        [HttpGet("templateimportacao")]
+        public ActionResult DonwloadTemplateImportacao()
+        {
+            var arquivo = @"Assets/Template Importacao.xlsx";
+            return PhysicalFile(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), arquivo), @"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Path.GetFileName(arquivo));
+        }
+
     }
 }

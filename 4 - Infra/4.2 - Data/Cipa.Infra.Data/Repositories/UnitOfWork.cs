@@ -1,6 +1,8 @@
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 using Cipa.Infra.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -34,6 +36,28 @@ namespace Cipa.Infra.Data.Repositories
 
         }
 
+        public void Rollback()
+        {
+            var changedEntries = Context.ChangeTracker.Entries()
+                .Where(x => x.State != EntityState.Unchanged).ToList();
+
+            foreach (var entry in changedEntries)
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Modified:
+                        entry.CurrentValues.SetValues(entry.OriginalValues);
+                        entry.State = EntityState.Unchanged;
+                        break;
+                    case EntityState.Added:
+                        entry.State = EntityState.Detached;
+                        break;
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Unchanged;
+                        break;
+                }
+            }
+        }
         #region Public Properties  
 
         public IContaRepository ContaRepository => (IContaRepository)_serviceProvider.GetService(typeof(IContaRepository));

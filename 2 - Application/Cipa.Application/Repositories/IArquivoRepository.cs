@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Cipa.Domain.Entities;
 
-namespace Cipa.Domain.Interfaces.Repositories
+namespace Cipa.Application.Repositories
 {
     public interface IArquivoRepository : IRepositoryBase<Arquivo>
     {

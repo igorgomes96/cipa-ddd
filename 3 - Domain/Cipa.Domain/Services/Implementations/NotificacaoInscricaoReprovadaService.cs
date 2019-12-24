@@ -10,6 +10,7 @@ namespace Cipa.Domain.Services.Implementations
         {
             MapeamentoParametros.Add("@REPROVACAO_DADOS", RetornarDadosReprovacao);
             ParametrosUtilizados.Add("@REPROVACAO_DADOS");
+            ParametrosUtilizados.Add("@FIM_INSCRICAO");
         }
 
         public override ICollection<Email> FormatarEmails()

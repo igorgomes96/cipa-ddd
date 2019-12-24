@@ -1,8 +1,11 @@
 using Cipa.Application.Helpers;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
+using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Domain.Factories.Interfaces;
+using Cipa.Domain.Helpers;
+using Cipa.Application.Repositories;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,11 +15,19 @@ namespace Cipa.Application
     public class EleicaoAppService : AppServiceBase<Eleicao>, IEleicaoAppService
     {
         private readonly IArquivoAppService _arquivoAppService;
+        private readonly IFormatadorEmailServiceFactory _formatadorFactory;
+        private readonly EmailConfiguration _emailConfiguration;
         private const string PATH_FOTOS = @"StaticFiles\Fotos\";
 
-        public EleicaoAppService(IUnitOfWork unitOfWork, IArquivoAppService arquivoAppService) : base(unitOfWork, unitOfWork.EleicaoRepository)
+        public EleicaoAppService(
+            IUnitOfWork unitOfWork,
+            IArquivoAppService arquivoAppService,
+            IFormatadorEmailServiceFactory formatadorFactory,
+            EmailConfiguration emailConfiguration) : base(unitOfWork, unitOfWork.EleicaoRepository)
         {
             _arquivoAppService = arquivoAppService;
+            _formatadorFactory = formatadorFactory;
+            _emailConfiguration = emailConfiguration;
         }
 
         public override Eleicao Adicionar(Eleicao eleicao)
@@ -158,6 +169,13 @@ namespace Cipa.Application
             return eleitorAdicionado;
         }
 
+        private void EnviarNotificacaoInscricao(Inscricao inscricao, ETipoTemplateEmail tipoTemplate)
+        {
+            var formatador = _formatadorFactory.ObterFormatadorEmailParaNotificacoesInscricoes(tipoTemplate, inscricao);
+            foreach (var email in formatador.FormatarEmails())
+                _unitOfWork.EmailRepository.Adicionar(email);
+        }
+
         public Inscricao FazerInscricao(int eleicaoId, int usuarioId, string objetivos)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
@@ -167,6 +185,8 @@ namespace Cipa.Application
             if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
 
             var inscricao = eleicao.FazerInscricao(eleitor, objetivos);
+            EnviarNotificacaoInscricao(inscricao, ETipoTemplateEmail.InscricaoRealizada);
+
             base.Atualizar(eleicao);
             return inscricao;
         }
@@ -179,7 +199,15 @@ namespace Cipa.Application
             var eleitor = eleicao.BuscarEleitorPeloUsuarioId(usuarioId);
             if (eleitor == null) throw new NotFoundException("Eleitor não encontrado.");
 
+            bool solicitacaoReanalise = false;
+            var inscricaoAntesDaAlteracao = eleicao.BuscarInscricaoPeloEleitorId(eleitor.Id);
+            if (inscricaoAntesDaAlteracao.StatusInscricao == StatusInscricao.Reprovada) solicitacaoReanalise = true;
+
             var inscricao = eleicao.AtualizarInscricao(eleitor.Id, objetivos);
+
+            if (solicitacaoReanalise)
+                EnviarNotificacaoInscricao(inscricao, ETipoTemplateEmail.ReanaliseInscricao);
+
             base.Atualizar(eleicao);
             return inscricao;
         }
@@ -193,6 +221,9 @@ namespace Cipa.Application
             if (usuario == null) throw new CustomException("Usuário inválido!");
 
             var inscricaoAprovada = eleicao.AprovarInscricao(inscricaoId, usuario);
+
+            EnviarNotificacaoInscricao(inscricaoAprovada, ETipoTemplateEmail.InscricaoAprovada);
+
             base.Atualizar(eleicao);
             return inscricaoAprovada;
         }
@@ -207,6 +238,10 @@ namespace Cipa.Application
 
             var inscricaoReprovacao = eleicao.ReprovarInscricao(inscricaoId, usuario, motivoReprovacao);
             base.Atualizar(eleicao);
+
+            EnviarNotificacaoInscricao(inscricaoReprovacao, ETipoTemplateEmail.InscricaoReprovada);
+
+            _unitOfWork.Commit();
             return inscricaoReprovacao;
         }
 

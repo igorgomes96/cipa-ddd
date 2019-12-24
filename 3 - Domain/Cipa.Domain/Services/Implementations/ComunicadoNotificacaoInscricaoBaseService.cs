@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using Cipa.Domain.Entities;
 
 namespace Cipa.Domain.Services.Implementations
@@ -5,13 +7,15 @@ namespace Cipa.Domain.Services.Implementations
     public abstract class ComunicadoNotificacaoInscricaoBaseService : ComunicadoEleicaoBaseService
     {
 
-        public ComunicadoNotificacaoInscricaoBaseService(Inscricao inscricao): base(inscricao.Eleicao)
+        public ComunicadoNotificacaoInscricaoBaseService(Inscricao inscricao) : base(inscricao.Eleicao)
         {
             Inscricao = inscricao;
             MapeamentoParametros.Add("@CANDIDATO_NOME", () => Inscricao.Eleitor.Nome);
             MapeamentoParametros.Add("@CANDIDATO_DADOS", RetornarDadosInscricao);
             ParametrosUtilizados.Add("@CANDIDATO_NOME");
             ParametrosUtilizados.Add("@CANDIDATO_DADOS");
+            ParametrosUtilizados.Add("@TECNICO_SESMT");
+            ParametrosUtilizados.Add("@TECNICO_CARGO");
         }
 
         private string RetornarDadosInscricao()
@@ -44,6 +48,23 @@ namespace Cipa.Domain.Services.Implementations
         }
 
         protected Inscricao Inscricao { get; }
+
+        protected override ICollection<Email> FormatarEmailPadrao(TemplateEmail templateEmail, string destinatarios)
+        {
+            var emails = base.FormatarEmailPadrao(templateEmail, destinatarios);
+            var emailGestor = Inscricao.Eleitor.EmailGestor;
+            if (!string.IsNullOrWhiteSpace(emailGestor))
+            {
+                foreach (var email in emails)
+                {
+                    if (string.IsNullOrWhiteSpace(email.Copias))
+                        email.Copias = emailGestor;
+                    else
+                        email.Copias += $",{emailGestor}";
+                }
+            }
+            return emails;
+        }
 
     }
 }

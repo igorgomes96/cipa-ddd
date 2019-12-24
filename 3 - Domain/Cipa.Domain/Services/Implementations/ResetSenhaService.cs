@@ -8,11 +8,12 @@ namespace Cipa.Domain.Services.Implementations
     {
 
         private string mensagemResetSenha =
-@"Foi solicitado reset de senha para seu usuário. Para cadastrar uma nova senha, clique no link abaixo:<br><br>
-<a href=""@LINK"">@LINK</a>
-<br><br><br>Sistema de Votação Online";
+            @"Foi solicitado reset de senha para seu usuário. Para cadastrar uma nova senha, clique no link abaixo:<br><br>
+            <a href=""@LINK"">@LINK</a>
+            <br><br><br>Sistema de Votação Online";
         public ResetSenhaService(Usuario usuario) : base(usuario)
         {
+            MapeamentoParametros.Add("@LINK", () => LinkResetSenha);
         }
 
         public override ICollection<Email> FormatarEmails()

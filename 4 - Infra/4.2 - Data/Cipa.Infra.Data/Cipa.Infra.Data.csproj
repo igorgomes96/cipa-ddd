@@ -7,5 +7,6 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\3 - Domain\Cipa.Domain\Cipa.Domain.csproj" />
+        <ProjectReference Include="..\..\..\2 - Application\Cipa.Application\Cipa.Application.csproj" />
     </ItemGroup>
 </Project>

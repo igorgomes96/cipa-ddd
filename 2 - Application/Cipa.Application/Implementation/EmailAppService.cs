@@ -2,7 +2,7 @@ using System.Linq;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 
 namespace Cipa.Application
 {

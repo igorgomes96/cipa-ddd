@@ -13,7 +13,7 @@ using Cipa.Application.Services.Models;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 
 namespace Cipa.Application
 {
@@ -145,20 +145,15 @@ namespace Cipa.Application
 
                     if (!FinalizarImportacaoComErro(importacao, inconsistencias))
                     {
-                        // Busca-se uma eleição no repositório ao invés de utilizar importacao.Eleicao
-                        // porque, caso ocorra um erro ao chamar o método SalvarEleitor para algum eleitor da lista,
-                        // nenhuma eleitor seja salvo ao atualizar o status da importação para Importação com Erro,
-                        // em base.Atualizar(importacao) 
-                        var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(importacao.EleicaoId);
                         var linha = 0;
                         foreach (var eleitor in eleitores)
                         {
-                            SalvarEleitor(eleicao, eleitor);
+                            SalvarEleitor(importacao.Eleicao, eleitor);
                             linha++;
                             NotificarProgresso(3, linha, eleitores.Count, importacao.Arquivo.EmailUsuario);
                         }
                         FinalizarImportacaoComSucesso(importacao);
-                        _unitOfWork.EleicaoRepository.Atualizar(eleicao);
+                        _unitOfWork.EleicaoRepository.Atualizar(importacao.Eleicao);
                         _unitOfWork.Commit();
                     }
                 }
@@ -166,6 +161,7 @@ namespace Cipa.Application
             }
             catch (Exception ex)
             {
+                _unitOfWork.Rollback();
                 FinalizarImportacaoComErro(importacao, new[] { new Inconsistencia(string.Empty, 0, ex.Message) });
             }
         }

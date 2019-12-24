@@ -59,7 +59,7 @@ namespace Cipa.Domain.Entities
                     From = new MailAddress(emailConfiguration.UserName),
                     Subject = Assunto,
                     IsBodyHtml = true,
-                    Body = Mensagem
+                    Body = MensagemEstilizada
                 };
                 DestinatariosLista.ToList().ForEach(to => mailMessage.To.Add(to));
                 CopiasLista.ToList().ForEach(cc => mailMessage.CC.Add(cc));
@@ -80,5 +80,53 @@ namespace Cipa.Domain.Entities
             }
         }
 
+        protected string MensagemEstilizada => @"
+            <head>
+                <style>
+                    .template-email * {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        margin: 0;
+                    }
+
+                    .template-email .container {
+                        margin-top: 40px;
+                        margin-bottom: 40px;
+                        background: white;
+                        max-width: 600px;
+                        margin: 30px auto;
+                        text-align: justify;
+                        border: 1px solid #e9e9e9;
+                        border-radius: 8px;
+                    }
+
+                    .template-email .titulo {
+                        font-size: 24px;
+                        text-align: center;
+                        padding: 20px;
+                        background: rgb(26, 179, 148);
+                        color: white;
+                        border-radius: 8px 8px 0 0;
+                    }
+
+                    .template-email .conteudo {
+                        padding: 20px;
+                    }
+
+                    .template-email .assinatura {
+                        margin-top: 30px;
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body class=""template-email"" style=""background-color: #f6f6f6;"">
+                <div class=""container"">
+                    <div class=""titulo"">"
+                        + Assunto.Replace("[CIPA] ", "") +
+            @"      </div>
+                    <div class=""conteudo"">"
+                        + Mensagem + 
+            @"      </div>
+                </div>
+            </body>";
     }
 }

@@ -1,6 +1,6 @@
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Exceptions;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 using System;
 using System.Collections.Generic;
 

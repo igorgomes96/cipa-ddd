@@ -31,7 +31,7 @@ namespace Cipa.Domain.Entities
         }
 
         public TemplateEmail BuscarTemplateEmail(ETipoTemplateEmail tipoTemplateEmail) =>
-            _templatesEmails.FirstOrDefault(t => t.TipoTemplateEmail == tipoTemplateEmail);
+            TemplatesEmails.FirstOrDefault(t => t.TipoTemplateEmail == tipoTemplateEmail);
 
         public void AdicionarTempateEmail(TemplateEmail templateEmail) {
             _templatesEmails.Add(templateEmail);

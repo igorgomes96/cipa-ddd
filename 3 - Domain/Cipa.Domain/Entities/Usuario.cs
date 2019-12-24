@@ -1,4 +1,5 @@
-﻿using Cipa.Domain.Helpers;
+﻿using Cipa.Domain.Exceptions;
+using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -46,5 +47,25 @@ namespace Cipa.Domain.Entities
         }
 
         public bool JaCadastrouSenha => !string.IsNullOrWhiteSpace(Senha);
+
+        public void CadastrarSenha(Guid codigoRecuperacao, string senha)
+        {
+            if (codigoRecuperacao != CodigoRecuperacao)
+                throw new CustomException("Código de recuperação inválido.");
+
+            if (ExpiracaoCodigoRecuperacao.HasValue && DateTime.Now > ExpiracaoCodigoRecuperacao)
+                throw new CustomException("Código de recuperação expirado.");
+
+            CodigoRecuperacao = null;
+            ExpiracaoCodigoRecuperacao = null;
+            Senha = senha;
+        }
+
+        public void ResetarSenha()
+        {
+            CodigoRecuperacao = Guid.NewGuid();
+            ExpiracaoCodigoRecuperacao = DateTime.Now.AddDays(1);
+            Senha = null;
+        }
     }
 }

@@ -5,7 +5,7 @@ using Cipa.Application.Helpers;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 
 namespace Cipa.Application
 {

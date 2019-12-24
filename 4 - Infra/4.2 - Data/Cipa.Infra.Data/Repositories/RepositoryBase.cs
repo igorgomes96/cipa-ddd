@@ -1,5 +1,5 @@
 using Cipa.Domain.Exceptions;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 using Cipa.Infra.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using System;

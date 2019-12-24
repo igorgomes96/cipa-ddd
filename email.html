@@ -1,0 +1,65 @@
+<head>
+    <style>
+        .template-email * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+
+        .template-email .container {
+            background: white;
+            max-width: 600px;
+            margin: 30px auto;
+            text-align: justify;
+            border: 1px solid #e9e9e9;
+            border-radius: 8px;
+        }
+
+        .template-email .titulo {
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+            background: rgb(26, 179, 148);
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .template-email .conteudo {
+            padding: 20px;
+        }
+
+        .template-email .assinatura {
+            margin-top: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body class="template-email" style="background-color: #f6f6f6;">
+    <div class="container">
+        <div class="titulo">
+            Título
+        </div>
+
+        <div class="conteudo">
+            @DATA_COMPLETA, a empresa @EMPRESA_CNPJ, situada na @ENDERECO, através de seu SESMT – Serviço Especializado
+            em
+            Engenharia de Segurança e Medicina do Trabalho - informa a todos os funcionários que na data de hoje tem
+            início
+            o
+            processo de constituição da CIPA – Comissão Interna de Prevenção de Acidentes – de acordo com o item 5.38 da
+            Norma
+            Regulamentadora – 05, aprovada pela portaria nº3. 214 de 08 de Junho de 1978 com alteração da Portaria SIT
+            n.º
+            247,
+            de 12 de Julho de 2011.<br>
+            Todo o processo atenderá ao disposto na legislação citada acima.<br><br>
+            As inscrições serão aceitas <strong>@PERIODO_INSCRICAO</strong>.<br>
+            A votação será realizada <strong>@PERIODO_VOTACAO</strong>.<br><br>
+            Todos os eventos do processo serão comunicados através de e-mails.<br><br>
+            Link de Acesso: <a href="@LINK">@LINK</a><br>
+            <div class="assinatura">
+                <strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO
+            </div>
+        </div>
+    </div>
+</body>

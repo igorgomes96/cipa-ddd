@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Cipa.Domain.Interfaces.Repositories
+namespace Cipa.Application.Repositories
 {
     public interface IRepositoryBase<TEntity> : IDisposable where TEntity : class
     {

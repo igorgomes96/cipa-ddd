@@ -11,7 +11,6 @@ namespace Cipa.Domain.Services.Implementations
         public ComunicadoAcessoBaseService(Usuario usuario)
         {
             Usuario = usuario;
-            MapeamentoParametros.Add("@LINK", () => LinkCadastro);
             ParametrosUtilizados.Add("@LINK");
         }
 
@@ -19,5 +18,8 @@ namespace Cipa.Domain.Services.Implementations
         
         protected string LinkCadastro =>
             $"{Links.URL}{Links.Cadastro}/{Usuario.CodigoRecuperacao.ToString()}";
+
+        protected string LinkResetSenha =>
+            $"{Links.URL}{Links.Reset}/{Usuario.CodigoRecuperacao.ToString()}";
     }
 }

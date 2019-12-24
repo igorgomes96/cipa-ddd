@@ -1,8 +1,11 @@
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
+using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
+using Cipa.Domain.Factories.Interfaces;
 using Cipa.Domain.Helpers;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,13 +13,31 @@ namespace Cipa.Application
 {
     public class UsuarioAppService : AppServiceBase<Usuario>, IUsuarioAppService
     {
-        public UsuarioAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.UsuarioRepository) { }
+        private readonly IFormatadorEmailServiceFactory _formatadorFactory;
+        private readonly EmailConfiguration _emailConfiguration;
+        public UsuarioAppService(
+            IUnitOfWork unitOfWork,
+            IFormatadorEmailServiceFactory formatadorFactory,
+            EmailConfiguration emailConfiguration) : base(unitOfWork, unitOfWork.UsuarioRepository)
+        {
+            _formatadorFactory = formatadorFactory;
+            _emailConfiguration = emailConfiguration;
+        }
 
         public Usuario BuscarUsuario(string email, string senha) =>
             (_repositoryBase as IUsuarioRepository).BuscarUsuario(email, senha);
 
         public IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId) =>
             (_repositoryBase as IUsuarioRepository).BuscarUsuariosPelaConta(contaId);
+
+
+        private void EnviarEmail(Usuario usuario, ETipoTemplateEmail tipoTemplate)
+        {
+            var formatador = _formatadorFactory.ObterFormatadorEmailParaAcesso(tipoTemplate, usuario);
+            foreach (var email in formatador.FormatarEmails())
+                _unitOfWork.EmailRepository.Adicionar(email);
+        }
+
 
         public override Usuario Adicionar(Usuario usuario)
         {
@@ -37,6 +58,7 @@ namespace Cipa.Application
             }
             usuario.Conta = conta;
             usuario.ContaId = conta.Id;
+            EnviarEmail(usuario, ETipoTemplateEmail.CadastroSESMT);
             return base.Adicionar(usuario);
         }
 
@@ -58,10 +80,41 @@ namespace Cipa.Application
         {
             var usuario = (_repositoryBase as IUsuarioRepository).BuscarPeloId(id);
             if (usuario == null) throw new NotFoundException("Usuário não encontrado.");
-            if (!usuario.Eleitores.Any() && string.IsNullOrWhiteSpace(usuario.Senha))
+            if (!usuario.Eleitores.Any() && !usuario.JaCadastrouSenha)
                 return base.Excluir(usuario);
             usuario.AlterarParaPerfilEleitor();
             base.Atualizar(usuario);
+            return usuario;
+        }
+
+        public Usuario CadastrarNovaSenha(Guid codigoRecuperacao, string senha)
+        {
+            var usuario = (_repositoryBase as IUsuarioRepository).BuscarUsuarioPeloCodigoRecuperacao(codigoRecuperacao);
+            if (usuario == null) throw new NotFoundException("Código de recuperação inválido.");
+
+            usuario.CadastrarSenha(codigoRecuperacao, senha);
+            base.Atualizar(usuario);
+            return usuario;
+        }
+
+        public void ResetarSenha(string emailUsuario)
+        {
+            var usuario = (_repositoryBase as IUsuarioRepository).BuscarUsuario(emailUsuario);
+            if (usuario == null) throw new NotFoundException("Usuário não encontrado.");
+
+            usuario.ResetarSenha();
+
+            var formatador = _formatadorFactory.ObterFormatadorEmailParaAcesso(ETipoTemplateEmail.ResetSenha, usuario);
+            var email = formatador.FormatarEmails().Single();
+            _unitOfWork.EmailRepository.Adicionar(email);
+            base.Atualizar(usuario);
+        }
+
+        public Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigoRecuperacao)
+        {
+            var usuario = (_repositoryBase as IUsuarioRepository).BuscarUsuarioPeloCodigoRecuperacao(codigoRecuperacao);
+            if (usuario == null) throw new NotFoundException("Usuário não encontrado.");
+
             return usuario;
         }
     }

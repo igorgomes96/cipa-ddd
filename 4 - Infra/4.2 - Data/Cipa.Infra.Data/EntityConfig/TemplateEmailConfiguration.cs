@@ -19,7 +19,8 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.HasOne(t => t.Conta)
                 .WithMany(c => c.TemplatesEmails)
-                .IsRequired();
+                .IsRequired()
+                .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
         }
     }
 }
