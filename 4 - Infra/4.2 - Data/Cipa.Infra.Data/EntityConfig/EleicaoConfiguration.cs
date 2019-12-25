@@ -53,9 +53,6 @@ namespace Cipa.Infra.Data.EntityConfig
                 .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasIndex(e => new { e.EstabelecimentoId, e.Gestao }).IsUnique();
-
-            builder.Ignore(e => e.UsuarioEleitor);
-
         }
     }
 }

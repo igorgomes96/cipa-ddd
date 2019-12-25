@@ -14,6 +14,7 @@ namespace Cipa.Application.Interfaces
         Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Eleitor> BuscarEleitores(int eleicaoId);
         Eleitor BuscarEleitor(int eleicaoId, int eleitorId);
+        void ExcluirTodosEleitores(int eleicaoId);
         Eleitor ExcluirEleitor(int eleicaoId, int eleitorId);
         Eleitor AtualizarEleitor(int eleicaoId, Eleitor eleitor);
         Eleitor BuscarEleitorPeloIdUsuario(int eleicaoId, int usuarioId);
@@ -32,5 +33,8 @@ namespace Cipa.Application.Interfaces
         Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId);
         Importacao ImportarEleitores(int eleicaoId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType);
         Arquivo FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType);
+        bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId);
+        Stream GerarRelatorioInscricoes(int eleicaoId);
+        Stream GerarRelatorioVotos(int eleicaoId);
     }
 }

@@ -19,7 +19,6 @@ namespace Cipa.WebApi.ViewModels
         public int? GrupoId { get; set; }
         public string Grupo { get; set; }
         public DateTime? TerminoMandatoAnterior { get; set; }
-        public bool UsuarioEleitor { get; set; }
         public int ContaId { get; set; }
         public int UsuarioCriacaoId { get; set; }
 

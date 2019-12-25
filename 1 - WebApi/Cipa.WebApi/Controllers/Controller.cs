@@ -45,5 +45,7 @@ namespace Cipa.WebApi.Controllers
                 return User.Identity.Name;
             }
         }
+
+        protected bool UsuarioEhDoSESMT => User.IsInRole(PerfilUsuario.SESMT);
     }
 }

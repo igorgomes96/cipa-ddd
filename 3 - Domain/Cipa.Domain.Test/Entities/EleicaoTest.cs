@@ -476,6 +476,41 @@ namespace Cipa.Domain.Test.Entities
             Assert.Equal(qtdaExperada, eleicao.QtdaInscricoes(statusInscricao));
         }
 
+
+        [Fact]
+        public void ExcluirTodosEleitores_ProcessoNaoIniciado_EleitoresExcluidos()
+        {
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+
+            eleicao.AdicionarEleitor(eleitor1);
+            eleicao.AdicionarEleitor(eleitor2);
+
+            eleicao.ExcluirTodosEleitores();
+            Assert.Empty(eleicao.Eleitores);
+        }
+
+        [Fact]
+        public void ExcluirTodosEleitores_ProcessoIniciado_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+
+            eleicao.AdicionarEleitor(eleitor1);
+            eleicao.AdicionarEleitor(eleitor2);
+
+            eleicao.PassarParaProximaEtapa();
+
+            var ex = Assert.Throws<CustomException>(() => eleicao.ExcluirTodosEleitores());
+            Assert.Equal("A exclusão em massa dos eleitores é permitida somente antes do início do processo.", ex.Message);
+        }
+
         [Fact]
         public void BuscarEleitor_IdExistente_RetornaEleitor()
         {

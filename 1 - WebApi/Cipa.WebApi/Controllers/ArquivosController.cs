@@ -41,5 +41,13 @@ namespace Cipa.WebApi.Controllers
             return PhysicalFile(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), arquivo), @"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Path.GetFileName(arquivo));
         }
 
+
+        [HttpGet("nr5")]
+        public ActionResult DonwloadNR5()
+        {
+            var arquivo = @"Assets/NR5.pdf";
+            return PhysicalFile(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), arquivo), @"application/pdf", Path.GetFileName(arquivo));
+        }
+
     }
 }

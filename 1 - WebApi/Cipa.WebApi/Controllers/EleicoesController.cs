@@ -46,27 +46,24 @@ namespace Cipa.WebApi.Controllers
                 eleicoes = _eleicaoAppService.BuscarPelaConta(ContaId);
             else
                 eleicoes = _eleicaoAppService.BuscarPeloUsuario(UsuarioId);
-            return _mapper.Map<List<EleicaoDetalheViewModel>>(RegistrarSeUsuarioEhEleitor(eleicoes));
+            return _mapper.Map<List<EleicaoDetalheViewModel>>(eleicoes);
         }
 
-        private IEnumerable<Eleicao> RegistrarSeUsuarioEhEleitor(IEnumerable<Eleicao> eleicoes)
+        [HttpGet("{id}/usuarioeleitor")]
+        public ActionResult<bool> GetUsuarioEhEleitor(int id)
         {
-            foreach (var eleicao in eleicoes) eleicao.RegistrarSeUsuarioEhEleitor(UsuarioId);
-            return eleicoes;
+            return _eleicaoAppService.VerificarSeUsuarioEhEleitor(id, UsuarioId);
         }
 
 
         [HttpGet("{id}")]
-        public ActionResult<EleicaoViewModel> GetEleicao(int id)
+        public ActionResult<EleicaoDetalheViewModel> GetEleicao(int id)
         {
             var eleicao = _eleicaoAppService.BuscarPeloId(id);
             if (eleicao == null)
                 return NotFound("Eleição não encontrada.");
             else
-            {
-                eleicao.RegistrarSeUsuarioEhEleitor(UsuarioId);
-                return _mapper.Map<EleicaoViewModel>(eleicao);
-            }
+                return _mapper.Map<EleicaoDetalheViewModel>(eleicao);
         }
 
         [HttpPost]
@@ -143,6 +140,10 @@ namespace Cipa.WebApi.Controllers
             var eleitor = _mapper.Map<Eleitor>(eleitorViewModel);
             return _mapper.Map<EleitorViewModel>(_eleicaoAppService.AdicionarEleitor(id, eleitor));
         }
+
+        [HttpDelete("{eleicaoId}/eleitores")]
+        public void DeleteEleitor(int eleicaoId) => _eleicaoAppService.ExcluirTodosEleitores(eleicaoId);
+
 
         [HttpDelete("{eleicaoId}/eleitores/{eleitorId}")]
         public EleitorViewModel DeleteEleitor(int eleicaoId, int eleitorId)
@@ -312,6 +313,17 @@ namespace Cipa.WebApi.Controllers
             return _mapper.Map<ImportacaoViewModel>(_eleicaoAppService
                 .ImportarEleitores(id, UsuarioId, arquivo, fileName, formFile.ContentType));
         }
+        #endregion
+
+
+        #region Relatórios
+        [HttpGet("{id}/relatorios/inscricoes")]
+        public IActionResult GetRelatorioInscricoes(int id) =>
+            new FileStreamResult(_eleicaoAppService.GerarRelatorioInscricoes(id), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        [HttpGet("{id}/relatorios/votos")]
+        public IActionResult GetRelatorioVotos(int id) =>
+            new FileStreamResult(_eleicaoAppService.GerarRelatorioVotos(id), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         #endregion
 
     }

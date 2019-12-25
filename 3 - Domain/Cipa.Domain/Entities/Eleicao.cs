@@ -89,7 +89,7 @@ namespace Cipa.Domain.Entities
                     _gestao = terminoMandatoAnterior.Value.Year;
             }
         }
-        public bool UsuarioEleitor { get; private set; }
+        // public bool UsuarioEleitor { get; set; }
 
         public virtual Estabelecimento Estabelecimento { get; private set; }
         public virtual Usuario Usuario { get; private set; }
@@ -124,9 +124,6 @@ namespace Cipa.Domain.Entities
         public virtual ICollection<Voto> Votos { get; } = new List<Voto>();
         public virtual ICollection<Importacao> Importacoes { get; } = new List<Importacao>();
         public virtual ICollection<ProcessamentoEtapa> ProcessamentosEtapas { get; } = new List<ProcessamentoEtapa>();
-
-        public bool RegistrarSeUsuarioEhEleitor(int usuarioId) =>
-            UsuarioEleitor = Eleitores.Any(e => e.UsuarioId == usuarioId); // Indica se o usuário solicitante é eleitor
 
         public EtapaCronograma EtapaAtual
         {
@@ -460,6 +457,15 @@ namespace Cipa.Domain.Entities
             LinhaDimensionamento novoDimensionamento = Grupo.CalcularDimensionamento(Dimensionamento.QtdaEleitores - 1);
             AtualizarDimensionamento(novoDimensionamento);
             return excluido;
+        }
+
+
+        public void ExcluirTodosEleitores()
+        {
+            if (EtapaAtual == null && Cronograma.All(etapa => etapa.PosicaoEtapa == EPosicaoEtapa.Futura))
+                Eleitores.ToList().ForEach(e => ExcluirEleitor(e));
+            else
+                throw new CustomException("A exclusão em massa dos eleitores é permitida somente antes do início do processo.");
         }
 
         private Voto RegistrarVoto(Eleitor eleitor, string ip)

@@ -9,6 +9,8 @@ using Cipa.Application.Repositories;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Data;
+using Cipa.Application.Services.Interfaces;
 
 namespace Cipa.Application
 {
@@ -17,17 +19,21 @@ namespace Cipa.Application
         private readonly IArquivoAppService _arquivoAppService;
         private readonly IFormatadorEmailServiceFactory _formatadorFactory;
         private readonly EmailConfiguration _emailConfiguration;
+        private readonly IExcelService _excelService;
         private const string PATH_FOTOS = @"StaticFiles\Fotos\";
+        private const string PATH_RELATORIOS = @"StaticFiles\Relatorios\";
 
         public EleicaoAppService(
             IUnitOfWork unitOfWork,
             IArquivoAppService arquivoAppService,
             IFormatadorEmailServiceFactory formatadorFactory,
-            EmailConfiguration emailConfiguration) : base(unitOfWork, unitOfWork.EleicaoRepository)
+            EmailConfiguration emailConfiguration,
+            IExcelService excelService) : base(unitOfWork, unitOfWork.EleicaoRepository)
         {
             _arquivoAppService = arquivoAppService;
             _formatadorFactory = formatadorFactory;
             _emailConfiguration = emailConfiguration;
+            _excelService = excelService;
         }
 
         public override Eleicao Adicionar(Eleicao eleicao)
@@ -144,6 +150,15 @@ namespace Cipa.Application
             return eleitor;
         }
 
+        public void ExcluirTodosEleitores(int eleicaoId)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+            
+            eleicao.ExcluirTodosEleitores();
+            base.Atualizar(eleicao);
+        }
+
         public Eleicao PassarParaProximaEtapa(int eleicaoId)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
@@ -153,6 +168,9 @@ namespace Cipa.Application
             base.Atualizar(eleicao);
             return eleicao;
         }
+
+        public bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId) =>
+            (_repositoryBase as IEleicaoRepository).VerificarSeUsuarioEhEleitor(eleicaoId, usuarioId);
 
         public Eleitor AdicionarEleitor(int eleicaoId, Eleitor eleitor)
         {
@@ -377,7 +395,7 @@ namespace Cipa.Application
             if (string.IsNullOrWhiteSpace(inscricao.Foto) || !File.Exists(file))
                 throw new NotFoundException("Foto não encontrada.");
 
-            return new FileStream(file, FileMode.Open);
+            return new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
         private void ValidaFormatoPlanilha(string file)
@@ -422,6 +440,65 @@ namespace Cipa.Application
             return _arquivoAppService.SalvarArquivo(
                 DependencyFileType.DocumentoCronograma, etapaId, usuario.Email, usuario.Nome,
                 conteudoArquivo, nomeArquivo, contentType);
+        }
+
+        public Stream GerarRelatorioInscricoes(int eleicaoId)
+        {
+            var apuracao = ApurarVotos(eleicaoId);
+            DataTable dataTable = new DataTable();
+
+            dataTable.Columns.Add("Nome");
+            dataTable.Columns.Add("Email");
+            dataTable.Columns.Add("Matrícula");
+            dataTable.Columns.Add("Cargo");
+            dataTable.Columns.Add("Área");
+            dataTable.Columns.Add("Data de Nascimento");
+            dataTable.Columns.Add("Data de Admissão");
+            dataTable.Columns.Add("Votos");
+
+            foreach (var inscricao in apuracao)
+            {
+                dataTable.Rows.Add(inscricao.Eleitor.Nome, inscricao.Eleitor.Email,
+                    inscricao.Eleitor.Matricula, inscricao.Eleitor.Cargo, inscricao.Eleitor.Area,
+                    inscricao.Eleitor.DataNascimento, inscricao.Eleitor.DataAdmissao,
+                    inscricao.Votos);
+            }
+            var nomeArquivo = $"Inscricoes - Eleicao {eleicaoId}.xlsx";
+            var arquivo = FileSystemHelpers.GetRelativeFileName(FileSystemHelpers.GetAbsolutePath(PATH_RELATORIOS), nomeArquivo);
+            _excelService.GravaInformacoesArquivo(arquivo, dataTable, "Inscrições", 1, 1);
+            return new FileStream(arquivo, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
+
+
+        public Stream GerarRelatorioVotos(int eleicaoId)
+        {
+            var votos = BuscarVotos(eleicaoId)
+                .OrderBy(v => v.Eleitor.Nome);
+
+            DataTable dataTable = new DataTable();
+
+            dataTable.Columns.Add("Nome");
+            dataTable.Columns.Add("Email");
+            dataTable.Columns.Add("Matrícula");
+            dataTable.Columns.Add("Cargo");
+            dataTable.Columns.Add("Área");
+            dataTable.Columns.Add("Data de Nascimento");
+            dataTable.Columns.Add("Data de Admissão");
+            dataTable.Columns.Add("Horário do Voto");
+            dataTable.Columns.Add("IP");
+
+            foreach (var voto in votos)
+            {
+                dataTable.Rows.Add(voto.Eleitor.Nome, voto.Eleitor.Email,
+                    voto.Eleitor.Matricula, voto.Eleitor.Cargo, voto.Eleitor.Area,
+                    voto.Eleitor.DataNascimento, voto.Eleitor.DataAdmissao,
+                    voto.DataCadastro, voto.IP);
+            }
+
+            var nomeArquivo = $"Votos - Eleicao {eleicaoId}.xlsx";
+            var arquivo = FileSystemHelpers.GetRelativeFileName(FileSystemHelpers.GetAbsolutePath(PATH_RELATORIOS), nomeArquivo);
+            _excelService.GravaInformacoesArquivo(arquivo, dataTable, "Votos", 1, 1);
+            return new FileStream(arquivo, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
     }
