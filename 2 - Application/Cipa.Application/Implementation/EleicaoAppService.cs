@@ -11,6 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Data;
 using Cipa.Application.Services.Interfaces;
+using System;
+using Cipa.Domain.Services.Interfaces;
 
 namespace Cipa.Application
 {
@@ -154,7 +156,7 @@ namespace Cipa.Application
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
-            
+
             eleicao.ExcluirTodosEleitores();
             base.Atualizar(eleicao);
         }
@@ -440,6 +442,36 @@ namespace Cipa.Application
             return _arquivoAppService.SalvarArquivo(
                 DependencyFileType.DocumentoCronograma, etapaId, usuario.Email, usuario.Nome,
                 conteudoArquivo, nomeArquivo, contentType);
+        }
+
+        public void AtualizarCronogramas()
+        {
+            var eleicoes = (_repositoryBase as IEleicaoRepository).BuscarEleicoesComMudancaEtapaAgendadaParaHoje();
+            foreach (var eleicao in eleicoes)
+            {
+                try
+                {
+                    eleicao.PassarParaProximaEtapa(true);
+                    var formatador = _formatadorFactory
+                        .ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(
+                            ETipoTemplateEmail.SucessoMudancaEtapaCronograma, eleicao);
+                    EnviarNotificacaoMudancaEtapa(formatador, eleicao);
+                }
+                catch
+                {
+                    var formatador = _formatadorFactory
+                        .ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(
+                            ETipoTemplateEmail.ErroMudancaEtapaCronograma, eleicao);
+                    EnviarNotificacaoMudancaEtapa(formatador, eleicao);
+                }
+            }
+            _unitOfWork.Commit();
+        }
+
+        private void EnviarNotificacaoMudancaEtapa(IFormatadorEmailService formatador, Eleicao eleicao)
+        {
+            foreach (var email in formatador.FormatarEmails())
+                _unitOfWork.EmailRepository.Adicionar(email);
         }
 
         public Stream GerarRelatorioInscricoes(int eleicaoId)

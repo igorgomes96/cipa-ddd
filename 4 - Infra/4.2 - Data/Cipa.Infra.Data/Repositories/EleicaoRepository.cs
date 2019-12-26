@@ -3,6 +3,7 @@ using Cipa.Application.Repositories;
 using Cipa.Infra.Data.Context;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -28,5 +29,16 @@ namespace Cipa.Infra.Data.Repositories
 
         public bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId) =>
             _db.Eleitores.Any(e => e.EleicaoId == eleicaoId && e.UsuarioId == usuarioId);
+
+        public IEnumerable<Eleicao> BuscarEleicoesComMudancaEtapaAgendadaParaHoje()
+        {
+            var dataInicio = DateTime.Today.AddDays(-2);  // Intervalo máximo de 2 dias
+            return BuscarTodos().Where(e =>
+                e.EtapaAtual != null
+                && string.IsNullOrWhiteSpace(e.EtapaAtual.ErroMudancaEtapa)
+                && e.DataTerminoEtapa(e.EtapaAtual) <= DateTime.Today
+                && e.EtapaAtual.DataPrevista.Date > dataInicio);
+        }
+
     }
 }

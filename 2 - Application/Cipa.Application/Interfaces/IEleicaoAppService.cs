@@ -36,5 +36,6 @@ namespace Cipa.Application.Interfaces
         bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId);
         Stream GerarRelatorioInscricoes(int eleicaoId);
         Stream GerarRelatorioVotos(int eleicaoId);
+        void AtualizarCronogramas();
     }
 }

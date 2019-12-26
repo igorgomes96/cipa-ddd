@@ -8,11 +8,11 @@ namespace Cipa.Domain.Services.Implementations
     {
         public ComunicadoSucessoMudancaEtapaService(Eleicao eleicao) : base(eleicao)
         {
-            MapeamentoParametros.Add("@ETAPA_ATUAL", () => eleicao.EtapaAtual?.Nome ?? "N/A - Processo não iniciado");
-            MapeamentoParametros.Add("@ETAPA_POSTERIOR", () => eleicao.EtapaPosterior?.Nome ?? "Finalização da Eleição");
+            MapeamentoParametros.Add("@ETAPA_ATUAL", () => eleicao.EtapaAtual?.Nome ?? "Finalização da Eleição");
+            MapeamentoParametros.Add("@ETAPA_ANTERIOR", () => eleicao.EtapaAnterior?.Nome ?? "N/A - Início do Processo");
             ParametrosUtilizados.Add("@EMPRESA_CNPJ");
             ParametrosUtilizados.Add("@ETAPA_ATUAL");
-            ParametrosUtilizados.Add("@ETAPA_POSTERIOR");
+            ParametrosUtilizados.Add("@ETAPA_ANTERIOR");
         }
 
         protected override ICollection<Email> FormatarEmailPadrao(TemplateEmail templateEmail)

@@ -9,7 +9,7 @@ namespace Cipa.Domain.Services.Implementations
         public ComunicadoErroMudancaEtapaService(Eleicao eleicao) : base(eleicao)
         {
             MapeamentoParametros.Add("@ERRO", () => Eleicao.EtapaAtual?.ErroMudancaEtapa);
-            MapeamentoParametros.Add("@ETAPA_ATUAL", () => eleicao.EtapaAtual?.Nome ?? "N/A - Processo não iniciado");
+            MapeamentoParametros.Add("@ETAPA_ATUAL", () => eleicao.EtapaAtual?.Nome ?? "N/A - Início do Processo");
             MapeamentoParametros.Add("@ETAPA_POSTERIOR", () => eleicao.EtapaPosterior?.Nome ?? "Finalização da Eleição");
             ParametrosUtilizados.Add("@EMPRESA_CNPJ");
             ParametrosUtilizados.Add("@ERRO");

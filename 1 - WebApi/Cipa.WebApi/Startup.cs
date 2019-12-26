@@ -28,6 +28,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Cipa.WebApi.BackgroundTasks.Scheduler;
 
 namespace Cipa.WebApi
 {
@@ -100,9 +101,10 @@ namespace Cipa.WebApi
                     .WithOrigins("http://localhost:4200")));
 
 
-            services.AddHostedService<ImportacaoHostedService>();
+            // services.AddHostedService<ImportacaoHostedService>();
             // services.AddHostedService<EmailHostedService>();
             // services.AddHostedService<ProcesssamentoEtapasHostedService>();
+            services.AddHostedService<AlteracaoEtapaScheduler>();
 
             services.AddResponseCompression();
 
