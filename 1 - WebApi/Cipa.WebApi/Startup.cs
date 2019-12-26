@@ -80,6 +80,11 @@ namespace Cipa.WebApi
                 authOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options => JwtBeareOptionsConfig.JwtConfiguration(options, signingConfigurations, tokenConfigurations));
 
+            services.AddAuthorization(auth => {
+                auth.AddPolicy(PoliticasAutorizacao.UsuarioSESMT, AuthorizationPolicies.UsuarioSESMTAuthorizationPolicy);
+                auth.AddPolicy(PoliticasAutorizacao.UsuarioSESMTContaValida, AuthorizationPolicies.UsuarioSESMTPossuiContaValidaAuthorizationPolicy);
+            });
+
             // AutoMapper
             services.AddSingleton(AutoMapperConfig.MapperConfig());
 

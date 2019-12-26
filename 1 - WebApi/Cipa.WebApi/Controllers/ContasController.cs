@@ -2,6 +2,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
+using Cipa.WebApi.Authentication;
 using Cipa.WebApi.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ using System.Linq;
 
 namespace Cipa.WebApi.Controllers
 {
-    [Authorize]
+    [Authorize(PoliticasAutorizacao.UsuarioSESMT)]
     [Route("api/[controller]")]
     [ApiController]
     public class ContasController : Controller

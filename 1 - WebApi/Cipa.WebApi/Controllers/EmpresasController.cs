@@ -2,6 +2,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
+using Cipa.WebApi.Authentication;
 using Cipa.WebApi.Filters;
 using Cipa.WebApi.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,7 @@ using System.Linq;
 
 namespace Cipa.WebApi.Controllers
 {
-    [Authorize]
+    [Authorize(PoliticasAutorizacao.UsuarioSESMT)]
     [Route("api/[controller]")]
     [ApiController]
     public class EmpresasController : Controller
@@ -33,6 +34,7 @@ namespace Cipa.WebApi.Controllers
         public EmpresaViewModel GetEmpresa(int id) =>
             _mapper.Map<EmpresaViewModel>(_empresaAppService.BuscarPeloId(id));
 
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPost]
         public EmpresaViewModel PostEmpresa(EmpresaViewModel empresa)
         {
@@ -41,6 +43,7 @@ namespace Cipa.WebApi.Controllers
             return _mapper.Map<EmpresaViewModel>(_empresaAppService.Adicionar(novaEmpresa));
         }
 
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPut("{id}")]
         public IActionResult PutEmpresa(int id, EmpresaViewModel empresa)
         {
@@ -49,6 +52,7 @@ namespace Cipa.WebApi.Controllers
             return NoContent();
         }
 
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpDelete("{id}")]
         public EmpresaViewModel DeleteEmpresa(int id) =>
             _mapper.Map<EmpresaViewModel>(_empresaAppService.Excluir(id));

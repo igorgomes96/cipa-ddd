@@ -2,6 +2,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
+using Cipa.WebApi.Authentication;
 using Cipa.WebApi.Filters;
 using Cipa.WebApi.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,7 @@ using System.Linq;
 
 namespace Cipa.WebApi.Controllers
 {
-    [Authorize]
+    [Authorize(PoliticasAutorizacao.UsuarioSESMT)]
     [Route("api/[controller]")]
     [ApiController]
     public class EstabelecimentosController : Controller
@@ -41,13 +42,15 @@ namespace Cipa.WebApi.Controllers
         public EstabelecimentoViewModel GetEstabelecimento(int id) =>
             _mapper.Map<EstabelecimentoViewModel>(_estabelecimentoAppService.BuscarPeloId(id));
 
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPost]
         public EstabelecimentoViewModel PostEstabelecimento(EstabelecimentoViewModel estabelecimento)
         {
-            var novaEstabelecimento = _mapper.Map<Estabelecimento>(estabelecimento);
-            return _mapper.Map<EstabelecimentoViewModel>(_estabelecimentoAppService.Adicionar(novaEstabelecimento));
+            var novoEstabelecimento = _mapper.Map<Estabelecimento>(estabelecimento);
+            return _mapper.Map<EstabelecimentoViewModel>(_estabelecimentoAppService.Adicionar(novoEstabelecimento));
         }
 
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPut("{id}")]
         public IActionResult PutEstabelecimento(int id, EstabelecimentoViewModel estabelecimento)
         {
@@ -56,6 +59,7 @@ namespace Cipa.WebApi.Controllers
             return NoContent();
         }
 
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpDelete("{id}")]
         public EstabelecimentoViewModel DeleteEstabelecimento(int id) =>
             _mapper.Map<EstabelecimentoViewModel>(_estabelecimentoAppService.Excluir(id));

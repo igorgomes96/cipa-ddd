@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
+using Cipa.WebApi.Authentication;
 using Cipa.WebApi.Filters;
 using Cipa.WebApi.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +28,7 @@ namespace Cipa.WebApi.Controllers
 
         [HttpGet]
         [Pagination]
+        [Authorize(PoliticasAutorizacao.UsuarioSESMT)]
         public IEnumerable<UsuarioViewModel> GetUsuarios() =>
             _usuarioAppService.BuscarUsuariosPelaConta(ContaId).AsQueryable().ProjectTo<UsuarioViewModel>(_mapper.ConfigurationProvider);
 
@@ -44,6 +46,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         public UsuarioViewModel PostUsuario(UsuarioViewModel usuario)
         {
             var novoUsuario = _mapper.Map<Usuario>(usuario);
@@ -53,6 +56,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         public IActionResult PutUsuario(int id, UsuarioViewModel usuarioViewModel)
         {
             var usuario = _mapper.Map<Usuario>(usuarioViewModel);
@@ -64,6 +68,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         public ActionResult<UsuarioViewModel> DeleteUsuario(int id)
         {
             if (id == UsuarioId) return BadRequest("Não é permitida a auto-exclusão.");

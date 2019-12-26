@@ -41,12 +41,6 @@ namespace Cipa.Domain.Helpers
         public const string Inscricoes = "/eleicoes/{id}/candidaturas/nova";
     }
 
-    public static class PoliticasAutorizacao
-    {
-        public const string Bearer = "Bearer";
-        public const string PossuiConta = "PossuiConta";
-        public const string PossuiContaValida = "PossuiContaValida";
-    }
 
     public static class FusosHorarios
     {
