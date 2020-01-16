@@ -55,6 +55,21 @@ namespace Cipa.WebApi.Migrations
                     b.ToTable("Arquivos");
                 });
 
+            modelBuilder.Entity("Cipa.Domain.Entities.ConfiguracaoEleicao", b =>
+                {
+                    b.Property<int>("Id");
+
+                    b.Property<bool>("EnvioConviteInscricao");
+
+                    b.Property<bool>("EnvioConviteVotacao");
+
+                    b.Property<bool>("EnvioEditalConvocao");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Eleicoes");
+                });
+
             modelBuilder.Entity("Cipa.Domain.Entities.Conta", b =>
                 {
                     b.Property<int>("Id")
@@ -259,17 +274,6 @@ namespace Cipa.WebApi.Migrations
                     b.HasIndex("ContaId");
 
                     b.ToTable("Empresas");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Ativa = true,
-                            Cnpj = "01540533000390",
-                            ContaId = 1,
-                            DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            RazaoSocial = "Empresa Teste"
-                        });
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Estabelecimento", b =>
@@ -303,19 +307,6 @@ namespace Cipa.WebApi.Migrations
                     b.HasIndex("GrupoId");
 
                     b.ToTable("Estabelecimentos");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Ativo = true,
-                            Cidade = "Uberlândia",
-                            DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Descricao = "Teste",
-                            EmpresaId = 1,
-                            Endereco = "Teste",
-                            GrupoId = 1
-                        });
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.EtapaCronograma", b =>
@@ -4799,11 +4790,11 @@ namespace Cipa.WebApi.Migrations
                         {
                             Id = 1,
                             Cargo = "Cargo Teste",
-                            CodigoRecuperacao = new Guid("096c22bd-51f9-4100-a789-1576c85eb4cb"),
+                            CodigoRecuperacao = new Guid("2f108d22-122e-4ca2-b616-52c43723fca6"),
                             ContaId = 1,
                             DataCadastro = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "teste@email.com",
-                            ExpiracaoCodigoRecuperacao = new DateTime(2019, 12, 24, 21, 17, 9, 585, DateTimeKind.Local).AddTicks(7680),
+                            ExpiracaoCodigoRecuperacao = new DateTime(2020, 1, 16, 16, 55, 39, 742, DateTimeKind.Local).AddTicks(4132),
                             Nome = "Teste",
                             Perfil = "SESMT",
                             Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc"
@@ -4833,6 +4824,14 @@ namespace Cipa.WebApi.Migrations
                         .IsUnique();
 
                     b.ToTable("Votos");
+                });
+
+            modelBuilder.Entity("Cipa.Domain.Entities.ConfiguracaoEleicao", b =>
+                {
+                    b.HasOne("Cipa.Domain.Entities.Eleicao")
+                        .WithOne("Configuracao")
+                        .HasForeignKey("Cipa.Domain.Entities.ConfiguracaoEleicao", "Id")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Cipa.Domain.Entities.Conta", b =>

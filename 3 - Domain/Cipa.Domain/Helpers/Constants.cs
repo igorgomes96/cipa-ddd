@@ -33,7 +33,7 @@ namespace Cipa.Domain.Helpers
 
     public static class Links
     {
-        public const string URL = "http://localhost:4200";
+        public const string URL = "https://cipabeta.solucoesti.online";
         public const string Login = "/autenticacao/login";
         public const string Cadastro = "/autenticacao/cadastro";
         public const string Reset = "/autenticacao/reset";

@@ -21,6 +21,11 @@ namespace Cipa.Application
         {
             var empresa = _unitOfWork.EmpresaRepository.BuscarPeloId(estabelecimento.EmpresaId);
             if (empresa == null) throw new NotFoundException("Empresa não encontrada.");
+            
+            if (!empresa.Conta.VerificarSeAindaPermiteCadastroDeEstabelecimentos())
+                throw new CustomException(
+                    $"Não é possível cadastrar novos estabelecimentos, pois sua conta possui o limite de " +
+                    $"{empresa.Conta.QtdaEstabelecimentos} estabelecimentos cadastrados. Faça um upgrade de sua conta.");
 
             estabelecimento.Empresa = empresa;
             estabelecimento.GrupoId = estabelecimento.GrupoId == 0 ? null : estabelecimento.GrupoId;

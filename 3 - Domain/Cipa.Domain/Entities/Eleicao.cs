@@ -1,6 +1,5 @@
 using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
-using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,6 +29,7 @@ namespace Cipa.Domain.Entities
             _grupo = grupo ?? estabelecimento.Grupo ?? throw new CustomException("O grupo deve ser informado.");
             Conta = usuarioCriacao.Conta ?? throw new CustomException("O usuário de criação da eleição deve estar vinculado à uma conta.");
             _dimensionamento = new Dimensionamento(0, 0, 0, 0);
+            Configuracao = new ConfiguracaoEleicao(true, true, true);
         }
 
         public Eleicao(
@@ -45,7 +45,7 @@ namespace Cipa.Domain.Entities
             Id = id;
             DataInicio = dataInicio;
             EstabelecimentoId = estabelecimentoId;
-            _gestao = terminoMandatoAnterior?.Year ?? dataInicio.Year;
+            Gestao = terminoMandatoAnterior?.Year ?? dataInicio.Year;
             DuracaoGestao = duracaoGestao;
             UsuarioCriacaoId = usuarioCriacaoId;
             ContaId = contaId;
@@ -54,11 +54,7 @@ namespace Cipa.Domain.Entities
             DataFinalizacaoPrevista = dataInicio.AddDays(60);
         }
 
-        private int _gestao;
-        public int Gestao
-        {
-            get => _gestao;
-        }
+        public int Gestao { get; private set; }
         public int DuracaoGestao { get; set; }
         public int EstabelecimentoId { get; private set; }
         private DateTime _dataInicio;
@@ -69,7 +65,7 @@ namespace Cipa.Domain.Entities
             {
                 _dataInicio = value;
                 if (!TerminoMandatoAnterior.HasValue)
-                    _gestao = _dataInicio.Year;
+                    Gestao = _dataInicio.Year;
             }
         }
         public int UsuarioCriacaoId { get; private set; }
@@ -86,10 +82,10 @@ namespace Cipa.Domain.Entities
             {
                 terminoMandatoAnterior = value;
                 if (terminoMandatoAnterior.HasValue)
-                    _gestao = terminoMandatoAnterior.Value.Year;
+                    Gestao = terminoMandatoAnterior.Value.Year;
             }
         }
-        // public bool UsuarioEleitor { get; set; }
+        public virtual ConfiguracaoEleicao Configuracao { get; set; }
 
         public virtual Estabelecimento Estabelecimento { get; private set; }
         public virtual Usuario Usuario { get; private set; }
@@ -115,7 +111,7 @@ namespace Cipa.Domain.Entities
         private Dimensionamento _dimensionamento;
         public virtual Dimensionamento Dimensionamento { get => _dimensionamento ?? new Dimensionamento(0, 0, 0, 0); }
         public virtual ICollection<Inscricao> Inscricoes { get; } = new List<Inscricao>();
-        private List<EtapaCronograma> _cronograma = new List<EtapaCronograma>();
+        private readonly List<EtapaCronograma> _cronograma = new List<EtapaCronograma>();
         public virtual IReadOnlyCollection<EtapaCronograma> Cronograma
         {
             get => new ReadOnlyCollection<EtapaCronograma>(_cronograma.OrderBy(e => e.Ordem).ToList());

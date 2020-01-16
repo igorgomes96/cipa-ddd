@@ -16,6 +16,7 @@ namespace Cipa.Infra.Data.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new EleicaoConfiguration());
+            modelBuilder.ApplyConfiguration(new ConfiguracaoEleicaoConfiguration());
             modelBuilder.ApplyConfiguration(new EmpresaConfiguration());
             modelBuilder.ApplyConfiguration(new EstabelecimentoConfiguration());
             modelBuilder.ApplyConfiguration(new EtapaCronogramaConfiguration());
@@ -64,6 +65,7 @@ namespace Cipa.Infra.Data.Context
         public virtual DbSet<ProcessamentoEtapa> ProcessamentosEtapas { get; set; }
         public virtual DbSet<EtapaPadraoConta> EtapasPadroesContas { get; set; }
         public virtual DbSet<TemplateEmail> TemplatesEmails { get; set; }
+        public virtual DbSet<ConfiguracaoEleicao> ConfiguracoesEleicoes { get; set; }
 
 
         public override int SaveChanges()

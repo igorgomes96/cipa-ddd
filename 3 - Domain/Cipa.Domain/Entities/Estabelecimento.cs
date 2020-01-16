@@ -37,8 +37,8 @@ namespace Cipa.Domain.Entities
 
         public void Inativar()
         {
-            if (EleicoesDoAnoCorrente.Any())
-                throw new CustomException("Somente um estabelecimento que não tenha nenhuma eleição no ano corrente pode ser excluído.");
+            if (EleicoesDoAnoCorrente.Any() || EleicoesEmAndamento.Any())
+                throw new CustomException("Somente um estabelecimento que não tenha nenhuma eleição em andamento ou no ano corrente pode ser excluído.");
             Ativo = false;
         }
 

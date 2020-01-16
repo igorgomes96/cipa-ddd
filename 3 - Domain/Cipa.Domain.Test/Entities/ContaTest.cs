@@ -109,5 +109,50 @@ namespace Cipa.Domain.Test.Entities
                 }
             );
         }
+
+        [Fact]
+        public void VerificarSeAindaPermiteCadastroDeEstabelecimentos_NaoAtingiuLimite_RetornaTrue()
+        {
+            var empresa1 = new Empresa("Empresa 1", "75890693000134");
+            var empresa2 = new Empresa("Empresa 2", "83059997000182");
+            var empresa3 = new Empresa("Empresa 3", "55900562000183");
+            empresa1.Estabelecimentos.Add(new Estabelecimento("Uberlândia", "Endereço", 1));
+            var estabelecimentoInativo = new Estabelecimento("Uberlândia", "Endereço", 1);
+            estabelecimentoInativo.Inativar();
+            empresa1.Estabelecimentos.Add(estabelecimentoInativo);
+            empresa2.Estabelecimentos.Add(new Estabelecimento("Uberlândia", "Endereço", 2));
+            empresa2.Estabelecimentos.Add(new Estabelecimento("Uberlândia", "Endereço", 2));
+            empresa3.Estabelecimentos.Add(estabelecimentoInativo);
+            empresa3.Inativar();
+
+            var conta = new Conta
+            {
+                QtdaEstabelecimentos = 4
+            };
+            conta.Empresas.Add(empresa1);
+            conta.Empresas.Add(empresa2);
+            conta.Empresas.Add(empresa3);
+
+            Assert.True(conta.VerificarSeAindaPermiteCadastroDeEstabelecimentos());
+        }
+
+        [Fact]
+        public void VerificarSeAindaPermiteCadastroDeEstabelecimentos_JaAtingiuLimite_RetornaFalse()
+        {
+            var empresa1 = new Empresa("Empresa 1", "75890693000134");
+            var empresa2 = new Empresa("Empresa 2", "83059997000182");
+            empresa1.Estabelecimentos.Add(new Estabelecimento("Uberlândia", "Endereço", 1));
+            empresa1.Estabelecimentos.Add(new Estabelecimento("Uberlândia", "Endereço", 1));
+            empresa2.Estabelecimentos.Add(new Estabelecimento("Uberlândia", "Endereço", 2));
+            empresa2.Estabelecimentos.Add(new Estabelecimento("Uberlândia", "Endereço", 2));
+            var conta = new Conta
+            {
+                QtdaEstabelecimentos = 4
+            };
+            conta.Empresas.Add(empresa1);
+            conta.Empresas.Add(empresa2);
+
+            Assert.False(conta.VerificarSeAindaPermiteCadastroDeEstabelecimentos());
+        }
     }
 }

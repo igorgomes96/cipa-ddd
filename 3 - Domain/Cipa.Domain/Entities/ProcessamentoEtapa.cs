@@ -52,14 +52,14 @@ namespace Cipa.Domain.Entities
             MensagemErro = mensagemErro;
         }
 
-        public ICollection<Email> RealizarProcessamentoGerarEmails(EmailConfiguration emailConfiguration, IFormatadorEmailServiceFactory formatadorFactory)
+        public ICollection<Email> RealizarProcessamentoGerarEmails(IFormatadorEmailServiceFactory formatadorFactory)
         {
             if (StatusProcessamentoEtapa != EStatusProcessamentoEtapa.Processando)
                 throw new CustomException("O processamento de uma etapa só pode ocorrer quando o status for igual a 'Processando'.");
 
             try
             {
-                IFormatadorEmailService formatador = ObterFomatadorEmail(EtapaCronograma.EtapaObrigatoriaId, formatadorFactory);
+                IFormatadorEmailService formatador = ObterFomatadorEmail(formatadorFactory);
                 ICollection<Email> emails = new List<Email>();
                 if (formatador != null)
                     emails = formatador.FormatarEmails();
@@ -75,21 +75,26 @@ namespace Cipa.Domain.Entities
             }
         }
 
-        private IFormatadorEmailService ObterFomatadorEmail(
-            ECodigoEtapaObrigatoria? codigoEtapaObrigatoria,
-            IFormatadorEmailServiceFactory formatadorFactory)
+        private IFormatadorEmailService ObterFomatadorEmail(IFormatadorEmailServiceFactory formatadorFactory)
         {
             switch (EtapaCronograma.EtapaObrigatoriaId)
             {
                 case (ECodigoEtapaObrigatoria.Convocacao):
-                    return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.EditalConvocacao, Eleicao);
+                    if (Eleicao.Configuracao.EnvioEditalConvocao)
+                        return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.EditalConvocacao, Eleicao);
+                    break;
                 case (ECodigoEtapaObrigatoria.Inscricao):
-                    return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.ConviteParaInscricao, Eleicao);
+                    if (Eleicao.Configuracao.EnvioConviteInscricao)
+                        return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.ConviteParaInscricao, Eleicao);
+                    break;
                 case (ECodigoEtapaObrigatoria.Votacao):
-                    return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.ConviteParaVotacao, Eleicao);
+                    if (Eleicao.Configuracao.EnvioConviteVotacao)
+                        return formatadorFactory.ObterFormatadorEmailParaComunicadosGeraisProcessamentoEtapa(ETipoTemplateEmail.ConviteParaVotacao, Eleicao);
+                    break;
                 default:
                     return null;
             }
+            return null;
         }
     }
 }

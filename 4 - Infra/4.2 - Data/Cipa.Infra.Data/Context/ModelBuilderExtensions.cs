@@ -629,20 +629,6 @@ namespace Cipa.Infra.Data.Context
                 ContaId = 1
             };
 
-            Empresa empresa = new Empresa("Empresa Teste", "01540533000390")
-            {
-                Id = 1,
-                Cnpj = "01540533000390",
-                ContaId = 1,
-            };
-
-            Estabelecimento estabelecimento = new Estabelecimento("Uberlândia", "Teste", 1)
-            {
-                Id = 1,
-                Descricao = "Teste",
-                GrupoId = 1
-            };
-
             var etapasObrigatorias = new EtapaObrigatoria[6] {
                 new EtapaObrigatoria
                 {
@@ -705,12 +691,10 @@ namespace Cipa.Infra.Data.Context
 
             modelBuilder.Entity<Conta>().HasData(conta);
             modelBuilder.Entity<TemplateEmail>().HasData(templatesEmails);
-            modelBuilder.Entity<Empresa>().HasData(empresa);
             modelBuilder.Entity<Grupo>().HasData(grupos);
             modelBuilder.Entity<LimiteDimensionamento>().HasData(limitesDimensionamentos);
             modelBuilder.Entity<LinhaDimensionamento>().HasData(linhaDimensionamentos);
             modelBuilder.Entity<Usuario>().HasData(usuario);
-            modelBuilder.Entity<Estabelecimento>().HasData(estabelecimento);
             modelBuilder.Entity<EtapaObrigatoria>().HasData(etapasObrigatorias);
             modelBuilder.Entity<EtapaPadraoConta>().HasData(etapasPadroesConta);
         }

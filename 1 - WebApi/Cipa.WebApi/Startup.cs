@@ -35,12 +35,14 @@ namespace Cipa.WebApi
     public class Startup
     {
         private readonly ILogger<Startup> _logger;
-        public Startup(ILogger<Startup> logger, IConfiguration configuration)
+        public Startup(ILogger<Startup> logger, IConfiguration configuration, IHostingEnvironment environment)
         {
             _logger = logger;
             Configuration = configuration;
+            Environment = environment;
         }
 
+        public IHostingEnvironment Environment { get; }
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -61,7 +63,7 @@ namespace Cipa.WebApi
             new ConfigureFromConfigurationOptions<TokenConfigurations>(
                 Configuration.GetSection("TokenConfigurations"))
                     .Configure(tokenConfigurations);
-            services.AddSingleton<TokenConfigurations>(tokenConfigurations);
+            services.AddSingleton(tokenConfigurations);
 
             var importacaoConfiguration = new ImportacaoServiceConfiguration();
             new ConfigureFromConfigurationOptions<ImportacaoServiceConfiguration>(
@@ -81,7 +83,8 @@ namespace Cipa.WebApi
                 authOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(options => JwtBeareOptionsConfig.JwtConfiguration(options, signingConfigurations, tokenConfigurations));
 
-            services.AddAuthorization(auth => {
+            services.AddAuthorization(auth =>
+            {
                 auth.AddPolicy(PoliticasAutorizacao.UsuarioSESMT, AuthorizationPolicies.UsuarioSESMTAuthorizationPolicy);
                 auth.AddPolicy(PoliticasAutorizacao.UsuarioSESMTContaValida, AuthorizationPolicies.UsuarioSESMTPossuiContaValidaAuthorizationPolicy);
             });
@@ -101,9 +104,9 @@ namespace Cipa.WebApi
                     .WithOrigins("http://localhost:4200")));
 
 
-            // services.AddHostedService<ImportacaoHostedService>();
-            // services.AddHostedService<EmailHostedService>();
-            // services.AddHostedService<ProcesssamentoEtapasHostedService>();
+            services.AddHostedService<ImportacaoHostedService>();
+            services.AddHostedService<EmailHostedService>();
+            services.AddHostedService<ProcesssamentoEtapasHostedService>();
             services.AddHostedService<AlteracaoEtapaScheduler>();
 
             services.AddResponseCompression();
@@ -158,7 +161,9 @@ namespace Cipa.WebApi
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("importacaofinalizada", mapper.Map<FinalizacaoImportacaoStatusViewModel>(args));
             };
 
-            // app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
+            //app.UseDefaultFiles();
+            //app.UseStaticFiles();
             app.UseMvc();
         }
 

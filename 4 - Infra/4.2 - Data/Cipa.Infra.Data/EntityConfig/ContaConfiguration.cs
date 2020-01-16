@@ -28,6 +28,8 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.Property(c => c.DataCadastro)
                 .IsRequired();
+
+            builder.Ignore(c => c.EmpresasAtivas);
         }
     }
 }

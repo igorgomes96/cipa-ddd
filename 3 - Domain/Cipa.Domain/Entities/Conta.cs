@@ -30,10 +30,17 @@ namespace Cipa.Domain.Entities
             get => new ReadOnlyCollection<TemplateEmail>(_templatesEmails.ToList());
         }
 
+        public IEnumerable<Empresa> EmpresasAtivas => Empresas.Where(e => e.Ativa);
+
+        public bool VerificarSeAindaPermiteCadastroDeEstabelecimentos() =>
+            EmpresasAtivas.Aggregate(0, 
+                (int qtda, Empresa empresa) => qtda + empresa.EstabelecimentosAtivos.Count) < QtdaEstabelecimentos;
+
         public TemplateEmail BuscarTemplateEmail(ETipoTemplateEmail tipoTemplateEmail) =>
             TemplatesEmails.FirstOrDefault(t => t.TipoTemplateEmail == tipoTemplateEmail);
 
-        public void AdicionarTempateEmail(TemplateEmail templateEmail) {
+        public void AdicionarTempateEmail(TemplateEmail templateEmail)
+        {
             _templatesEmails.Add(templateEmail);
         }
 

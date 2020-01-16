@@ -59,7 +59,7 @@ namespace Cipa.Domain.Test.Entities
                 .Throws(new Exception("Erro"));
 
             processamentoEtapa.IniciarProcessamento();
-            var retorno = processamentoEtapa.RealizarProcessamentoGerarEmails(new EmailConfiguration(), formatadorFactory.Object);
+            var retorno = processamentoEtapa.RealizarProcessamentoGerarEmails(formatadorFactory.Object);
             Assert.Empty(retorno);
             Assert.Equal(EStatusProcessamentoEtapa.ErroProcessamento, processamentoEtapa.StatusProcessamentoEtapa);
             Assert.StartsWith("Erro ao processar mudança de etapa/envio de e-mail. Contate o suporte.\r\nErro", processamentoEtapa.MensagemErro);
@@ -75,7 +75,7 @@ namespace Cipa.Domain.Test.Entities
             formatador.Setup(f => f.FormatarEmails()).Returns(new List<Email> { new Email("", "", "", "") } );
 
             processamentoEtapa.IniciarProcessamento();
-            var retorno = processamentoEtapa.RealizarProcessamentoGerarEmails(new EmailConfiguration(), formatadorFactory.Object);
+            var retorno = processamentoEtapa.RealizarProcessamentoGerarEmails(formatadorFactory.Object);
             Assert.Equal(1, retorno.Count);
             Assert.Equal(EStatusProcessamentoEtapa.ProcessadoComSucesso, processamentoEtapa.StatusProcessamentoEtapa);
             Assert.Null(processamentoEtapa.MensagemErro);

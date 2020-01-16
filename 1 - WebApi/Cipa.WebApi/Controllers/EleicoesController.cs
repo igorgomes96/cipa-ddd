@@ -42,7 +42,7 @@ namespace Cipa.WebApi.Controllers
         [Pagination]
         public IEnumerable<EleicaoDetalheViewModel> GetEleicoes()
         {
-            IEnumerable<Eleicao> eleicoes = null;
+            IEnumerable<Eleicao> eleicoes;
             if (User.IsInRole(PerfilUsuario.SESMT))
                 eleicoes = _eleicaoAppService.BuscarPelaConta(ContaId);
             else
@@ -330,7 +330,6 @@ namespace Cipa.WebApi.Controllers
                 .ImportarEleitores(id, UsuarioId, arquivo, fileName, formFile.ContentType));
         }
         #endregion
-
 
         #region Relatórios
         [HttpGet("{id}/relatorios/inscricoes")]

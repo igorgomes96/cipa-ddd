@@ -8,7 +8,7 @@ namespace Cipa.Domain.Services.Implementations
     public abstract class ComunicadoBaseService : IFormatadorEmailService
     {
 
-        public ComunicadoBaseService()
+        protected ComunicadoBaseService()
         {
             MapeamentoParametros = new Dictionary<string, Func<string>>();
             ParametrosUtilizados = new HashSet<string>();

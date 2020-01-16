@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Enums;
+using Cipa.Domain.Helpers;
 using Cipa.Domain.Services.Implementations;
 using Cipa.Domain.Test.Mocks;
 using Xunit;
@@ -49,6 +50,9 @@ namespace Cipa.Domain.Test.Services
                 });
         }
 
+        private string RetornarDataAbreviada(DateTime data) =>
+            $"{data.Day} de {Util.NomeMes(data.Month)} de {data.Year}";
+
         [Fact]
         public void FormatarEmailPadrao_TodosOsParametrosValidos_RetornaListaEmails()
         {
@@ -74,11 +78,12 @@ namespace Cipa.Domain.Test.Services
 
             var emails = comunicadoEleicao.FormatarEmails();
 
+            var hoje = RetornarDataAbreviada(DateTime.Today);
             var mensagemSenhaCadastrada = new StringBuilder();
             mensagemSenhaCadastrada.Append("2020, 2020/2021, No 1º dia do mês de Janeiro de 2020, Soluções TI, ");
             mensagemSenhaCadastrada.Append("inscrita no CNPJ 30.271.795/0001-33, entre os dias 2 de Janeiro de 2020 ");
-            mensagemSenhaCadastrada.Append("e 3 de Janeiro de 2020, no dia 4 de Janeiro de 2020, ");
-            mensagemSenhaCadastrada.Append("Gestor, Técnico do SESMT, 3 de Janeiro de 2020, ");
+            mensagemSenhaCadastrada.Append($"e {hoje}, no dia 4 de Janeiro de 2020, ");
+            mensagemSenhaCadastrada.Append($"Gestor, Técnico do SESMT, {hoje}, ");
             mensagemSenhaCadastrada.Append("<ol><li><strong>Eleitor 1</strong><br><small>Cargo 1</small></li>");
             mensagemSenhaCadastrada.Append("<li><strong>Eleitor 3</strong><br><small>Cargo 3</small></li></ol>, ");
             mensagemSenhaCadastrada.Append("http://localhost:4200/autenticacao/login");
@@ -86,8 +91,8 @@ namespace Cipa.Domain.Test.Services
             var mensagemSenhaNaoCadastrada1 = new StringBuilder();
             mensagemSenhaNaoCadastrada1.Append("2020, 2020/2021, No 1º dia do mês de Janeiro de 2020, Soluções TI, ");
             mensagemSenhaNaoCadastrada1.Append("inscrita no CNPJ 30.271.795/0001-33, entre os dias 2 de Janeiro de 2020 ");
-            mensagemSenhaNaoCadastrada1.Append("e 3 de Janeiro de 2020, no dia 4 de Janeiro de 2020, ");
-            mensagemSenhaNaoCadastrada1.Append("Gestor, Técnico do SESMT, 3 de Janeiro de 2020, ");
+            mensagemSenhaNaoCadastrada1.Append($"e {hoje}, no dia 4 de Janeiro de 2020, ");
+            mensagemSenhaNaoCadastrada1.Append($"Gestor, Técnico do SESMT, {hoje}, ");
             mensagemSenhaNaoCadastrada1.Append("<ol><li><strong>Eleitor 1</strong><br><small>Cargo 1</small></li>");
             mensagemSenhaNaoCadastrada1.Append("<li><strong>Eleitor 3</strong><br><small>Cargo 3</small></li></ol>, ");
             mensagemSenhaNaoCadastrada1.Append($"http://localhost:4200/autenticacao/cadastro/{usuario1.CodigoRecuperacao.ToString()}");
@@ -95,8 +100,8 @@ namespace Cipa.Domain.Test.Services
             var mensagemSenhaNaoCadastrada2 = new StringBuilder();
             mensagemSenhaNaoCadastrada2.Append("2020, 2020/2021, No 1º dia do mês de Janeiro de 2020, Soluções TI, ");
             mensagemSenhaNaoCadastrada2.Append("inscrita no CNPJ 30.271.795/0001-33, entre os dias 2 de Janeiro de 2020 ");
-            mensagemSenhaNaoCadastrada2.Append("e 3 de Janeiro de 2020, no dia 4 de Janeiro de 2020, ");
-            mensagemSenhaNaoCadastrada2.Append("Gestor, Técnico do SESMT, 3 de Janeiro de 2020, ");
+            mensagemSenhaNaoCadastrada2.Append($"e {hoje}, no dia 4 de Janeiro de 2020, ");
+            mensagemSenhaNaoCadastrada2.Append($"Gestor, Técnico do SESMT, {hoje}, ");
             mensagemSenhaNaoCadastrada2.Append("<ol><li><strong>Eleitor 1</strong><br><small>Cargo 1</small></li>");
             mensagemSenhaNaoCadastrada2.Append("<li><strong>Eleitor 3</strong><br><small>Cargo 3</small></li></ol>, ");
             mensagemSenhaNaoCadastrada2.Append($"http://localhost:4200/autenticacao/cadastro/{usuario3.CodigoRecuperacao.ToString()}");

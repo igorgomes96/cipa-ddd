@@ -25,7 +25,7 @@ namespace Cipa.Application
             {
                 processamento.IniciarProcessamento();
                 base.Atualizar(processamento);
-                var emails = processamento.RealizarProcessamentoGerarEmails(_emailConfiguration, _formatadorEmail);
+                var emails = processamento.RealizarProcessamentoGerarEmails(_formatadorEmail);
                 foreach (var email in emails)
                     _unitOfWork.EmailRepository.Adicionar(email);
                 base.Atualizar(processamento);                    
