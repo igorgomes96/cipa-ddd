@@ -62,7 +62,7 @@ namespace Cipa.Application
 
             var novoArquivo = new Arquivo(
                 Path.Combine(relativePath, Path.GetFileName(file)), nomeArquivo, new FileInfo(file).Length,
-                contentType, emailUsuario, nomeArquivo, dependencyType, dependencyId
+                contentType, emailUsuario, nomeUsuario, dependencyType, dependencyId
             );
 
             return base.Adicionar(novoArquivo);

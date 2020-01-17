@@ -58,8 +58,7 @@ namespace Cipa.Application
                         $"A coluna {coluna} é obrigatória, porém não foi encontrada no arquivo."));
 
             // Valida os valores
-            int linha = LINHA_INICIAL_ARQUIVO;
-            int totalLinhas = dataTable.Rows.Count;
+            int linha = LINHA_INICIAL_ARQUIVO + 1;
             foreach (DataRow dr in dataTable.Rows)
             {
                 for (int i = 0; i < dataTable.Columns.Count; i++)

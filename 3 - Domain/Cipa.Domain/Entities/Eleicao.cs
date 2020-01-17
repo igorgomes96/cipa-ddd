@@ -240,7 +240,7 @@ namespace Cipa.Domain.Entities
             };
         }
 
-        private void AtualizarDimensionamento(LinhaDimensionamento linhaDimensionamento)
+        public void AtualizarDimensionamento(LinhaDimensionamento linhaDimensionamento)
         {
             Dimensionamento.QtdaEfetivos = linhaDimensionamento.QtdaEfetivos;
             Dimensionamento.QtdaSuplentes = linhaDimensionamento.QtdaSuplentes;

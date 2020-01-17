@@ -26,7 +26,7 @@ namespace Cipa.Infra.Data.Repositories
                     Context.SaveChanges();
                     dbContextTransaction.Commit();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     //Log Exception Handling message                      
                     dbContextTransaction.Rollback();

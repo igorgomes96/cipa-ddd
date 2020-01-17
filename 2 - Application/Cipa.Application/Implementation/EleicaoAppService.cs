@@ -468,6 +468,17 @@ namespace Cipa.Application
             _unitOfWork.Commit();
         }
 
+        public void AtualizarDimensionamento(int eleicaoId)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            LinhaDimensionamento dimensionamentoGrupo = eleicao.Grupo.CalcularDimensionamento(eleicao.Eleitores.Count);
+            eleicao.AtualizarDimensionamento(dimensionamentoGrupo);
+
+            base.Atualizar(eleicao);
+        }
+
         private void EnviarNotificacaoMudancaEtapa(IFormatadorEmailService formatador, Eleicao eleicao)
         {
             foreach (var email in formatador.FormatarEmails())

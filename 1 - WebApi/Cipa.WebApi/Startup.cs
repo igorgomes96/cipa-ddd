@@ -101,13 +101,13 @@ namespace Cipa.WebApi
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials()
-                    .WithOrigins("http://localhost:4200")));
+                    .WithOrigins("*")));
 
 
             services.AddHostedService<ImportacaoHostedService>();
-            services.AddHostedService<EmailHostedService>();
-            services.AddHostedService<ProcesssamentoEtapasHostedService>();
-            services.AddHostedService<AlteracaoEtapaScheduler>();
+            //services.AddHostedService<EmailHostedService>();
+            //services.AddHostedService<ProcesssamentoEtapasHostedService>();
+            //services.AddHostedService<AlteracaoEtapaScheduler>();
 
             services.AddResponseCompression();
 
@@ -161,9 +161,9 @@ namespace Cipa.WebApi
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("importacaofinalizada", mapper.Map<FinalizacaoImportacaoStatusViewModel>(args));
             };
 
-            //app.UseHttpsRedirection();
-            //app.UseDefaultFiles();
-            //app.UseStaticFiles();
+            app.UseHttpsRedirection();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
             app.UseMvc();
         }
 

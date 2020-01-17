@@ -90,6 +90,12 @@ namespace Cipa.WebApi.Controllers
         {
             return _mapper.Map<EleicaoViewModel>(_eleicaoAppService.Excluir(id));
         }
+
+        [HttpPost("{id}/atualizardimensionamento")]
+        public void PostAtualizarDimensionamento(int id)
+        {
+            _eleicaoAppService.AtualizarDimensionamento(id);
+        }
         #endregion
 
         #region Cronograma
