@@ -311,6 +311,15 @@ namespace Cipa.Application
             return eleicao.ApurarVotos();
         }
 
+        public IEnumerable<Inscricao> RegistrarResultadoApuracao(int eleicaoId)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+            eleicao.RegistrarResultadoApuracao();
+            base.Atualizar(eleicao);
+            return eleicao.ApurarVotos();
+        }
+
         public Eleitor AtualizarEleitor(int eleicaoId, Eleitor eleitor)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
@@ -487,7 +496,6 @@ namespace Cipa.Application
 
         public Stream GerarRelatorioInscricoes(int eleicaoId)
         {
-            var apuracao = ApurarVotos(eleicaoId);
             DataTable dataTable = new DataTable();
 
             dataTable.Columns.Add("Nome");
@@ -499,13 +507,25 @@ namespace Cipa.Application
             dataTable.Columns.Add("Data de Admissão");
             dataTable.Columns.Add("Votos");
 
-            foreach (var inscricao in apuracao)
+            var apuracao = ApurarVotos(eleicaoId).AsQueryable().Select(inscricao => new
             {
-                dataTable.Rows.Add(inscricao.Eleitor.Nome, inscricao.Eleitor.Email,
-                    inscricao.Eleitor.Matricula, inscricao.Eleitor.Cargo, inscricao.Eleitor.Area,
-                    inscricao.Eleitor.DataNascimento, inscricao.Eleitor.DataAdmissao,
+                inscricao.Eleitor.Nome,
+                inscricao.Eleitor.Email,
+                inscricao.Eleitor.Matricula,
+                inscricao.Eleitor.Cargo,
+                inscricao.Eleitor.Area,
+                inscricao.Eleitor.DataNascimento,
+                inscricao.Eleitor.DataAdmissao,
+                inscricao.Votos
+            }).ToList();
+            
+            foreach (var inscricao in apuracao) {
+                dataTable.Rows.Add(inscricao.Nome, inscricao.Email,
+                    inscricao.Matricula, inscricao.Cargo, inscricao.Area,
+                    inscricao.DataNascimento, inscricao.DataAdmissao,
                     inscricao.Votos);
             }
+
             var nomeArquivo = $"Inscricoes - Eleicao {eleicaoId}.xlsx";
             var arquivo = FileSystemHelpers.GetRelativeFileName(FileSystemHelpers.GetAbsolutePath(PATH_RELATORIOS), nomeArquivo);
             _excelService.GravaInformacoesArquivo(arquivo, dataTable, "Inscrições", 1, 1);
@@ -515,9 +535,6 @@ namespace Cipa.Application
 
         public Stream GerarRelatorioVotos(int eleicaoId)
         {
-            var votos = BuscarVotos(eleicaoId)
-                .OrderBy(v => v.Eleitor.Nome);
-
             DataTable dataTable = new DataTable();
 
             dataTable.Columns.Add("Nome");
@@ -530,11 +547,24 @@ namespace Cipa.Application
             dataTable.Columns.Add("Horário do Voto");
             dataTable.Columns.Add("IP");
 
+            var votos = BuscarVotos(eleicaoId).AsQueryable().Select(voto => new
+            {
+                voto.Eleitor.Nome,
+                voto.Eleitor.Email,
+                voto.Eleitor.Matricula,
+                voto.Eleitor.Cargo,
+                voto.Eleitor.Area,
+                voto.Eleitor.DataNascimento,
+                voto.Eleitor.DataAdmissao,
+                voto.DataCadastro,
+                voto.IP
+            }).OrderBy(voto => voto.Nome).ToList();
+
             foreach (var voto in votos)
             {
-                dataTable.Rows.Add(voto.Eleitor.Nome, voto.Eleitor.Email,
-                    voto.Eleitor.Matricula, voto.Eleitor.Cargo, voto.Eleitor.Area,
-                    voto.Eleitor.DataNascimento, voto.Eleitor.DataAdmissao,
+                dataTable.Rows.Add(voto.Nome, voto.Email,
+                    voto.Matricula, voto.Cargo, voto.Area,
+                    voto.DataNascimento, voto.DataAdmissao,
                     voto.DataCadastro, voto.IP);
             }
 

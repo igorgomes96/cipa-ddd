@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
@@ -286,7 +287,7 @@ namespace Cipa.WebApi.Controllers
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [Pagination]
         public IEnumerable<VotoViewModel> GetVotos(int id) =>
-            _mapper.Map<List<VotoViewModel>>(_eleicaoAppService.BuscarVotos(id));
+            _eleicaoAppService.BuscarVotos(id).AsQueryable().ProjectTo<VotoViewModel>(_mapper.ConfigurationProvider);
 
         [HttpGet("{id}/votousuario")]
         public VotoViewModel GetVotoUsuario(int id)
@@ -297,6 +298,11 @@ namespace Cipa.WebApi.Controllers
         [HttpGet("{id}/apuracao")]
         public IEnumerable<ApuracaoViewModel> GetApuracao(int id) =>
             _mapper.Map<List<ApuracaoViewModel>>(_eleicaoAppService.ApurarVotos(id));
+
+        [HttpPost("{id}/registrarresultado")]
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
+        public ResultadoApuracaoViewModel RegistrarResultadoApuracao(int id) =>
+            _mapper.Map<ResultadoApuracaoViewModel>(_eleicaoAppService.RegistrarResultadoApuracao(id));
 
         [HttpGet("{id}/resultado")]
         public ResultadoApuracaoViewModel GetResultadoApuracao(int id) =>

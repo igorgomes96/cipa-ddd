@@ -492,11 +492,11 @@ namespace Cipa.Domain.Entities
 
         public Voto BuscarVotoEleitor(Eleitor eleitor) => Votos.FirstOrDefault(v => v.Eleitor == eleitor);
 
-        private IEnumerable<Inscricao> OrdenaInscricoesPorQtdaVotos() =>
+        private IEnumerable<Inscricao> OrdenarInscricoesPorQtdaVotos() =>
             Inscricoes.OrderByDescending(i => i.Votos).ThenBy(i => i.Eleitor.DataAdmissao)
                 .ThenBy(i => i.Eleitor.DataNascimento);
 
-        private void RegistrarResultadoApuracao()
+        public void RegistrarResultadoApuracao()
         {
             foreach (var inscricaoApurada in ApurarVotos())
             {
@@ -507,15 +507,14 @@ namespace Cipa.Domain.Entities
 
         public IEnumerable<Inscricao> ApurarVotos()
         {
-            List<Inscricao> apuracao = OrdenaInscricoesPorQtdaVotos().ToList();
+            IEnumerable<Inscricao> apuracao = OrdenarInscricoesPorQtdaVotos();
 
             var qtdaVotosEmBranco = Votos.Count - Inscricoes.Sum(i => i.Votos);
             var votosEmBranco = new Inscricao(this, new Eleitor("(Em Branco)", "(Em Branco)"), "(Em Branco)")
             {
                 Votos = qtdaVotosEmBranco
             };
-            apuracao.Add(votosEmBranco);
-
+            apuracao = apuracao.Union(new[] { votosEmBranco });
             if (!Dimensionamento.PossuiQtdaMinimaVotos) return apuracao;
 
             var efetivos = apuracao

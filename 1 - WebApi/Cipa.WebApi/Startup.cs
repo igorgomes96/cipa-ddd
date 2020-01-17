@@ -100,14 +100,13 @@ namespace Cipa.WebApi
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials()
-                    .WithOrigins("*")));
+                    .AllowCredentials()));
 
 
             services.AddHostedService<ImportacaoHostedService>();
             //services.AddHostedService<EmailHostedService>();
-            //services.AddHostedService<ProcesssamentoEtapasHostedService>();
-            //services.AddHostedService<AlteracaoEtapaScheduler>();
+            services.AddHostedService<ProcesssamentoEtapasHostedService>();
+            services.AddHostedService<AlteracaoEtapaScheduler>();
 
             services.AddResponseCompression();
 
