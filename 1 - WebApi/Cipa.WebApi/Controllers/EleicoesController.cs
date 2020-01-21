@@ -41,13 +41,21 @@ namespace Cipa.WebApi.Controllers
         #region Eleições
         [HttpGet]
         [Pagination]
-        public IEnumerable<EleicaoDetalheViewModel> GetEleicoes()
+        public IEnumerable<EleicaoDetalheViewModel> GetEleicoes(string status = null)
         {
             IEnumerable<Eleicao> eleicoes;
-            if (User.IsInRole(PerfilUsuario.SESMT))
+            if (UsuarioEhDoSESMT || UsuarioEhAdministrador)
                 eleicoes = _eleicaoAppService.BuscarPelaConta(ContaId);
             else
                 eleicoes = _eleicaoAppService.BuscarPeloUsuario(UsuarioId);
+
+            if (status != null)
+            {
+                if (status == "aberta")
+                    eleicoes = eleicoes.Where(e => e.DataFinalizacao == null);
+                else
+                    eleicoes = eleicoes.Where(e => e.DataFinalizacao != null);
+            }
             return _mapper.Map<List<EleicaoDetalheViewModel>>(eleicoes);
         }
 
@@ -96,6 +104,12 @@ namespace Cipa.WebApi.Controllers
         public void PostAtualizarDimensionamento(int id)
         {
             _eleicaoAppService.AtualizarDimensionamento(id);
+        }
+
+        [HttpPost("{id}/configuracoes")]
+        public void PostAtualizarConfiguracoes(int id, ConfiguracaoEleicaoViewModel configuracaoEleicao)
+        {
+            _eleicaoAppService.AtualizarConfiguracoes(id, _mapper.Map<ConfiguracaoEleicao>(configuracaoEleicao));
         }
         #endregion
 
@@ -193,7 +207,7 @@ namespace Cipa.WebApi.Controllers
         [HttpGet("{id}/inscricoes")]
         public ActionResult<IEnumerable<InscricaoViewModel>> GetInscricoes(int id, string status, int? seedOrder = null)
         {
-            StatusInscricao statusInscricao = StatusInscricao.Pendente;
+            StatusInscricao statusInscricao;
             try
             {
                 statusInscricao = (StatusInscricao)Enum.Parse(typeof(StatusInscricao), status);

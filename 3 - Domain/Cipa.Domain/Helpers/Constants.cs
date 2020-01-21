@@ -4,6 +4,7 @@ namespace Cipa.Domain.Helpers
     {
         public const string Eleitor = "Eleitor";
         public const string SESMT = "SESMT";
+        public const string Administrador = "Administrador";
 
     }
 

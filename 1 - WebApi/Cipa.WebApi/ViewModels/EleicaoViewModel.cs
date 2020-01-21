@@ -21,6 +21,7 @@ namespace Cipa.WebApi.ViewModels
         public DateTime? TerminoMandatoAnterior { get; set; }
         public int ContaId { get; set; }
         public int UsuarioCriacaoId { get; set; }
+        public ConfiguracaoEleicaoViewModel Configuracao { get; set; }
 
         public EstabelecimentoViewModel Estabelecimento { get; set; }
         public EtapaCronogramaViewModel EtapaAtual { get; set; }

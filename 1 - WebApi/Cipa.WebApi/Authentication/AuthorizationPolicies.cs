@@ -43,7 +43,7 @@ namespace Cipa.WebApi.Authentication
         };
 
         private static Func<AuthorizationHandlerContext, bool> usuarioSESMTPossuiContaExpression = (context) =>
-            context.User.IsInRole(PerfilUsuario.SESMT)
+            (context.User.IsInRole(PerfilUsuario.SESMT) || context.User.IsInRole(PerfilUsuario.Administrador))
             && hasIntClaim(context.User, CustomClaimTypes.CodigoConta)
             && hasIntClaim(context.User, CustomClaimTypes.UsuarioId)
             && hasIntClaim(context.User, CustomClaimTypes.QtdaEstabelecimentos)

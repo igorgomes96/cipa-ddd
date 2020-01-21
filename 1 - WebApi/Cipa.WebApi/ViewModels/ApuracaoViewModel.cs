@@ -10,6 +10,7 @@ namespace Cipa.WebApi.ViewModels
         public string Matricula { get; set; }
         public string Cargo { get; set; }
         public string Area { get; set; }
+        public DateTime HorarioInscricao { get; set; }
         public int Votos { get; set; }
         public DateTime? DataAdmissao { get; set; }
         public DateTime? DataNascimento { get; set; }

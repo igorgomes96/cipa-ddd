@@ -2,8 +2,6 @@ using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
-using System.Threading.Tasks;
 using Cipa.Application.Events.EventsArgs;
 
 namespace Cipa.Application.Events
@@ -12,7 +10,7 @@ namespace Cipa.Application.Events
     {
         public event EventHandler<ProgressoImportacaoEventArgs> NotificacaoProgresso;
         public event EventHandler<FinalizacaoImportacaoStatusEventArgs> ImportacaoFinalizada;
-        private ISubject<ProgressoImportacaoEventArgs, ProgressoImportacaoEventArgs> _notificationEventSubject;
+        private readonly ISubject<ProgressoImportacaoEventArgs, ProgressoImportacaoEventArgs> _notificationEventSubject;
         private IDisposable _notificationEventSubscription;
 
         public ProgressoImportacaoEvent()
@@ -21,14 +19,10 @@ namespace Cipa.Application.Events
 
             _notificationEventSubscription =
             _notificationEventSubject.ObserveOn(NewThreadScheduler.Default)
-                .Throttle(TimeSpan.FromMilliseconds(5))
+                .Throttle(TimeSpan.FromMilliseconds(10))
                 .Subscribe(progress =>
                 {
-                    EventHandler<ProgressoImportacaoEventArgs> handler = NotificacaoProgresso;
-                    if (handler != null)
-                    {
-                        handler(this, progress);
-                    }
+                    NotificacaoProgresso?.Invoke(this, progress);
                 });
         }
 
@@ -42,11 +36,7 @@ namespace Cipa.Application.Events
 
         public void OnImportacaoFinalizada(object sender, FinalizacaoImportacaoStatusEventArgs e)
         {
-            EventHandler<FinalizacaoImportacaoStatusEventArgs> handler = ImportacaoFinalizada;
-            if (handler != null)
-            {
-                handler(sender, e);
-            }
+            ImportacaoFinalizada?.Invoke(sender, e);
         }
 
         public void Dispose()

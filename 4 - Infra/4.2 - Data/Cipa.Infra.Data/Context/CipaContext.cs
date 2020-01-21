@@ -77,9 +77,12 @@ namespace Cipa.Infra.Data.Context
                 if (entry.State == EntityState.Modified)
                     entry.Property("DataCadastro").IsModified = false;
             }
-            foreach (var entry in ChangeTracker.Entries<Eleicao>().ToList())
+            foreach (var entry in ChangeTracker.Entries<Eleicao>().ToList()) { 
                 if (entry.Entity.Dimensionamento != null)
                     Entry(entry.Entity.Dimensionamento).State = entry.State;
+                if (entry.Entity.Configuracao != null)
+                    Entry(entry.Entity.Configuracao).State = entry.State;
+            }
             return base.SaveChanges();
         }
     }

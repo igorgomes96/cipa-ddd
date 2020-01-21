@@ -39,7 +39,8 @@ namespace Cipa.WebApi.AutoMapper
                 cfg.CreateMap<EtapaCronograma, EtapaCronogramaViewModel>().ReverseMap();
                 cfg.CreateMap<Eleitor, EleitorViewModel>().ReverseMap();
                 cfg.CreateMap<Inscricao, InscricaoViewModel>()
-                    .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")));
+                    .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")))
+                    .ForMember(dest => dest.HorarioInscricao, opt => opt.MapFrom(src => src.DataCadastro));
                 cfg.CreateMap<Inscricao, InscricaoDetalhesViewModel>()
                     .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")));
                 cfg.CreateMap<Reprovacao, ReprovacaoViewModel>()
@@ -57,9 +58,11 @@ namespace Cipa.WebApi.AutoMapper
                     InscricaoId = src.Id,
                     Matricula = src.Eleitor.Matricula,
                     Nome = src.Eleitor.Nome,
+                    HorarioInscricao = src.DataCadastro,
                     ResultadoApuracao = ConverteResultadoApuracao(src.ResultadoApuracao),
                     Votos = src.Votos
                 });
+                cfg.CreateMap<ConfiguracaoEleicao, ConfiguracaoEleicaoViewModel>().ReverseMap();
                 cfg.CreateMap<LimiteDimensionamento, LimiteDimensionamentoViewModel>();
                 cfg.CreateMap<LinhaDimensionamento, LinhaDimensionamentoViewModel>();
                 cfg.CreateMap<Grupo, GrupoViewModel>();
@@ -69,6 +72,7 @@ namespace Cipa.WebApi.AutoMapper
                     .ReverseMap()
                     .ConvertUsing(dest => new Usuario(dest.Email, dest.Nome, dest.Cargo));
                 cfg.CreateMap<Conta, ContaViewModel>();
+                cfg.CreateMap<Conta, ContaDetalhesViewModel>();
                 cfg.CreateMap<IEnumerable<Inscricao>, ResultadoApuracaoViewModel>()
                     .ConvertUsing<ResultadoApuracaoTypeConverter>();
                 cfg.CreateMap<Inconsistencia, InconsistenciaViewModel>();

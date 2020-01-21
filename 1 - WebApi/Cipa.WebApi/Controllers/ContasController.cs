@@ -2,6 +2,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
+using Cipa.Domain.Helpers;
 using Cipa.WebApi.Authentication;
 using Cipa.WebApi.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -25,8 +26,12 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpGet]
-        public ContaViewModel GetContaUsuario() => _mapper.Map<ContaViewModel>(_contaAppService.BuscarPeloId(ContaId));
+        public ContaDetalhesViewModel GetContaUsuario() => _mapper.Map<ContaDetalhesViewModel>(_contaAppService.BuscarPeloId(ContaId));
 
+        [HttpGet("list")]
+        [Authorize(Roles = PerfilUsuario.Administrador)]
+        public IEnumerable<ContaViewModel> GetContas() =>
+            _contaAppService.BuscarTodos().AsQueryable().ProjectTo<ContaViewModel>(_mapper.ConfigurationProvider);
 
         [HttpGet("cronograma")]
         public IEnumerable<EtapaPadraoContaViewModel> GetCronogramaPadrao() =>

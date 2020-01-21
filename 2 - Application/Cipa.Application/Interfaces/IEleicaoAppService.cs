@@ -11,6 +11,7 @@ namespace Cipa.Application.Interfaces
         IEnumerable<EtapaCronograma> BuscarCronograma(int eleicaoId);
         IEnumerable<EtapaCronograma> AtualizarCronograma(int eleicaoId, EtapaCronograma etapa);
         void AtualizarDimensionamento(int eleicaoId);
+        Eleicao AtualizarConfiguracoes(int eleicaoId, ConfiguracaoEleicao configuracao);
         IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status);
         Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Eleitor> BuscarEleitores(int eleicaoId);

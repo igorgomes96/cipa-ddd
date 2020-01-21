@@ -24,7 +24,6 @@ namespace Cipa.Application
         private readonly IProgressoImportacaoEvent _progressoEvent;
         private const int LINHA_INICIAL_ARQUIVO = 1;
         private const int QTDA_MAX_ERROS = 10;
-        private const int QTDA_ETAPAS_PPROCESSAMENTO = 3;
 
         public ImportacaoAppService(
             IUnitOfWork unitOfWork,
@@ -74,7 +73,7 @@ namespace Cipa.Application
                 if (countLinhasErros > QTDA_MAX_ERROS)
                     break;
                 linha++;
-                NotificarProgresso(1, linha - LINHA_INICIAL_ARQUIVO, dataTable.Rows.Count, emailUsuario);
+                //NotificarProgresso(1, linha - LINHA_INICIAL_ARQUIVO, dataTable.Rows.Count, emailUsuario);
             }
             return inconsistencias;
 
@@ -112,7 +111,7 @@ namespace Cipa.Application
                 eleitor.Usuario = usuario;
                 eleitores.Add(eleitor);
                 linha++;
-                NotificarProgresso(2, linha - LINHA_INICIAL_ARQUIVO, dataTable.Rows.Count, emailUsuario);
+                NotificarProgresso(linha - LINHA_INICIAL_ARQUIVO, dataTable.Rows.Count, emailUsuario);
             }
             return eleitores;
         }
@@ -144,12 +143,11 @@ namespace Cipa.Application
 
                     if (!FinalizarImportacaoComErro(importacao, inconsistencias))
                     {
-                        var linha = 0;
+                        //var linha = 0;
                         foreach (var eleitor in eleitores)
                         {
                             SalvarEleitor(importacao.Eleicao, eleitor);
-                            linha++;
-                            NotificarProgresso(3, linha, eleitores.Count, importacao.Arquivo.EmailUsuario);
+                            //NotificarProgresso(3, linha, eleitores.Count, importacao.Arquivo.EmailUsuario);
                         }
                         FinalizarImportacaoComSucesso(importacao);
                         _unitOfWork.EleicaoRepository.Atualizar(importacao.Eleicao);
@@ -196,13 +194,13 @@ namespace Cipa.Application
                 });
         }
 
-        private void NotificarProgresso(int numEtapa, int linhasProcessadas, int totalLinhas, string emailUsuario)
+        private void NotificarProgresso(int linhasProcessadas, int totalLinhas, string emailUsuario)
         {
             _progressoEvent.OnNotificacaoProgresso(this, new ProgressoImportacaoEventArgs
             {
-                EtapaAtual = numEtapa,
+                EtapaAtual = 1,
                 LinhasProcessadas = linhasProcessadas,
-                TotalEtapas = QTDA_ETAPAS_PPROCESSAMENTO,
+                TotalEtapas = 1,
                 TotalLinhas = totalLinhas,
                 EmailUsuario = emailUsuario
             });

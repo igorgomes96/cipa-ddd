@@ -171,6 +171,16 @@ namespace Cipa.Application
             return eleicao;
         }
 
+        public Eleicao AtualizarConfiguracoes(int eleicaoId, ConfiguracaoEleicao configuracao)
+        {
+            var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
+            if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
+
+            eleicao.AtualizarConfiguracoes(configuracao);
+            base.Atualizar(eleicao);
+            return eleicao;
+        }
+
         public bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId) =>
             (_repositoryBase as IEleicaoRepository).VerificarSeUsuarioEhEleitor(eleicaoId, usuarioId);
 
@@ -505,6 +515,7 @@ namespace Cipa.Application
             dataTable.Columns.Add("Área");
             dataTable.Columns.Add("Data de Nascimento");
             dataTable.Columns.Add("Data de Admissão");
+            dataTable.Columns.Add("Data de Inscrição");
             dataTable.Columns.Add("Votos");
 
             var apuracao = ApurarVotos(eleicaoId).AsQueryable().Select(inscricao => new
@@ -516,13 +527,14 @@ namespace Cipa.Application
                 inscricao.Eleitor.Area,
                 inscricao.Eleitor.DataNascimento,
                 inscricao.Eleitor.DataAdmissao,
+                inscricao.DataCadastro,
                 inscricao.Votos
             }).ToList();
             
             foreach (var inscricao in apuracao) {
                 dataTable.Rows.Add(inscricao.Nome, inscricao.Email,
                     inscricao.Matricula, inscricao.Cargo, inscricao.Area,
-                    inscricao.DataNascimento, inscricao.DataAdmissao,
+                    inscricao.DataNascimento, inscricao.DataAdmissao, inscricao.DataCadastro,
                     inscricao.Votos);
             }
 

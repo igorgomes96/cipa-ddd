@@ -29,6 +29,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Cipa.WebApi.BackgroundTasks.Scheduler;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
+using System.Collections.Generic;
 
 namespace Cipa.WebApi
 {
@@ -102,13 +105,34 @@ namespace Cipa.WebApi
                     .AllowAnyHeader()
                     .AllowCredentials()));
 
-
             services.AddHostedService<ImportacaoHostedService>();
-            //services.AddHostedService<EmailHostedService>();
+            services.AddHostedService<EmailHostedService>();
             services.AddHostedService<ProcesssamentoEtapasHostedService>();
             services.AddHostedService<AlteracaoEtapaScheduler>();
 
-            services.AddResponseCompression();
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
+            });
+
+            services.AddResponseCompression(options =>
+            {
+                IEnumerable<string> MimeTypes = new[]
+                {
+                    // General
+                    "text/plain",
+                    "text/html",
+                    "text/css",
+                    "font/woff2",
+                    "application/javascript",
+                    "image/x-icon",
+                    "image/png"
+                 };
+
+                options.EnableForHttps = true;
+                options.MimeTypes = MimeTypes;
+                options.Providers.Add<GzipCompressionProvider>();
+            });
 
             services.AddSignalR();
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
@@ -148,7 +172,7 @@ namespace Cipa.WebApi
                 routes.MapHub<ProgressHub>("/api/signalr");
             });
             app.UseAuthentication();
-            app.UseResponseCompression();
+
 
             notificacaoProgressoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) =>
             {
@@ -161,7 +185,7 @@ namespace Cipa.WebApi
             };
 
             app.UseHttpsRedirection();
-            app.UseDefaultFiles();
+            app.UseResponseCompression();
             app.UseStaticFiles();
             app.UseMvc();
         }

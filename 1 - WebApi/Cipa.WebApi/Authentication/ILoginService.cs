@@ -10,5 +10,6 @@ namespace Cipa.WebApi.Authentication
         AuthInfoViewModel CadastrarNovaSenha(Guid codigoRecuperacao, string senha);
         void ResetarSenha(string email);
         Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigoRecuperacao);
+        AuthInfoViewModel AlterarContaTokenAdministrador(int usuarioId, int contaId);
     }
 }

@@ -47,5 +47,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         protected bool UsuarioEhDoSESMT => User.IsInRole(PerfilUsuario.SESMT);
+        protected bool UsuarioEhAdministrador => User.IsInRole(PerfilUsuario.Administrador);
+
     }
 }

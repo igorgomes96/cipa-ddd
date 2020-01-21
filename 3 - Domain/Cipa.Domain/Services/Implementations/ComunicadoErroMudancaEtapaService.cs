@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Enums;
 
@@ -19,9 +20,11 @@ namespace Cipa.Domain.Services.Implementations
 
         protected override ICollection<Email> FormatarEmailPadrao(TemplateEmail templateEmail)
         {
+            var usuariosSESMST = Eleicao.Conta.Usuarios
+                .Select(x => x.Email).Aggregate((i, j) => $"{i},{j}");
             var mensagem = SubstituirParametrosTemplate(templateEmail.Template);
             return new List<Email> {
-                new Email(Eleicao.Usuario.Email, null, templateEmail.Assunto, mensagem)
+                new Email(usuariosSESMST, null, templateEmail.Assunto, mensagem)
             };
         }
 

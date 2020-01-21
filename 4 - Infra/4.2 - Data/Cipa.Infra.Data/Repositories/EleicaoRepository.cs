@@ -4,6 +4,7 @@ using Cipa.Infra.Data.Context;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Cipa.Domain.Enums;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -34,10 +35,14 @@ namespace Cipa.Infra.Data.Repositories
         {
             var dataInicio = DateTime.Today.AddDays(-2);  // Intervalo máximo de 2 dias
             return BuscarTodos().Where(e =>
-                e.EtapaAtual != null
+                (e.EtapaAtual == null 
+                && e.Cronograma.All(c => c.PosicaoEtapa == EPosicaoEtapa.Futura)
+                && e.Cronograma.First().DataPrevista.Date > dataInicio)  // Início do Processo
+                ||
+                (e.EtapaAtual != null
                 && string.IsNullOrWhiteSpace(e.EtapaAtual.ErroMudancaEtapa)
                 && e.DataTerminoEtapa(e.EtapaAtual) <= DateTime.Today
-                && e.EtapaAtual.DataPrevista.Date > dataInicio);
+                && e.EtapaAtual.DataPrevista.Date > dataInicio)); // Demais etapas após o início 
         }
 
     }

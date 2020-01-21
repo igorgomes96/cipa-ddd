@@ -86,7 +86,7 @@ namespace Cipa.Domain.Test.Services
             mensagemSenhaCadastrada.Append($"Gestor, Técnico do SESMT, {hoje}, ");
             mensagemSenhaCadastrada.Append("<ol><li><strong>Eleitor 1</strong><br><small>Cargo 1</small></li>");
             mensagemSenhaCadastrada.Append("<li><strong>Eleitor 3</strong><br><small>Cargo 3</small></li></ol>, ");
-            mensagemSenhaCadastrada.Append("http://localhost:4200/autenticacao/login");
+            mensagemSenhaCadastrada.Append("https://cipabeta.solucoesti.online/autenticacao/login");
 
             var mensagemSenhaNaoCadastrada1 = new StringBuilder();
             mensagemSenhaNaoCadastrada1.Append("2020, 2020/2021, No 1º dia do mês de Janeiro de 2020, Soluções TI, ");
@@ -95,7 +95,7 @@ namespace Cipa.Domain.Test.Services
             mensagemSenhaNaoCadastrada1.Append($"Gestor, Técnico do SESMT, {hoje}, ");
             mensagemSenhaNaoCadastrada1.Append("<ol><li><strong>Eleitor 1</strong><br><small>Cargo 1</small></li>");
             mensagemSenhaNaoCadastrada1.Append("<li><strong>Eleitor 3</strong><br><small>Cargo 3</small></li></ol>, ");
-            mensagemSenhaNaoCadastrada1.Append($"http://localhost:4200/autenticacao/cadastro/{usuario1.CodigoRecuperacao.ToString()}");
+            mensagemSenhaNaoCadastrada1.Append($"https://cipabeta.solucoesti.online/autenticacao/cadastro/{usuario1.CodigoRecuperacao.ToString()}");
 
             var mensagemSenhaNaoCadastrada2 = new StringBuilder();
             mensagemSenhaNaoCadastrada2.Append("2020, 2020/2021, No 1º dia do mês de Janeiro de 2020, Soluções TI, ");
@@ -104,7 +104,7 @@ namespace Cipa.Domain.Test.Services
             mensagemSenhaNaoCadastrada2.Append($"Gestor, Técnico do SESMT, {hoje}, ");
             mensagemSenhaNaoCadastrada2.Append("<ol><li><strong>Eleitor 1</strong><br><small>Cargo 1</small></li>");
             mensagemSenhaNaoCadastrada2.Append("<li><strong>Eleitor 3</strong><br><small>Cargo 3</small></li></ol>, ");
-            mensagemSenhaNaoCadastrada2.Append($"http://localhost:4200/autenticacao/cadastro/{usuario3.CodigoRecuperacao.ToString()}");
+            mensagemSenhaNaoCadastrada2.Append($"https://cipabeta.solucoesti.online/autenticacao/cadastro/{usuario3.CodigoRecuperacao.ToString()}");
 
             Assert.Collection(emails,
                 (Email email) =>

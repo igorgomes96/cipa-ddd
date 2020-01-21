@@ -14,18 +14,21 @@ namespace Cipa.WebApi.Authentication
 {
     public class LoginService : ILoginService
     {
-        private IUsuarioAppService _usuarioAppService;
+        private readonly IUsuarioAppService _usuarioAppService;
         private readonly SigningConfigurations _signingConfigurations;
         private readonly TokenConfigurations _tokenConfigurations;
+        private readonly IContaAppService _contaAppService;
 
         public LoginService(
             IUsuarioAppService usuarioAppService,
             SigningConfigurations signingConfigurations,
-            TokenConfigurations tokenConfigurations)
+            TokenConfigurations tokenConfigurations,
+            IContaAppService contaAppService)
         {
             _usuarioAppService = usuarioAppService;
             _signingConfigurations = signingConfigurations;
             _tokenConfigurations = tokenConfigurations;
+            _contaAppService = contaAppService;
         }
 
         private Usuario ValidaUsuario(string email, string senha)
@@ -36,7 +39,7 @@ namespace Cipa.WebApi.Authentication
             return usuario;
         }
 
-        public ClaimsIdentity GeraIdentity(Usuario usuario)
+        public ClaimsIdentity GeraIdentity(Usuario usuario, Conta conta)
         {
             ClaimsIdentity identity = new ClaimsIdentity(
                     new GenericIdentity(usuario.Email, "Login"),
@@ -47,25 +50,40 @@ namespace Cipa.WebApi.Authentication
                         new Claim(CustomClaimTypes.UsuarioId, usuario.Id.ToString())
                     }
                 );
-            if (usuario.Conta != null)
+            if (conta != null)
             {
                 identity.AddClaims(
                     new[] {
-                        new Claim(CustomClaimTypes.DataExpiracaoConta, usuario.Conta.DataFim.ToString()),
-                        new Claim(CustomClaimTypes.QtdaEstabelecimentos, usuario.Conta.QtdaEstabelecimentos.ToString()),
-                        new Claim(CustomClaimTypes.CodigoConta, usuario.ContaId.ToString()),
-                        new Claim(CustomClaimTypes.ContaValida, usuario.Conta.Ativa.ToString().ToLower())
+                        new Claim(CustomClaimTypes.DataExpiracaoConta, conta.DataFim.ToString()),
+                        new Claim(CustomClaimTypes.QtdaEstabelecimentos, conta.QtdaEstabelecimentos.ToString()),
+                        new Claim(CustomClaimTypes.CodigoConta, conta.Id.ToString()),
+                        new Claim(CustomClaimTypes.ContaValida, conta.Ativa.ToString().ToLower())
                     }
                 );
             }
             return identity;
         }
 
+        public AuthInfoViewModel AlterarContaTokenAdministrador(int usuarioId, int contaId)
+        {
+            var usuario = _usuarioAppService.BuscarPeloId(usuarioId);
+            var conta = _contaAppService.BuscarPeloId(contaId);
+            if (usuario == null) throw new NotFoundException("Usuário não encontrado.");
+            if (conta == null) throw new NotFoundException("Conta não encontrada.");
+
+            var identity = GeraIdentity(usuario, conta);
+            return GerarToken(usuario, identity);
+        }
+
         public AuthInfoViewModel Login(string email, string senha)
         {
             var usuarioBanco = ValidaUsuario(email, senha);
-            var identity = GeraIdentity(usuarioBanco);
+            var identity = GeraIdentity(usuarioBanco, usuarioBanco.Conta);
+            return GerarToken(usuarioBanco, identity);
+        }
 
+        private AuthInfoViewModel GerarToken(Usuario usuario, ClaimsIdentity identity)
+        {
             DateTime dataCriacao = DateTime.Now.HorarioBrasilia();
             DateTime dataExpiracao = dataCriacao + TimeSpan.FromSeconds(_tokenConfigurations.Seconds);
 
@@ -87,7 +105,7 @@ namespace Cipa.WebApi.Authentication
                 Criacao = dataCriacao,
                 Expiracao = dataExpiracao,
                 Roles = identity.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x => x.Value).ToArray(),
-                UsuarioEmail = usuarioBanco.Email
+                UsuarioEmail = usuario.Email
             };
         }
 

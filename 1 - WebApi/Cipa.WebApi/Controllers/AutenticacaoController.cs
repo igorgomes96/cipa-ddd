@@ -1,6 +1,6 @@
 using System;
 using AutoMapper;
-using Cipa.Domain.Entities;
+using Cipa.Domain.Helpers;
 using Cipa.WebApi.Authentication;
 using Cipa.WebApi.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -25,12 +25,17 @@ namespace Cipa.WebApi.Controllers
         public ActionResult<AuthInfoViewModel> Login(AcessoUsuarioViewModel usuario) =>
             _loginService.Login(usuario.Email, usuario.Senha);
 
+        [HttpPost("alterarconta/{contaId}")]
+        [Authorize(Roles = PerfilUsuario.Administrador)]
+        public ActionResult<AuthInfoViewModel> AlterarConta(int contaId) =>
+            _loginService.AlterarContaTokenAdministrador(UsuarioId, contaId);
+
 
         [HttpGet("codigorecuperacao/{codigo}")]
         [AllowAnonymous]
         public ActionResult<UsuarioViewModel> BuscarUsuarioPeloCodigoRecuperacao(string codigo)
         {
-            Guid codigoGuid = Guid.Empty;
+            Guid codigoGuid;
             try
             {
                 codigoGuid = new Guid(codigo);

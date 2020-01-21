@@ -47,7 +47,7 @@ namespace Cipa.Application
             var usuarioExistente = (_repositoryBase as IUsuarioRepository).BuscarUsuario(usuario.Email);
             if (usuarioExistente != null)
             {
-                if (usuarioExistente.Perfil == PerfilUsuario.SESMT)
+                if (usuarioExistente.Perfil == PerfilUsuario.SESMT || usuarioExistente.Perfil == PerfilUsuario.Administrador)
                     throw new DuplicatedException($"Já há um usuário cadastrado com o e-mail '{usuario.Email}'.");
                 else
                 {
