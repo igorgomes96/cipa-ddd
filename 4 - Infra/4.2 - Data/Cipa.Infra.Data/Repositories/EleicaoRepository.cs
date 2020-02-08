@@ -37,12 +37,13 @@ namespace Cipa.Infra.Data.Repositories
             return BuscarTodos().Where(e =>
                 (e.EtapaAtual == null 
                 && e.Cronograma.All(c => c.PosicaoEtapa == EPosicaoEtapa.Futura)
-                && e.Cronograma.First().DataPrevista.Date > dataInicio)  // Início do Processo
+                && e.Cronograma.First().DataPrevista.Date <= DateTime.Today
+                && e.Cronograma.First().DataPrevista.Date >= dataInicio)  // Início do Processo
                 ||
                 (e.EtapaAtual != null
                 && string.IsNullOrWhiteSpace(e.EtapaAtual.ErroMudancaEtapa)
                 && e.DataTerminoEtapa(e.EtapaAtual) <= DateTime.Today
-                && e.EtapaAtual.DataPrevista.Date > dataInicio)); // Demais etapas após o início 
+                && e.DataTerminoEtapa(e.EtapaAtual) >= dataInicio)); // Demais etapas após o início 
         }
 
     }

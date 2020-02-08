@@ -32,6 +32,11 @@ namespace Cipa.WebApi.Controllers
         public IEnumerable<UsuarioViewModel> GetUsuarios() =>
             _usuarioAppService.BuscarUsuariosPelaConta(ContaId).AsQueryable().ProjectTo<UsuarioViewModel>(_mapper.ConfigurationProvider);
 
+        [HttpGet("administradores")]
+        [Authorize(Roles = PerfilUsuario.Administrador)]
+        public IEnumerable<UsuarioViewModel> GetUsuariosAdministradores() =>
+            _usuarioAppService.BuscarUsuariosAdministradores().AsQueryable().ProjectTo<UsuarioViewModel>(_mapper.ConfigurationProvider);
+
         [HttpGet("logado")]
         public ActionResult<UsuarioViewModel> GetUsuarioLogado() =>
             _mapper.Map<UsuarioViewModel>(_usuarioAppService.BuscarPeloId(UsuarioId));
@@ -55,6 +60,17 @@ namespace Cipa.WebApi.Controllers
             return _mapper.Map<UsuarioViewModel>(_usuarioAppService.Adicionar(novoUsuario));
         }
 
+        [HttpPost("administradores")]
+        [Authorize(Roles = PerfilUsuario.Administrador)]
+        public UsuarioViewModel PostUsuarioAdministrador(UsuarioViewModel usuario)
+        {
+            var novoUsuario = _mapper.Map<Usuario>(usuario);
+            novoUsuario.Perfil = PerfilUsuario.Administrador;
+            return _mapper.Map<UsuarioViewModel>(_usuarioAppService.AdicionarAdministrador(novoUsuario));
+        }
+
+        
+
         [HttpPut("{id}")]
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         public IActionResult PutUsuario(int id, UsuarioViewModel usuarioViewModel)
@@ -63,6 +79,17 @@ namespace Cipa.WebApi.Controllers
             usuario.Id = id;
             usuario.ContaId = ContaId;
             usuario.Perfil = PerfilUsuario.SESMT;
+            _usuarioAppService.Atualizar(usuario);
+            return NoContent();
+        }
+
+        [HttpPut("{id}/administradores")]
+        [Authorize(Roles = PerfilUsuario.Administrador)]
+        public IActionResult PutUsuarioAdministrador(int id, UsuarioViewModel usuarioViewModel)
+        {
+            var usuario = _mapper.Map<Usuario>(usuarioViewModel);
+            usuario.Id = id;
+            usuario.Perfil = PerfilUsuario.Administrador;
             _usuarioAppService.Atualizar(usuario);
             return NoContent();
         }

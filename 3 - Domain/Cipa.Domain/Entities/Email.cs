@@ -32,6 +32,7 @@ namespace Cipa.Domain.Entities
         public string Mensagem { get; set; }
         public StatusEnvio StatusEnvio { get; private set; }
         public string MensagemErro { get; private set; }
+        public DateTime DataCadastro { get; private set; }
 
         public IEnumerable<string> DestinatariosLista { get => EmailsIndividuais(Destinatarios); }
         public IEnumerable<string> CopiasLista { get => EmailsIndividuais(Copias); }

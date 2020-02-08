@@ -4,6 +4,7 @@ using Cipa.Infra.Data.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cipa.Domain.Helpers;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -24,6 +25,11 @@ namespace Cipa.Infra.Data.Repositories
         public Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigo)
         {
             return DbSet.FirstOrDefault(u => u.CodigoRecuperacao == codigo);
+        }
+
+        public IEnumerable<Usuario> BuscarUsuariosAdministradores()
+        {
+            return DbSet.Where(u => u.Perfil == PerfilUsuario.Administrador);
         }
 
         public IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId)

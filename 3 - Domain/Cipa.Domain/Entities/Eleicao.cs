@@ -17,7 +17,7 @@ namespace Cipa.Domain.Entities
             Estabelecimento estabelecimento,
             Grupo grupo)
         {
-            DataInicio = dataInicio;
+            DataInicio = dataInicio.Date;
             DuracaoGestao = duracaoGestao;
             TerminoMandatoAnterior = terminoMandatoAnterior;
             Estabelecimento = estabelecimento ?? throw new CustomException("O estabelecimento deve ser informado.");
@@ -43,7 +43,7 @@ namespace Cipa.Domain.Entities
             DateTime? terminoMandatoAnterior)
         {
             Id = id;
-            DataInicio = dataInicio;
+            DataInicio = dataInicio.Date;
             EstabelecimentoId = estabelecimentoId;
             Gestao = terminoMandatoAnterior?.Year ?? dataInicio.Year;
             DuracaoGestao = duracaoGestao;

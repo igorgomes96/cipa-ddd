@@ -49,6 +49,7 @@ namespace Cipa.Domain.Test.Services
             {
                 Conta = conta
             };
+            conta.Usuarios.Add(usuarioCriacao);
             grupo = new Grupo("C-TESTE");
             grupo.Dimensionamentos.Add(new LinhaDimensionamento(5, 0, 1, 1));
             grupo.LimiteDimensionamento = new LimiteDimensionamento(5, 1, 1, 1);

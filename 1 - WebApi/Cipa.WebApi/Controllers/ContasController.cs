@@ -37,6 +37,7 @@ namespace Cipa.WebApi.Controllers
         public IEnumerable<EtapaPadraoContaViewModel> GetCronogramaPadrao() =>
             _contaAppService.BuscarCronogramaPadrao(ContaId).AsQueryable().ProjectTo<EtapaPadraoContaViewModel>(_mapper.ConfigurationProvider);
 
+        
         [HttpPost("cronograma")]
         public EtapaPadraoContaViewModel PostEtapaPadrao(EtapaPadraoContaViewModel etapaPadrao) =>
             _mapper.Map<EtapaPadraoContaViewModel>(_contaAppService.AdicionarEtapaPadrao(ContaId, _mapper.Map<EtapaPadraoConta>(etapaPadrao)));

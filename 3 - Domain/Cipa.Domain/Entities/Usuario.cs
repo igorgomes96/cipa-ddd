@@ -46,6 +46,11 @@ namespace Cipa.Domain.Entities
             Conta = conta;
         }
 
+        public void AlterarParaPerfilAdministrador()
+        {
+            Perfil = PerfilUsuario.Administrador;
+        }
+
         public bool JaCadastrouSenha => !string.IsNullOrWhiteSpace(Senha);
 
         public void CadastrarSenha(Guid codigoRecuperacao, string senha)

@@ -20,6 +20,9 @@ namespace Cipa.Infra.Data.EntityConfig
             builder.Property(e => e.StatusEnvio)
                 .IsRequired();
 
+            builder.Property(e => e.DataCadastro)
+                .IsRequired();
+
            builder.Ignore(e => e.DestinatariosLista)
                 .Ignore(e => e.CopiasLista);
         }

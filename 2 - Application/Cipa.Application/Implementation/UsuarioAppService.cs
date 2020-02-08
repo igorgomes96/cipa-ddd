@@ -30,6 +30,8 @@ namespace Cipa.Application
         public IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId) =>
             (_repositoryBase as IUsuarioRepository).BuscarUsuariosPelaConta(contaId);
 
+        public IEnumerable<Usuario> BuscarUsuariosAdministradores() =>
+            (_repositoryBase as IUsuarioRepository).BuscarUsuariosAdministradores();
 
         private void EnviarEmail(Usuario usuario, ETipoTemplateEmail tipoTemplate)
         {
@@ -74,6 +76,41 @@ namespace Cipa.Application
             usuarioExistente.Nome = usuario.Nome;
             usuarioExistente.Perfil = usuario.Perfil;
             base.Atualizar(usuarioExistente);
+        }
+
+
+        public Usuario AdicionarAdministrador(Usuario usuario)
+        {
+            usuario.Email = usuario.Email.Trim().ToLower();
+            Conta conta = null;
+            if (usuario.ContaId.HasValue)
+            {
+                conta = _unitOfWork.ContaRepository.BuscarPeloId(usuario.ContaId.Value);
+                if (conta == null)
+                    usuario.ContaId = null;
+            }
+
+            var usuarioExistente = (_repositoryBase as IUsuarioRepository).BuscarUsuario(usuario.Email);
+            if (usuarioExistente != null)
+            {
+                if (usuarioExistente.Perfil == PerfilUsuario.Administrador)
+                    throw new DuplicatedException($"Já há um usuário cadastrado com o e-mail '{usuario.Email}'.");
+                else
+                {
+                    usuarioExistente.AlterarParaPerfilAdministrador();
+                    base.Atualizar(usuarioExistente);
+                    return usuarioExistente;
+                }
+            }
+
+            if (conta != null)
+            {
+                usuario.Conta = conta;
+                usuario.ContaId = conta.Id;
+            }
+
+            EnviarEmail(usuario, ETipoTemplateEmail.CadastroSESMT);
+            return base.Adicionar(usuario);
         }
 
         public override Usuario Excluir(int id)

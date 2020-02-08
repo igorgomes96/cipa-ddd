@@ -10,6 +10,7 @@ namespace Cipa.Application.Repositories
         Usuario BuscarUsuario(string email, string senha);
         IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId);
         Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigo);
+        IEnumerable<Usuario> BuscarUsuariosAdministradores();
 
     }
 }

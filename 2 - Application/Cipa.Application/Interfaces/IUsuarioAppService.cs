@@ -10,6 +10,8 @@ namespace Cipa.Application.Interfaces
         Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigoRecuperacao);
         IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId);
         Usuario CadastrarNovaSenha(Guid codigoRecuperacao, string senha);
+        IEnumerable<Usuario> BuscarUsuariosAdministradores();
+        Usuario AdicionarAdministrador(Usuario usuario);
         void ResetarSenha(string email);
     }
 }
