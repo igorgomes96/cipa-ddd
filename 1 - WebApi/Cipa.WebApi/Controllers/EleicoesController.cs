@@ -238,7 +238,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpPost("{id}/inscricoes/foto"), DisableRequestSizeLimit]
-        public ActionResult<InscricaoViewModel> PosttAtualizaFotoInscricao(int id)
+        public ActionResult<InscricaoViewModel> PostAtualizaFotoInscricao(int id)
         {
             if (Request.Form.Files == null || Request.Form.Files.Count == 0)
                 return BadRequest("Nenhuma foto foi enviada.");
