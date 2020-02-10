@@ -1,8 +1,10 @@
-using Cipa.Domain.Interfaces.Repositories;
 using Cipa.Domain.Entities;
+using Cipa.Application.Repositories;
 using Cipa.Infra.Data.Context;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using Cipa.Domain.Helpers;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -10,18 +12,29 @@ namespace Cipa.Infra.Data.Repositories
     {
         public UsuarioRepository(CipaContext db) : base(db) { }
 
-        private IQueryable<Usuario> QueryUsuario() {
-            return DbSet
-                .Include(u => u.Conta);
-        }
         public Usuario BuscarUsuario(string email, string senha)
         {
-            return QueryUsuario().SingleOrDefault(u => u.Email == email && u.Senha == senha);
+            return DbSet.FirstOrDefault(u => u.Email == email && u.Senha == senha);
         }
 
         public Usuario BuscarUsuario(string email)
         {
-            return QueryUsuario().SingleOrDefault(u => u.Email == email);
+            return DbSet.FirstOrDefault(u => u.Email == email);
+        }
+
+        public Usuario BuscarUsuarioPeloCodigoRecuperacao(Guid codigo)
+        {
+            return DbSet.FirstOrDefault(u => u.CodigoRecuperacao == codigo);
+        }
+
+        public IEnumerable<Usuario> BuscarUsuariosAdministradores()
+        {
+            return DbSet.Where(u => u.Perfil == PerfilUsuario.Administrador);
+        }
+
+        public IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId)
+        {
+            return DbSet.Where(u => u.ContaId == contaId);
         }
     }
 }

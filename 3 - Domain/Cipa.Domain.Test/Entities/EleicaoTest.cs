@@ -1,80 +1,98 @@
-using System;
 using Cipa.Domain.Entities;
+using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
-using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Cipa.Domain.Test.Entities
 {
     public class EleicaoTest
     {
-
-        private readonly Eleicao eleicao;
-        public EleicaoTest()
+        #region Funções Auxiliares
+        private Conta ContaPadrao()
         {
-            eleicao = new Eleicao(1, new DateTime(2019, 1, 1), 2, 1, 1, 1, 1, new DateTime(2019, 2, 28));
+            var conta = new Conta();
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 1", null, 1, 1, 10, ECodigoEtapaObrigatoria.Convocacao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 5 } });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 2", null, 2, 1, 10, ECodigoEtapaObrigatoria.Inscricao) { EtapaObrigatoria = new EtapaObrigatoria { DuracaoMinima = 7 } });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 3", null, 3, 1, 10, ECodigoEtapaObrigatoria.Votacao) { EtapaObrigatoria = new EtapaObrigatoria() });
+            conta.AdicionarEtapaPadrao(new EtapaPadraoConta("Etapa 4", null, 4, 1, 10, ECodigoEtapaObrigatoria.Ata) { EtapaObrigatoria = new EtapaObrigatoria() });
+            return conta;
         }
 
-        [Fact]
-        public void EtapaAtual_CronogramaVazio_RetornaNull()
+        private Usuario UsuarioPadrao => new Usuario("teste@email.com", "Teste", "Teste Cargo") { Conta = ContaPadrao() };
+        private Grupo GrupoPadrao()
         {
-            // var eleicao = new Eleicao();
-            var etapaAtual = eleicao.EtapaAtual;
-            Assert.Null(etapaAtual);
+            var grupo = new Grupo("C-Teste")
+            {
+                LimiteDimensionamento = new LimiteDimensionamento(10000, 2500, 2, 2)
+            };
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(19, 0, 0, 0));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(50, 20, 1, 1));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(100, 51, 3, 3));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(500, 101, 4, 3));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(1000, 501, 6, 4));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(2500, 1001, 9, 7));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(5000, 2501, 12, 9));
+            grupo.Dimensionamentos.Add(new LinhaDimensionamento(10000, 5001, 15, 12));
+            return grupo;
         }
+        private Estabelecimento EstabelecimentoPadrao => new Estabelecimento("Cidade", "Endereço", 1) { Grupo = GrupoPadrao() };
+
+
+        private Eleicao CriarEleicao(Conta conta, Grupo grupo)
+        {
+            var eleicao = new Eleicao(
+                new DateTime(2019, 1, 1),
+                2,
+                new DateTime(2019, 2, 28),
+                UsuarioPadrao,
+                EstabelecimentoPadrao,
+                grupo);
+            eleicao.Id = 1;
+            eleicao.GerarCronograma();
+            return eleicao;
+        }
+
+        private Eleicao CriarEleicao() => CriarEleicao(ContaPadrao(), GrupoPadrao());
+
+        private void FinalizarEleicao(Eleicao eleicao)
+        {
+            for (int i = 0; i <= eleicao.Cronograma.Count; i++)
+                eleicao.PassarParaProximaEtapa();
+        }
+
+        private void PassarEtapaAte(Eleicao eleicao, ECodigoEtapaObrigatoria codigoEtapaObrigatoria)
+        {
+            while (eleicao.EtapaAtual?.EtapaObrigatoriaId != codigoEtapaObrigatoria)
+            {
+                eleicao.PassarParaProximaEtapa();
+            }
+        }
+        #endregion
 
         [Fact]
         public void EtapaAtual_ProcessoNaoIniciado_RetornaNull()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            var etapaAtual = eleicao.EtapaAtual;
-            Assert.Null(etapaAtual);
+            var eleicao = CriarEleicao();
+            Assert.Null(eleicao.EtapaAtual);
         }
 
         [Fact]
         public void EtapaAtual_CronogramaGerado_RetornaEtapa()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 1, PosicaoEtapa = PosicaoEtapa.Passada });
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 2, PosicaoEtapa = PosicaoEtapa.Atual });
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 3, PosicaoEtapa = PosicaoEtapa.Futura });
-
-            var etapaAtual = eleicao.EtapaAtual;
-            Assert.Equal(2, etapaAtual.Id);
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            Assert.Equal(1, eleicao.EtapaAtual.Ordem);
         }
 
         [Fact]
         public void GerarCronograma_EtapasPadroesCarregadas_CronogramaGerado()
         {
-            var conta = new Conta();
-            conta.EtapasPadroes.Add(
-                new EtapaPadraoConta
-                {
-                    EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao,
-                    Id = 1,
-                    Ordem = 1,
-                    Nome = "Etapa 1",
-                    DuracaoPadrao = 10
-                }
-            );
-            conta.EtapasPadroes.Add(
-                new EtapaPadraoConta
-                {
-                    EtapaObrigatoriaId = CodigoEtapaObrigatoria.FormacaoComissao,
-                    Id = 2,
-                    Ordem = 2,
-                    Nome = "Etapa 2",
-                    DuracaoPadrao = 1
-                }
-            );
-            // var eleicao = new Eleicao();
-            eleicao.Conta = conta;
-            eleicao.DataInicio = new DateTime(2019, 1, 1);
 
-            eleicao.GerarCronograma();
+            var eleicao = CriarEleicao();
 
             Assert.Collection(eleicao.Cronograma,
                 etapa =>
@@ -82,241 +100,342 @@ namespace Cipa.Domain.Test.Entities
                     Assert.Equal(new DateTime(2019, 1, 1), etapa.DataPrevista);
                     Assert.Equal("Etapa 1", etapa.Nome);
                     Assert.Equal(1, etapa.Ordem);
-                    Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
                 },
                 etapa =>
                 {
                     Assert.Equal(new DateTime(2019, 1, 11), etapa.DataPrevista);
                     Assert.Equal("Etapa 2", etapa.Nome);
                     Assert.Equal(2, etapa.Ordem);
-                    Assert.Equal(PosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                },
+                etapa =>
+                {
+                    Assert.Equal(new DateTime(2019, 1, 21), etapa.DataPrevista);
+                    Assert.Equal("Etapa 3", etapa.Nome);
+                    Assert.Equal(3, etapa.Ordem);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
+                },
+                etapa =>
+                {
+                    Assert.Equal(new DateTime(2019, 1, 31), etapa.DataPrevista);
+                    Assert.Equal("Etapa 4", etapa.Nome);
+                    Assert.Equal(4, etapa.Ordem);
+                    Assert.Equal(EPosicaoEtapa.Futura, etapa.PosicaoEtapa);
                 }
             );
         }
 
         [Fact]
-        public void JaUltrapassouEtapa_EtapaNullNaoFinalizada_RetornaFalse()
+        public void JaUltrapassouEtapa_ProcessoNaoIniciado_RetornaFalse()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var eleicao = CriarEleicao();
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.False(retorno);
         }
 
         [Fact]
-        public void JaUltrapassouEtapa_EtapaNullJaFinalizada_RetornaTrue()
+        public void JaUltrapassouEtapa_ProcessoFinalizado_RetornaTrue()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            eleicao.DataFinalizacao = DateTime.Today;
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var eleicao = CriarEleicao();
+            FinalizarEleicao(eleicao);
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.True(retorno);
+            Assert.NotNull(eleicao.DataFinalizacao);
         }
 
         [Fact]
         public void JaUltrapassouEtapa_EtapaNaoEncontrada_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var exception = Assert.Throws<CustomException>(() => eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.EditalInscricao));
+            var eleicao = CriarEleicao();
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
         [Fact]
         public void JaUltrapassouEtapa_EtapaUltrapassada_RetornaTrue()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            eleicao.PassarParaProximaEtapa();
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
             Assert.True(retorno);
         }
 
         [Fact]
         public void JaUltrapassouEtapa_EtapaAtual_RetornaFalse()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
+            Assert.Equal(EPosicaoEtapa.Atual, eleicao.EtapaAtual.PosicaoEtapa);
             Assert.False(retorno);
         }
 
         [Fact]
         public void JaUltrapassouEtapa_EtapaNaoUltrapassada_RetornaFalse()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.JaUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var retorno = eleicao.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao);
             Assert.False(retorno);
         }
 
         [Fact]
-        public void AindaNaoUltrapassouEtapa_EtapaNullNaoFinalizada_RetornaTrue()
+        public void AindaNaoUltrapassouEtapa_ProcessoNaoIniciado_RetornaTrue()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var eleicao = CriarEleicao();
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.True(retorno);
         }
 
         [Fact]
-        public void AindaNaoUltrapassouEtapa_EtapaNullJaFinalizada_RetornaFalse()
+        public void AindaNaoUltrapassouEtapa_ProcessoFinalizado_RetornaFalse()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura });
-            eleicao.DataFinalizacao = DateTime.Today;
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Ata);
+            var eleicao = CriarEleicao();
+            FinalizarEleicao(eleicao);
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Ata);
             Assert.False(retorno);
         }
 
         [Fact]
         public void AindaNaoUltrapassouEtapa_EtapaNaoEncontrada_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var exception = Assert.Throws<CustomException>(() => eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.EditalInscricao));
+            var eleicao = CriarEleicao();
+            var exception = Assert.Throws<CustomException>(() => eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
         [Fact]
         public void AindaNaoUltrapassouEtapa_EtapaNaoUltrapassada_RetornaTrue()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao);
             Assert.True(retorno);
         }
 
         [Fact]
         public void AindaNaoUltrapassouEtapa_EtapaAtual_RetornaFalse()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
             Assert.False(retorno);
+            Assert.Equal(ECodigoEtapaObrigatoria.Convocacao, eleicao.EtapaAtual.EtapaObrigatoriaId);
         }
 
         [Fact]
-        public void AindaNaoUltrapassouEtapa_EtapaUltrapassada_RetornaTrue()
+        public void AindaNaoUltrapassouEtapa_EtapaUltrapassada_RetornaFalse()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.AindaNaoUltrapassouEtapa(CodigoEtapaObrigatoria.Convocacao);
-            Assert.True(retorno);
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            eleicao.PassarParaProximaEtapa();
+            var retorno = eleicao.AindaNaoUltrapassouEtapa(ECodigoEtapaObrigatoria.Convocacao);
+            Assert.False(retorno);
         }
 
         [Fact]
         public void BuscaEtapaObrigatoria_EtapaNaoEncontrada_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var exception = Assert.Throws<CustomException>(() => eleicao.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.EditalInscricao));
+            var eleicao = CriarEleicao();
+            var exception = Assert.Throws<CustomException>(() => eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.EditalInscricao));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
         [Fact]
         public void BuscaEtapaObrigatoria_EtapaEncontrada_RetornaEtapa()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var etapa = eleicao.BuscaEtapaObrigatoria(CodigoEtapaObrigatoria.Convocacao);
-            Assert.Equal(PosicaoEtapa.Atual, etapa.PosicaoEtapa);
-            Assert.Equal(CodigoEtapaObrigatoria.Convocacao, etapa.EtapaObrigatoriaId);
+            var eleicao = CriarEleicao();
+            var etapa = eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao);
+            Assert.Equal(ECodigoEtapaObrigatoria.Inscricao, etapa.EtapaObrigatoriaId);
         }
 
         [Fact]
         public void EtapaAnterior_PrimeiraEtapa_RetornaNull()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.EtapaAnterior(new EtapaCronograma { Ordem = 1 });
+            var eleicao = CriarEleicao();
+            var retorno = eleicao.RetonarEtapaAnterior(new EtapaCronograma("Etapa", null, 1, eleicao.Id, DateTime.Today, null));
             Assert.Null(retorno);
         }
 
         [Fact]
         public void EtapaAnterior_EtapaDiferenteDaPrimeira_RetornaEtapa()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.EtapaAnterior(new EtapaCronograma { Ordem = 2 });
+            var eleicao = CriarEleicao();
+            var retorno = eleicao.RetonarEtapaAnterior(new EtapaCronograma("Etapa", null, 2, eleicao.Id, DateTime.Today, null));
             Assert.Equal(1, retorno.Ordem);
-            Assert.Equal(CodigoEtapaObrigatoria.Ata, retorno.EtapaObrigatoriaId);
+            Assert.Equal(ECodigoEtapaObrigatoria.Convocacao, retorno.EtapaObrigatoriaId);
         }
 
         [Fact]
         public void EtapaPosterior_UltimaEtapa_RetornaNull()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.EtapaPosterior(new EtapaCronograma { Ordem = 2 });
+            var eleicao = CriarEleicao();
+            for (int i = 0; i < eleicao.Cronograma.Count; i++)
+                eleicao.PassarParaProximaEtapa();
+            var retorno = eleicao.RetornarEtapaPosterior(new EtapaCronograma("Etapa", null, 4, eleicao.Id, DateTime.Today, null));
             Assert.Null(retorno);
         }
 
         [Fact]
         public void EtapaPosterior_EtapaDiferenteDaUltima_RetornaEtapa()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var retorno = eleicao.EtapaPosterior(new EtapaCronograma { Ordem = 1 });
+            var eleicao = CriarEleicao();
+            var retorno = eleicao.RetornarEtapaPosterior(new EtapaCronograma("Etapa", null, 1, eleicao.Id, DateTime.Today, null));
             Assert.Equal(2, retorno.Ordem);
-            Assert.Equal(CodigoEtapaObrigatoria.Convocacao, retorno.EtapaObrigatoriaId);
+            Assert.Equal(ECodigoEtapaObrigatoria.Inscricao, retorno.EtapaObrigatoriaId);
         }
 
         [Fact]
         public void DataTerminoEtapa_EtapaNaoEncontrada_ThrowsException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 1, Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 2, Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            var exception = Assert.Throws<CustomException>(() => eleicao.DataTerminoEtapa(new EtapaCronograma { Id = 3, Ordem = 3 }));
+            var eleicao = CriarEleicao();
+            var exception = Assert.Throws<CustomException>(() => eleicao.DataTerminoEtapa(new EtapaCronograma("Etapa", null, 5, eleicao.Id, DateTime.Today, null)));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
         [Fact]
         public void DataTerminoEtapa_UltimaEtapa_RetornaDataFinalizacao()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 1, Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 2, Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao });
-            eleicao.DataFinalizacao = new DateTime(2019, 2, 15);
-            var retorno = eleicao.DataTerminoEtapa(new EtapaCronograma { Id = 2, Ordem = 2 });
-            Assert.Equal(new DateTime(2019, 2, 15), retorno);
+            var eleicao = CriarEleicao();
+            FinalizarEleicao(eleicao);
+            var retorno = eleicao.DataTerminoEtapa(new EtapaCronograma("Etapa", null, 4, eleicao.Id, DateTime.Today, null));
+            Assert.InRange(retorno, DateTime.Now.AddSeconds(-1), DateTime.Now.AddSeconds(1));
         }
 
         [Fact]
         public void DataTerminoEtapa_PrimeiraEtapa_RetornaDataTerminoEtapa()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 1, Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 2, Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao, DataPrevista = new DateTime(2019, 2, 20) });
-            var retorno = eleicao.DataTerminoEtapa(new EtapaCronograma { Id = 1, Ordem = 1 });
-            Assert.Equal(new DateTime(2019, 2, 19), retorno);
+            var eleicao = CriarEleicao();
+            var retorno = eleicao.DataTerminoEtapa(eleicao.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Convocacao));
+            Assert.Equal(new DateTime(2019, 1, 10), retorno);
         }
 
         [Fact]
         public void UltimaEtapa_CronogramaConsistente_RetornaUltimaEtapa()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 1, Ordem = 1, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Id = 2, Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Convocacao, DataPrevista = new DateTime(2019, 2, 20) });
-            Assert.Equal(2, eleicao.UltimaEtapa.Id);
+            var eleicao = CriarEleicao();
+            Assert.Equal(4, eleicao.UltimaEtapa.Ordem);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaNaoEncontrada_ThrowsNotFoundException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 5", null, 5, 1, DateTime.Today, ECodigoEtapaObrigatoria.Convocacao);
+
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal("Etapa não encontrada no cronograma.", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataIgualRealizadaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value, ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataRealizada.Value.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataMenorQueRealizadaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            eleicao.PassarParaProximaEtapa();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataRealizada.Value.AddDays(-1), ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataRealizada.Value.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataMenorQuePrevistaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista.AddDays(-1), ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataIgualPrevistaAnterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(0).DataPrevista, ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser maior que a data da etapa anterior ({eleicao.Cronograma.ElementAt(0).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        public static object[][] DatasPrevistas = new object[][]
+        {
+            new object[] { new DateTime(2019, 1, 4) },
+            new object[] { new DateTime(2019, 1, 5) }
+        };
+        [Theory, MemberData(nameof(DatasPrevistas))]
+        public void AtualizarCronograma_EtapaAnteriorComDuracaoMenorQueDuracaoMinimaObrigatoria_ThrowsCustomException(DateTime dataPrevista)
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal("A etapa anterior (Etapa 1) deve ter a duração mínima de 5 dias!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataIgualPrevistaPosterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista, ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser menor que a data da próxima etapa ({eleicao.Cronograma.ElementAt(2).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        [Fact]
+        public void AtualizarCronograma_EtapaDataMaiorPrevistaPosterior_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, eleicao.Cronograma.ElementAt(2).DataPrevista.AddDays(1), ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal($"A data deve ser menor que a data da próxima etapa ({eleicao.Cronograma.ElementAt(2).DataPrevista.ToString("dd/MM/yyyy")})!", exception.Message);
+        }
+
+        public static object[][] DatasPrevistasPosteriores = new object[][]
+        {
+            new object[] { new DateTime(2019, 1, 16) },
+            new object[] { new DateTime(2019, 1, 15) }
+        };
+        [Theory, MemberData(nameof(DatasPrevistasPosteriores))]
+        public void AtualizarCronograma_EtapaComDuracaoMenorQueDuracaoMinimaObrigatoria_ThrowsCustomException(DateTime dataPrevista)
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2", null, 2, 1, dataPrevista, ECodigoEtapaObrigatoria.Inscricao);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarCronograma(etapa));
+            Assert.Equal("Essa etapa deve ter a duração mínima de 7 dias!", exception.Message);
+        }
+
+        public static object[][] DatasPrevistasValidas = new object[][]
+        {
+            new object[] { new DateTime(2019, 1, 6) },
+            new object[] { new DateTime(2019, 1, 14) }
+        };
+        [Theory, MemberData(nameof(DatasPrevistasValidas))]
+        public void AtualizarCronograma_DataConsistente_AtualizaCronograma(DateTime dataPrevista)
+        {
+            var eleicao = CriarEleicao();
+            var etapa = new EtapaCronograma("Etapa 2 Atualizada", "Nova Descrição", 2, 1, dataPrevista, ECodigoEtapaObrigatoria.Inscricao);
+
+            eleicao.AtualizarCronograma(etapa);
+            Assert.Equal("Etapa 2 Atualizada", eleicao.Cronograma.ElementAt(1).Nome);
+            Assert.Equal("Nova Descrição", eleicao.Cronograma.ElementAt(1).Descricao);
+            Assert.Equal(dataPrevista, eleicao.Cronograma.ElementAt(1).DataPrevista);
         }
 
         [Theory]
@@ -325,40 +444,111 @@ namespace Cipa.Domain.Test.Entities
         [InlineData(StatusInscricao.Reprovada, 2)]
         public void QtdaInscricoes_InscricoesCarregadas_RetornaQtda(StatusInscricao statusInscricao, int qtdaExperada)
         {
-            // var eleicao = new Eleicao();
-            eleicao.Inscricoes.Add(new Inscricao { StatusInscricao = StatusInscricao.Aprovada });
-            eleicao.Inscricoes.Add(new Inscricao { StatusInscricao = StatusInscricao.Aprovada });
-            eleicao.Inscricoes.Add(new Inscricao { StatusInscricao = StatusInscricao.Reprovada });
-            eleicao.Inscricoes.Add(new Inscricao { StatusInscricao = StatusInscricao.Pendente });
-            eleicao.Inscricoes.Add(new Inscricao { StatusInscricao = StatusInscricao.Aprovada });
-            eleicao.Inscricoes.Add(new Inscricao { StatusInscricao = StatusInscricao.Reprovada });
+            var eleicao = CriarEleicao();
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
+            var usuario3 = new Usuario("eleitor3@email.com", "Eleitor 3", "Cargo");
+            var usuario4 = new Usuario("eleitor4@email.com", "Eleitor 4", "Cargo");
+            var usuario5 = new Usuario("eleitor5@email.com", "Eleitor 5", "Cargo");
+            var usuario6 = new Usuario("eleitor6@email.com", "Eleitor 6", "Cargo");
+
+            var inscricao1 = eleicao.FazerInscricao(new Eleitor(usuario1) { Id = 1 }, "Objetivos");
+            var inscricao2 = eleicao.FazerInscricao(new Eleitor(usuario2) { Id = 2 }, "Objetivos");
+            var inscricao3 = eleicao.FazerInscricao(new Eleitor(usuario3) { Id = 3 }, "Objetivos");
+            var inscricao4 = eleicao.FazerInscricao(new Eleitor(usuario4) { Id = 4 }, "Objetivos");
+            var inscricao5 = eleicao.FazerInscricao(new Eleitor(usuario5) { Id = 5 }, "Objetivos");
+            var inscricao6 = eleicao.FazerInscricao(new Eleitor(usuario6) { Id = 6 }, "Objetivos");
+
+            inscricao1.Id = 1;
+            inscricao2.Id = 2;
+            inscricao3.Id = 3;
+            inscricao4.Id = 4;
+            inscricao5.Id = 5;
+            inscricao6.Id = 6;
+
+            eleicao.AprovarInscricao(inscricao2.Id, usuario1);
+            eleicao.AprovarInscricao(inscricao3.Id, usuario1);
+            eleicao.AprovarInscricao(inscricao6.Id, usuario1);
+            eleicao.ReprovarInscricao(inscricao1.Id, usuario1, "Motivo");
+            eleicao.ReprovarInscricao(inscricao4.Id, usuario1, "Motivo");
 
             Assert.Equal(qtdaExperada, eleicao.QtdaInscricoes(statusInscricao));
+        }
+
+
+        [Fact]
+        public void ExcluirTodosEleitores_ProcessoNaoIniciado_EleitoresExcluidos()
+        {
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+
+            eleicao.AdicionarEleitor(eleitor1);
+            eleicao.AdicionarEleitor(eleitor2);
+
+            eleicao.ExcluirTodosEleitores();
+            Assert.Empty(eleicao.Eleitores);
+        }
+
+        [Fact]
+        public void ExcluirTodosEleitores_ProcessoIniciado_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+
+            eleicao.AdicionarEleitor(eleitor1);
+            eleicao.AdicionarEleitor(eleitor2);
+
+            eleicao.PassarParaProximaEtapa();
+
+            var ex = Assert.Throws<CustomException>(() => eleicao.ExcluirTodosEleitores());
+            Assert.Equal("A exclusão em massa dos eleitores é permitida somente antes do início do processo.", ex.Message);
         }
 
         [Fact]
         public void BuscarEleitor_IdExistente_RetornaEleitor()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Eleitores.Add(new Eleitor { Id = 1 });
-            eleicao.Eleitores.Add(new Eleitor { Id = 2 });
-            eleicao.Eleitores.Add(new Eleitor { Id = 3 });
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
+            var usuario3 = new Usuario("eleitor3@email.com", "Eleitor 3", "Cargo");
+
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+            var eleitor3 = new Eleitor(usuario3) { Id = 3 };
+
+            eleicao.AdicionarEleitor(eleitor1);
+            eleicao.AdicionarEleitor(eleitor2);
+            eleicao.AdicionarEleitor(eleitor3);
 
             var eleitor = eleicao.BuscarEleitor(2);
 
-            Assert.Equal(2, eleitor.Id);
+            Assert.Equal(eleitor2, eleitor);
         }
 
         [Fact]
         public void BuscarEleitor_IdInexistente_RetornaNull()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Eleitores.Add(new Eleitor { Id = 1 });
-            eleicao.Eleitores.Add(new Eleitor { Id = 2 });
-            eleicao.Eleitores.Add(new Eleitor { Id = 3 });
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
+            var usuario3 = new Usuario("eleitor3@email.com", "Eleitor 3", "Cargo");
+
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+            var eleitor3 = new Eleitor(usuario3) { Id = 3 };
+
+            eleicao.AdicionarEleitor(eleitor1);
+            eleicao.AdicionarEleitor(eleitor2);
+            eleicao.AdicionarEleitor(eleitor3);
 
             var eleitor = eleicao.BuscarEleitor(4);
-
             Assert.Null(eleitor);
         }
 
@@ -370,18 +560,37 @@ namespace Cipa.Domain.Test.Entities
         public void PassarParaProximaEtapa_EtapaInscricaoQtdaMinimaInscritos_ThrowsCustomException(
             int qtdaInscricoesAprovadas, int qtdaInscricoesPendentes, string mensagemErro)
         {
-            var dimensionamento = new Dimensionamento(10000, 5001, 15, 12)
+            var eleicao = CriarEleicao();
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < 6000; i++)
             {
-                QtdaInscricoesAprovadas = qtdaInscricoesAprovadas,
-                QtdaInscricoesPendentes = qtdaInscricoesPendentes,
-                QtdaInscricoesReprovadas = 2
-            };
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
 
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
+            // Faz as inscrições
+            var qtdaInscricoesReprovadas = 2;
+            for (int i = 0; i < qtdaInscricoesAprovadas + qtdaInscricoesPendentes + qtdaInscricoesReprovadas; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+            }
 
-            var excecao = Assert.Throws<CustomException>(() => eleicao.PassarParaProximaEtapa(dimensionamento));
+            // Aprova algumas inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 1; i <= qtdaInscricoesAprovadas; i++)
+                eleicao.AprovarInscricao(i, usuarioAprovador);
+
+            // Reprova algumas inscrições
+            for (int i = 1; i <= qtdaInscricoesReprovadas; i++)
+                eleicao.ReprovarInscricao(i + qtdaInscricoesAprovadas, usuarioAprovador, "Motivo");
+
+            var excecao = Assert.Throws<CustomException>(() => eleicao.PassarParaProximaEtapa());
             Assert.Equal(mensagemErro, excecao.Message);
         }
 
@@ -391,68 +600,107 @@ namespace Cipa.Domain.Test.Entities
         public void PassarParaProximaEtapa_EtapaVotacaoSemQtdaMinimaVotos_ThrowCustomException(
             int qtdaEleitores, int qtdaVotos)
         {
-            var dimensionamento = new Dimensionamento(10000, 5001, 15, 12)
+            var eleicao = CriarEleicao();
+
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < qtdaEleitores; i++)
             {
-                QtdaInscricoesAprovadas = 27,
-                QtdaInscricoesPendentes = 0,
-                QtdaInscricoesReprovadas = 2,
-                QtdaEleitores = qtdaEleitores,
-                QtdaVotos = qtdaVotos
-            };
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
 
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
 
-            var excecao = Assert.Throws<CustomException>(() => eleicao.PassarParaProximaEtapa(dimensionamento));
+            // Faz as inscrições
+            var qtdaInscricoes = 27;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            for (int i = 0; i < qtdaVotos; i++)
+                eleicao.RegistrarVoto((i % qtdaInscricoes) + 1, eleitores.ElementAt(i), "::1");
+
+            var excecao = Assert.Throws<CustomException>(() => eleicao.PassarParaProximaEtapa());
             Assert.Equal("Esta eleição ainda não atingiu os 50% de participação de todos os funcionários, conforme exigido pela NR-5.", excecao.Message);
         }
 
         public static object[][] InlineDataCronograma = new object[][] {
             new object[] {
-                PosicaoEtapa.Futura, PosicaoEtapa.Futura, PosicaoEtapa.Futura,
-                PosicaoEtapa.Atual, PosicaoEtapa.Futura, PosicaoEtapa.Futura,
-                DateTime.Today, null, null, null
+                1, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura,
+                DateTime.Today, null, null, null, null
             },
             new object[] {
-                PosicaoEtapa.Atual, PosicaoEtapa.Futura, PosicaoEtapa.Futura,
-                PosicaoEtapa.Passada, PosicaoEtapa.Atual, PosicaoEtapa.Futura,
-                null, DateTime.Today, null, null
+                2, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura,
+                DateTime.Today, DateTime.Today, null, null, null
             },
             new object[] {
-                PosicaoEtapa.Passada, PosicaoEtapa.Atual, PosicaoEtapa.Futura,
-                PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Atual,
-                null, null, DateTime.Today, null
+                3, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura,
+                DateTime.Today, DateTime.Today, DateTime.Today, null, null
             },
             new object[] {
-                PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Atual,
-                PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Passada,
-                null, null, null, DateTime.Now
+                4, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual,
+                DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Today, null
             },
+             new object[] {
+                5, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada,
+                DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Now
+            }
         };
         [Theory, MemberData(nameof(InlineDataCronograma))]
         public void PassarParaProximaEtapa_NenhumaInsconsistencia_CronogramaAtualizado(
-            PosicaoEtapa posicaoEtapaCorrente1, PosicaoEtapa posicaoEtapaCorrente2, PosicaoEtapa posicaoEtapaCorrente3,
-            PosicaoEtapa posicaoEtapaEsperada1, PosicaoEtapa posicaoEtapaEsperada2, PosicaoEtapa posicaoEtapaEsperada3,
-            DateTime? dataRealizada1, DateTime? dataRealizada2, DateTime? dataRealizada3, DateTime? dataFinalizacaoEleicao
+            int passarEtapaNVezes,
+            EPosicaoEtapa posicaoEtapaEsperada1, EPosicaoEtapa posicaoEtapaEsperada2, EPosicaoEtapa posicaoEtapaEsperada3, EPosicaoEtapa posicaoEtapaEsperada4,
+            DateTime? dataRealizada1, DateTime? dataRealizada2, DateTime? dataRealizada3, DateTime? dataRealizada4, DateTime? dataFinalizacaoEleicao
         )
         {
-            var dimensionamento = new Dimensionamento(10000, 5001, 15, 12)
+            var eleicao = CriarEleicao();
+
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            var qtdaEleitores = 21;
+            var qtdaInscricoes = 2;
+            var qtdaVotos = 15;
+
+            for (int n = 0; n < passarEtapaNVezes; n++)
             {
-                QtdaInscricoesAprovadas = 27,
-                QtdaInscricoesPendentes = 0,
-                QtdaInscricoesReprovadas = 2,
-                QtdaEleitores = 7000,
-                QtdaVotos = 3500
-            };
-
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = posicaoEtapaCorrente1, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = posicaoEtapaCorrente2, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = posicaoEtapaCorrente3, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-
-            eleicao.PassarParaProximaEtapa(dimensionamento);
+                if (eleicao.EtapaAtual?.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Convocacao)
+                {
+                    for (int i = 0; i < qtdaEleitores; i++)
+                    {
+                        var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                        var eleitor = new Eleitor(usuario) { Id = i };
+                        eleicao.AdicionarEleitor(eleitor);
+                        eleitores.Add(eleitor);
+                    }
+                }
+                else if (eleicao.EtapaAtual?.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Inscricao)
+                {
+                    // Faz as inscrições
+                    var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+                    for (int i = 0; i < qtdaInscricoes; i++)
+                    {
+                        var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                        inscricao.Id = i + 1;
+                        eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+                    }
+                }
+                else if (eleicao.EtapaAtual?.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Votacao)
+                {
+                    // Registra os votos
+                    for (int i = 0; i < qtdaVotos; i++)
+                        eleicao.RegistrarVoto((i % qtdaInscricoes) + 1, eleitores.ElementAt(i), "::1");
+                }
+                eleicao.PassarParaProximaEtapa();
+            }
 
             Assert.Collection(eleicao.Cronograma,
                 etapa =>
@@ -469,6 +717,11 @@ namespace Cipa.Domain.Test.Entities
                 {
                     Assert.Equal(posicaoEtapaEsperada3, etapa.PosicaoEtapa);
                     Assert.Equal(dataRealizada3, etapa.DataRealizada);
+                },
+                etapa =>
+                {
+                    Assert.Equal(posicaoEtapaEsperada4, etapa.PosicaoEtapa);
+                    Assert.Equal(dataRealizada4, etapa.DataRealizada);
                 }
             );
 
@@ -485,204 +738,434 @@ namespace Cipa.Domain.Test.Entities
         [Fact]
         public void AdicionarEleitor_EleitorEmailDuplicado_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Eleitores.Add(new Eleitor { Email = "email1@teste.com" });
-            eleicao.Eleitores.Add(new Eleitor { Email = "email2@teste.com" });
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var usuario2 = new Usuario("eleitor2@email.com", "Eleitor 2", "Cargo");
 
-            var novoEleitor = new Eleitor { Email = "email1@teste.com" };
-            var excecao = Assert.Throws<CustomException>(() => eleicao.AdicionarEleitor(novoEleitor, It.IsAny<Dimensionamento>(), It.IsAny<Dimensionamento>()));
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+
+            var dimensionamento = eleicao.Grupo.CalcularDimensionamento(3);
+            eleicao.AdicionarEleitor(eleitor1);
+            eleicao.AdicionarEleitor(eleitor2);
+
+            var novoEleitor = new Eleitor(usuario1);
+            var excecao = Assert.Throws<CustomException>(() => eleicao.AdicionarEleitor(novoEleitor));
             Assert.Equal("Já existe um eleitor cadastrado com o mesmo e-mail para essa eleição.", excecao.Message);
         }
 
         [Fact]
         public void AdicionarEleitor_EleicaoAposEtapaVotacao_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Eleitores.Add(new Eleitor { Email = "email1@teste.com" });
-            eleicao.Eleitores.Add(new Eleitor { Email = "email2@teste.com" });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            var qtdaInscricoes = 2;
+            var qtdaVotos = 15;
+            List<Eleitor> eleitores = new List<Eleitor>();
 
-            var novoEleitor = new Eleitor { Email = "email3@teste.com" };
-            var excecao = Assert.Throws<CustomException>(() => eleicao.AdicionarEleitor(novoEleitor, It.IsAny<Dimensionamento>(), It.IsAny<Dimensionamento>()));
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+            // Registra os votos
+            for (int i = 0; i < qtdaVotos; i++)
+                eleicao.RegistrarVoto((i % qtdaInscricoes) + 1, eleitores.ElementAt(i), "::1");
+
+            eleicao.PassarParaProximaEtapa();
+
+            var novoEleitor = new Eleitor(new Usuario("email@email.com", "Teste", "Teste"));
+            var excecao = Assert.Throws<CustomException>(() => eleicao.AdicionarEleitor(novoEleitor));
             Assert.Equal("Não é permitido cadastrar eleitores após o período de votação.", excecao.Message);
         }
 
         [Fact]
         public void AdicionarEleitor_DimensionamentoInvalido_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Eleitores.Add(new Eleitor { Email = "email1@teste.com" });
-            eleicao.Eleitores.Add(new Eleitor { Email = "email2@teste.com" });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 2;
 
-            var novoEleitor = new Eleitor { Email = "email3@teste.com" };
-            var dimensionamentoAtual = new Dimensionamento(29, 20, 1, 1)
-            {
-                QtdaEleitores = 29,
-                QtdaInscricoesAprovadas = 2,
-                QtdaInscricoesPendentes = 2,
-                QtdaInscricoesReprovadas = 2
-            };
+            List<Eleitor> eleitores = new List<Eleitor>();
 
-            var dimensionamentoProposto = new Dimensionamento(50, 30, 2, 1)
+            for (int i = 0; i < qtdaEleitores; i++)
             {
-                QtdaEleitores = 39
-            };
-            var excecao = Assert.Throws<CustomException>(() => eleicao.AdicionarEleitor(novoEleitor, dimensionamentoAtual, dimensionamentoProposto));
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            eleicao.PassarParaProximaEtapa();
+
+            var novoUsuario = new Usuario("teste@email.com", "Eleitor 1", "Cargo");
+            var novoEleitor = new Eleitor(novoUsuario);
+
+            var excecao = Assert.Throws<CustomException>(() => eleicao.AdicionarEleitor(novoEleitor));
             Assert.Equal("Não é possível adicionar esse novo eleitor, pois sua inclusão altera o dimensionamento da eleição e com isso a quantidade mínima de inscritos passa a ser superior à quantidade atual de inscritos.", excecao.Message);
+        }
+
+        /// <summary>
+        /// Testa a atualização do dimensionamento adicionando e excluindo eleitores.
+        /// </summary>
+        /// <param name="minimo"></param>
+        /// <param name="maximo"></param>
+        /// <param name="qtdaEleitores"></param>
+        /// <param name="qtdaEfetivos"></param>
+        /// <param name="qtdaSuplentes"></param>
+        [Theory]
+        [InlineData(2501, 5000, 5000, 12, 9)]
+        [InlineData(5001, 10000, 5001, 15, 12)]
+        [InlineData(5001, 10000, 10000, 15, 12)]
+        [InlineData(10001, 12500, 10001, 17, 14)]
+        [InlineData(10001, 12500, 12500, 17, 14)]
+        [InlineData(12501, 15000, 12501, 19, 16)]
+        public void AdicionarEleitor_LimitesDimensionamento_AtualizarDimensionamento(
+            int minimo, int maximo, int qtdaEleitores, int qtdaEfetivos, int qtdaSuplentes)
+        {
+            var eleicao = CriarEleicao();
+
+            var qtdaExcluir = 5;
+            for (int i = 0; i < qtdaEleitores + qtdaExcluir; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+            }
+            for (int i = 0; i < qtdaExcluir; i++)
+            {
+                eleicao.ExcluirEleitor(eleicao.Eleitores.ElementAt(i));
+            }
+
+            var dimensionamentoEsperado = new Dimensionamento(maximo, minimo, qtdaEfetivos, qtdaSuplentes)
+            {
+                QtdaEleitores = qtdaEleitores
+            };
+            Assert.Equal(dimensionamentoEsperado, eleicao.Dimensionamento);
         }
 
         [Fact]
         public void AdicionarEleitor_DimensionamentoValido_AtualizaDimensionamentoEleicaoAdicionaEleitor()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Eleitores.Add(new Eleitor { Email = "email1@teste.com" });
-            eleicao.Eleitores.Add(new Eleitor { Email = "email2@teste.com" });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var novoEleitor = new Eleitor { Email = "email3@teste.com" };
-            var dimensionamentoAtual = new Dimensionamento(29, 20, 1, 1)
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
             {
-                QtdaEleitores = 29,
-                QtdaInscricoesAprovadas = 3,
-                QtdaInscricoesPendentes = 2,
-                QtdaInscricoesReprovadas = 2
-            };
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
 
-            var dimensionamentoProposto = new Dimensionamento(50, 30, 2, 1)
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
             {
-                QtdaEleitores = 30
-            };
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
 
-            eleicao.AdicionarEleitor(novoEleitor, dimensionamentoAtual, dimensionamentoProposto);
-            Assert.Equal(3, eleicao.Eleitores.Count);
-            Assert.Contains(eleicao.Eleitores, e => e.Email == "email3@teste.com");
-            Assert.Same(dimensionamentoProposto, eleicao.Dimensionamento);
+            eleicao.PassarParaProximaEtapa();
+
+            var novoUsuario = new Usuario("teste@email.com", "Eleitor 1", "Cargo");
+            var novoEleitor = new Eleitor(novoUsuario);
+
+            eleicao.AdicionarEleitor(novoEleitor);
+            Assert.Equal(qtdaEleitores + 1, eleicao.Eleitores.Count);
+            Assert.Contains(eleicao.Eleitores, e => e.Email == "teste@email.com");
+            Assert.Equal(new Dimensionamento(100, 51, 3, 3)
+            {
+                QtdaEleitores = qtdaEleitores + 1,
+                QtdaInscricoesAprovadas = qtdaInscricoes
+            }, eleicao.Dimensionamento);
+
         }
 
         [Fact]
         public void FazerInscricao_ForaPeriodoInscricoes_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
 
-            var exception = Assert.Throws<CustomException>(() => eleicao.FazerInscricao(new Eleitor { Id = 1 }, "Meus Objetivos."));
+            var novoUsuario = new Usuario("teste@email.com", "Eleitor 1", "Cargo");
+            var novoEleitor = new Eleitor(novoUsuario);
+            eleicao.AdicionarEleitor(novoEleitor);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.FazerInscricao(novoEleitor, "Meus Objetivos."));
             Assert.Equal("As inscrições podem ser realizadas somente no período de inscrição. Confira o cronograma da eleição.", exception.Message);
         }
 
         [Fact]
         public void FazerInscricao_EleitorJaInscrito_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Inscricoes.Add(new Inscricao { EleitorId = 1 });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var exception = Assert.Throws<CustomException>(() => eleicao.FazerInscricao(new Eleitor { Id = 1 }, "Meus Objetivos."));
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            var novoUsuario = new Usuario("eleitor1@email.com", "Eleitor 1", "Cargo");
+            var novoEleitor = new Eleitor(novoUsuario);
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.FazerInscricao(novoEleitor, "Meus Objetivos."));
             Assert.Equal("Esse eleitor já está inscrito na eleição.", exception.Message);
         }
 
         [Fact]
         public void AtualizarInscricao_ForaPeriodoInscricoes_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarInscricao(new Eleitor { Id = 1 }, "Meus Objetivos."));
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            eleicao.PassarParaProximaEtapa();
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.AtualizarInscricao(eleitores.ElementAt(0).Id, "Meus Objetivos."));
             Assert.Equal("As inscrições não podem ser alteradas fora do período de inscrição.", exception.Message);
         }
 
         [Fact]
         public void AtualizarInscricao_InscricaoNaoEncontrada_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var exception = Assert.Throws<NotFoundException>(() => eleicao.AtualizarInscricao(new Eleitor { Id = 1 }, "Meus Objetivos."));
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            var novoUsuario = new Usuario("eleitorteste@email.com", "Eleitor 1", "Cargo");
+            var novoEleitor = new Eleitor(novoUsuario) { Id = 1000 };
+
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.AtualizarInscricao(novoEleitor.Id, "Meus Objetivos."));
             Assert.Equal("Inscrição não encontrada.", exception.Message);
         }
 
         [Fact]
         public void AtualizarInscricao_InscricaoEncontrada_InscricaoAtualizada()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Inscricoes.Add(new Inscricao { EleitorId = 1, Objetivos = "Teste", StatusInscricao = StatusInscricao.Reprovada });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var inscricaoRetornada = eleicao.AtualizarInscricao(new Eleitor { Id = 1 }, "Meus Objetivos.");
-            var inscricao = eleicao.BuscarInscricaoPeloEleitorId(1);
-            Assert.Same(inscricaoRetornada, inscricao);
-            Assert.Equal("Meus Objetivos.", inscricao.Objetivos);
-            Assert.Equal(StatusInscricao.Pendente, inscricao.StatusInscricao);
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            var inscricaoRetornada = eleicao.AtualizarInscricao(eleitores.ElementAt(0).Id, "Meus Objetivos.");
+            Assert.Equal("Meus Objetivos.", inscricaoRetornada.Objetivos);
+            Assert.Equal(StatusInscricao.Pendente, inscricaoRetornada.StatusInscricao);
         }
 
         [Fact]
         public void ReprovarInscricao_ForaPeriodoInscricoes_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var exception = Assert.Throws<CustomException>(() => eleicao.ReprovarInscricao(1, new Usuario(), "Motivo Reprovação"));
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            eleicao.PassarParaProximaEtapa();
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.ReprovarInscricao(1, usuarioAprovador, "Motivo Reprovação"));
             Assert.Equal("As inscrições não podem ser reprovadas fora do período de inscrição.", exception.Message);
         }
 
         [Fact]
         public void ReprovarInscricao_InscricaoNaoEncontrada_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var exception = Assert.Throws<NotFoundException>(() => eleicao.ReprovarInscricao(1, new Usuario(), "Motivo Reprovação"));
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.ReprovarInscricao(qtdaInscricoes + 1, usuarioAprovador, "Motivo Reprovação"));
             Assert.Equal("Inscrição não encontrada.", exception.Message);
         }
 
         [Fact]
         public void ReprovarInscricao_InscricaoEncontrada_AdicionaReprovacao()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Inscricoes.Add(new Inscricao { Id = 1, EleitorId = 1, Objetivos = "Teste", StatusInscricao = StatusInscricao.Pendente });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var usuarioAprovador = new Usuario
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
             {
-                Email = "aprovador@email.com",
-                Nome = "Aprovador"
-            };
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
             var inscricaoRetornada = eleicao.ReprovarInscricao(1, usuarioAprovador, "Foto indevida");
-            Assert.Collection(eleicao.Inscricoes,
-                inscricao =>
+
+            Assert.Equal(StatusInscricao.Reprovada, inscricaoRetornada.StatusInscricao);
+            Assert.Collection(inscricaoRetornada.Reprovacoes,
+                reprovacao =>
                 {
-                    Assert.Same(inscricao, inscricaoRetornada);
-                    Assert.Equal(StatusInscricao.Reprovada, inscricao.StatusInscricao);
-                    Assert.Collection(inscricao.Reprovacoes,
-                        reprovacao =>
-                        {
-                            Assert.Equal("aprovador@email.com", reprovacao.EmailAprovador);
-                            Assert.Equal("Aprovador", reprovacao.NomeAprovador);
-                            Assert.Equal("Foto indevida", reprovacao.MotivoReprovacao);
-                        }
-                    );
+                    Assert.Equal("aprovador@email.com", reprovacao.EmailAprovador);
+                    Assert.Equal("Aprovador", reprovacao.NomeAprovador);
+                    Assert.Equal("Foto indevida", reprovacao.MotivoReprovacao);
                 }
             );
         }
@@ -690,112 +1173,232 @@ namespace Cipa.Domain.Test.Entities
         [Fact]
         public void AprovarInscricao_ForaPeriodoInscricoes_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var exception = Assert.Throws<CustomException>(() => eleicao.AprovarInscricao(1, new Usuario()));
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            eleicao.PassarParaProximaEtapa();
+            var exception = Assert.Throws<CustomException>(() => eleicao.AprovarInscricao(1, usuarioAprovador));
             Assert.Equal("As inscrições não podem ser aprovadas fora do período de inscrição.", exception.Message);
         }
 
         [Fact]
         public void AprovarInscricao_InscricaoNaoEncontrada_ThrowsCustomException()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var exception = Assert.Throws<NotFoundException>(() => eleicao.AprovarInscricao(1, new Usuario()));
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.AprovarInscricao(qtdaInscricoes + 1, usuarioAprovador));
             Assert.Equal("Inscrição não encontrada.", exception.Message);
         }
 
         [Fact]
         public void AprovarInscricao_InscricaoEncontrada_AtualizaInscricao()
         {
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Inscricoes.Add(new Inscricao { Id = 1, EleitorId = 1, Objetivos = "Teste", StatusInscricao = StatusInscricao.Pendente });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 50;
+            var qtdaInscricoes = 6;
 
-            var usuarioAprovador = new Usuario
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
             {
-                Email = "aprovador@email.com",
-                Nome = "Aprovador"
-            };
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
 
             var inscricaoRetornada = eleicao.AprovarInscricao(1, usuarioAprovador);
-            Assert.Collection(eleicao.Inscricoes,
-                inscricao =>
-                {
-                    Assert.Same(inscricao, inscricaoRetornada);
-                    Assert.Equal(StatusInscricao.Aprovada, inscricao.StatusInscricao);
-                    Assert.Equal("aprovador@email.com", inscricao.EmailAprovador);
-                    Assert.Equal("Aprovador", inscricao.NomeAprovador);
-                }
-            );
+
+            Assert.Equal(StatusInscricao.Aprovada, inscricaoRetornada.StatusInscricao);
+            Assert.Equal("aprovador@email.com", inscricaoRetornada.EmailAprovador);
+            Assert.Equal("Aprovador", inscricaoRetornada.NomeAprovador);
+
         }
 
         [Fact]
         public void RegistrarVoto_EleitorJaVotou_ThrowsCustomException()
         {
-            var eleitor = new Eleitor { Id = 1 };
-            // var eleicao = new Eleicao();
-            eleicao.Inscricoes.Add(new Inscricao { EleitorId = 1, Eleitor = eleitor });
-            eleicao.Votos.Add(new Voto(eleitor, "::1"));
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            var qtdaInscricoes = 2;
+            List<Eleitor> eleitores = new List<Eleitor>();
 
-            var exception = Assert.Throws<CustomException>(() => eleicao.RegistrarVoto(1, eleitor, "::1"));
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            eleicao.RegistrarVoto(1, eleitores.ElementAt(0), "::1");
+            var exception = Assert.Throws<CustomException>(() => eleicao.RegistrarVoto(1, eleitores.ElementAt(0), "::1"));
             Assert.Equal("Eleitor já registrou seu voto nessa eleição. Não é possível votar mais de uma vez.", exception.Message);
         }
 
-        [Theory]
-        [InlineData(PosicaoEtapa.Atual, PosicaoEtapa.Futura, PosicaoEtapa.Futura)]
-        [InlineData(PosicaoEtapa.Passada, PosicaoEtapa.Passada, PosicaoEtapa.Atual)]
-        public void RegistrarVoto_EleicaoForaDoPeriodoDeVotacao_ThrowsCustomException(PosicaoEtapa posicaoEtapa1, PosicaoEtapa posicaoEtapa2, PosicaoEtapa posicaoEtapa3)
+        [Fact]
+        public void RegistrarVoto_EleicaoForaDoPeriodoDeVotacao_ThrowsCustomException()
         {
-            var eleitor = new Eleitor { Id = 1 };
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = posicaoEtapa1, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = posicaoEtapa2, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = posicaoEtapa3, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Inscricoes.Add(new Inscricao { EleitorId = 1, Eleitor = eleitor });
-            eleicao.Votos.Add(new Voto(new Eleitor { Id = 2 }, "::1"));
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            var qtdaInscricoes = 2;
+            List<Eleitor> eleitores = new List<Eleitor>();
 
-            var exception = Assert.Throws<CustomException>(() => eleicao.RegistrarVoto(1, eleitor, "::1"));
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.RegistrarVoto(1, eleitores.ElementAt(0), "::1"));
             Assert.Equal("Essa eleição não está no período de votação.", exception.Message);
         }
 
         [Fact]
         public void RegistrarVoto_InscricaoNaoEncontrada_ThrowsNotFoundException()
         {
-            var eleitor = new Eleitor { Id = 1 };
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Inscricoes.Add(new Inscricao { Id = 1, EleitorId = 2, Eleitor = eleitor });
-            eleicao.Votos.Add(new Voto(new Eleitor { Id = 2 }, "::1"));
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            var qtdaInscricoes = 2;
+            List<Eleitor> eleitores = new List<Eleitor>();
 
-            var exception = Assert.Throws<NotFoundException>(() => eleicao.RegistrarVoto(2, eleitor, "::1"));
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.RegistrarVoto(qtdaInscricoes + 1, eleitores.ElementAt(0), "::1"));
             Assert.Equal("Inscrição não encontrada.", exception.Message);
         }
 
-        [Theory]
-        [InlineData(StatusInscricao.Pendente)]
-        [InlineData(StatusInscricao.Reprovada)]
-        public void RegistrarVoto_InscricaoNaoAprovada_ThrowNotFoundException(StatusInscricao statusInscricao)
+        [Fact]
+        public void RegistrarVoto_InscricaoNaoAprovada_ThrowNotFoundException()
         {
-            var eleitor = new Eleitor { Id = 1 };
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Inscricoes.Add(new Inscricao { Id = 1, EleitorId = 1, Eleitor = eleitor, StatusInscricao = StatusInscricao.Aprovada });
-            eleicao.Inscricoes.Add(new Inscricao { Id = 2, EleitorId = 2, Eleitor = new Eleitor { Id = 2 }, StatusInscricao = statusInscricao });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            var qtdaInscricoes = 2;
+            List<Eleitor> eleitores = new List<Eleitor>();
 
-            var exception = Assert.Throws<NotFoundException>(() => eleicao.RegistrarVoto(2, eleitor, "::1"));
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            var inscricaoReprovada = eleicao.FazerInscricao(eleitores.ElementAt(qtdaInscricoes), "Objetivos");
+            inscricaoReprovada.Id = qtdaInscricoes + 1;
+            eleicao.ReprovarInscricao(inscricaoReprovada.Id, usuarioAprovador, "Motivo Reprovação");
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.RegistrarVoto(inscricaoReprovada.Id, eleitores.ElementAt(0), "::1"));
             Assert.Equal("Inscrição não encontrada.", exception.Message);
 
         }
@@ -803,15 +1406,32 @@ namespace Cipa.Domain.Test.Entities
         [Fact]
         public void RegistrarVoto_VotoValido_VotoRegistrado()
         {
-            var eleitor = new Eleitor { Id = 1 };
-            // var eleicao = new Eleicao();
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 1, PosicaoEtapa = PosicaoEtapa.Passada, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Inscricao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 2, PosicaoEtapa = PosicaoEtapa.Atual, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Votacao });
-            eleicao.Cronograma.Add(new EtapaCronograma { Ordem = 3, PosicaoEtapa = PosicaoEtapa.Futura, EtapaObrigatoriaId = CodigoEtapaObrigatoria.Ata });
-            eleicao.Inscricoes.Add(new Inscricao { Id = 1, EleitorId = 1, Eleitor = eleitor, StatusInscricao = StatusInscricao.Aprovada });
-            eleicao.Inscricoes.Add(new Inscricao { Id = 2, EleitorId = 2, Eleitor = new Eleitor { Id = 2 }, StatusInscricao = StatusInscricao.Aprovada });
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            var qtdaInscricoes = 2;
+            List<Eleitor> eleitores = new List<Eleitor>();
 
-            var votoRetornado = eleicao.RegistrarVoto(2, eleitor, "::1");
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            var votoRetornado = eleicao.RegistrarVoto(2, eleitores.ElementAt(0), "::1");
             Assert.Collection(eleicao.Inscricoes,
                 inscricao =>
                 {
@@ -826,6 +1446,297 @@ namespace Cipa.Domain.Test.Entities
                 voto =>
                 {
                     Assert.Same(voto, votoRetornado);
+                }
+            );
+
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorNaoInscritoJaVotou_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor);
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+            eleicao.VotarEmBranco(eleitor, "::1");
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele já votou nessa eleição!", exception.Message);
+
+        }
+
+        [Fact]
+        public void ExcluirEleitor_InscricaoReprovadaEleitorJaVotou_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            var inscricao = eleicao.FazerInscricao(eleitor, "Objetivos");
+            inscricao.Id = 1;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.ReprovarInscricao(inscricao.Id, usuarioAprovador, "Motivo Reprovação");
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+            eleicao.VotarEmBranco(eleitor, "::1");
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele já votou nessa eleição!", exception.Message);
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorInscritoAprovadoOuPendente_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor);
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            var inscricao = eleicao.FazerInscricao(eleitor, "Objetivos");
+            inscricao.Id = 1;
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele é um dos inscritos nessa eleição!", exception.Message);
+
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+
+            exception = Assert.Throws<CustomException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Não é possível excluir esse eleitor pois ele é um dos inscritos nessa eleição!", exception.Message);
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorNaoEncontrado_ThrowsNotFoundException()
+        {
+            var eleicao = CriarEleicao();
+            var usuario = new Usuario($"eleitor@email.com", $"Eleitor", "Cargo");
+            var eleitor = new Eleitor(usuario) { Id = 1 };
+            var exception = Assert.Throws<NotFoundException>(() => eleicao.ExcluirEleitor(eleitor));
+            Assert.Equal("Eleitor não encontrado.", exception.Message);
+        }
+
+        [Fact]
+        public void ExcluirEleitor_EleitorPodeSerExcluido_RetornaTrueExcluiEleitor()
+        {
+            var eleicao = CriarEleicao();
+            var usuario1 = new Usuario($"eleitor1@email.com", $"Eleitor1", "Cargo");
+            var eleitor1 = new Eleitor(usuario1) { Id = 1 };
+            eleicao.AdicionarEleitor(eleitor1);
+            var usuario2 = new Usuario($"eleitor2@email.com", $"Eleitor2", "Cargo");
+            var eleitor2 = new Eleitor(usuario2) { Id = 2 };
+            eleicao.AdicionarEleitor(eleitor2);
+            var usuario3 = new Usuario($"eleitor3@email.com", $"Eleitor3", "Cargo");
+            var eleitor3 = new Eleitor(usuario3) { Id = 3 };
+            eleicao.AdicionarEleitor(eleitor3);
+
+            var excluido = eleicao.ExcluirEleitor(eleitor2);
+            Assert.True(excluido);
+            Assert.Collection(eleicao.Eleitores,
+                eleitor =>
+                {
+                    Assert.Same(eleitor, eleitor1);
+                },
+                eleitor =>
+                {
+                    Assert.Same(eleitor, eleitor3);
+                }
+            );
+
+        }
+
+        [Fact]
+        public void ExcluirEleitor_AlteraDimensionamento_ExcluiEleitorAtualizaDimensionamento()
+        {
+            var eleicao = CriarEleicao();
+
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < 51; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            Assert.Equal(51, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(3, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(3, eleicao.Dimensionamento.QtdaSuplentes);
+
+            var excluido = eleicao.ExcluirEleitor(eleitores.ElementAt(0));
+            Assert.True(excluido);
+
+            Assert.Equal(50, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(1, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(1, eleicao.Dimensionamento.QtdaSuplentes);
+        }
+
+        [Fact]
+        public void SetGrupo_DimensionamentoNaoEncontrado_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            var novoGrupo = new Grupo { Id = 2, LimiteDimensionamento = new LimiteDimensionamento(0, 0, 0, 0) };
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.Grupo = novoGrupo);
+            Assert.Equal("Não foi encontrado o dimensionamento adequado para a eleição. Por favor, contate o suporte.", exception.Message);
+        }
+
+        [Fact]
+        public void SetGrupo_EtapaInscricoesPassadaSemQtdaMinimaInscritos_ThrowsCustomException()
+        {
+            var eleicao = CriarEleicao();
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < 10; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(0), "Objetivos");
+            inscricao.Id = 1;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            var novoGrupo = new Grupo("C-Teste 2")
+            {
+                Id = 2,
+                LimiteDimensionamento = new LimiteDimensionamento(50, 20, 2, 2)
+            };
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(19, 0, 1, 1));
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(50, 20, 2, 2));
+
+            var exception = Assert.Throws<CustomException>(() => eleicao.Grupo = novoGrupo);
+            Assert.Equal("Para o grupo C-Teste 2, o mínimo de inscrições necessária é 2, e só houveram 1 inscrições aprovadas nessa eleição.", exception.Message);
+        }
+
+        [Fact]
+        public void SetGrupo_EtapaInscricoesPassadaComQtdaMinimaInscritos_AtualizaGrupoDimensionamento()
+        {
+            var eleicao = CriarEleicao();
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < 10; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(0), "Objetivos");
+            inscricao.Id = 1;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Cargo Aprovador");
+            eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            var novoGrupo = new Grupo("C-Teste 2")
+            {
+                Id = 2,
+                LimiteDimensionamento = new LimiteDimensionamento(50, 20, 2, 2)
+            };
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(19, 0, 1, 0));
+            novoGrupo.Dimensionamentos.Add(new LinhaDimensionamento(50, 20, 2, 1));
+
+            Assert.Equal(10, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(0, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(0, eleicao.Dimensionamento.QtdaSuplentes);
+
+            eleicao.Grupo = novoGrupo;
+
+            Assert.Same(eleicao.Grupo, novoGrupo);
+            Assert.Equal(10, eleicao.Dimensionamento.QtdaEleitores);
+            Assert.Equal(1, eleicao.Dimensionamento.QtdaEfetivos);
+            Assert.Equal(0, eleicao.Dimensionamento.QtdaSuplentes);
+
+        }
+
+        [Fact]
+        public void ApurarVotos_PossuiQtdaMinimaVotosComEmpate_RetornaApuracao()
+        {
+            var eleicao = CriarEleicao();
+            var qtdaEleitores = 21;
+            List<Eleitor> eleitores = new List<Eleitor>();
+
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+            // Faz as inscrições
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            var inscricao1 = eleicao.FazerInscricao(new Eleitor("Eleitor 1", "eleitor1@email.com") { Id = 1 }, "Meus objetivos");
+            inscricao1.Id = 1;
+            eleicao.AprovarInscricao(inscricao1.Id, usuarioAprovador);
+
+            var inscricao2 = eleicao.FazerInscricao(new Eleitor("Eleitor 2", "eleitor2@email.com") { Id = 2, DataAdmissao = new DateTime(2019, 1, 2) }, "Meus objetivos");
+            inscricao2.Id = 2;
+            eleicao.AprovarInscricao(inscricao2.Id, usuarioAprovador);
+
+            var inscricao3 = eleicao.FazerInscricao(new Eleitor("Eleitor 3", "eleitor3@email.com") { Id = 3, DataAdmissao = new DateTime(2019, 1, 1) }, "Meus objetivos");
+            inscricao3.Id = 3;
+            eleicao.AprovarInscricao(inscricao3.Id, usuarioAprovador);
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            // Registra os votos
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(0), "::1");
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(1), "::1");
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(2), "::1");
+            eleicao.RegistrarVoto(inscricao1.Id, eleitores.ElementAt(3), "::1");
+            eleicao.RegistrarVoto(inscricao2.Id, eleitores.ElementAt(4), "::1");
+            eleicao.RegistrarVoto(inscricao2.Id, eleitores.ElementAt(5), "::1");
+            eleicao.RegistrarVoto(inscricao2.Id, eleitores.ElementAt(6), "::1");
+            eleicao.RegistrarVoto(inscricao3.Id, eleitores.ElementAt(7), "::1");
+            eleicao.RegistrarVoto(inscricao3.Id, eleitores.ElementAt(8), "::1");
+            eleicao.RegistrarVoto(inscricao3.Id, eleitores.ElementAt(9), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(10), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(11), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(12), "::1");
+            eleicao.VotarEmBranco(eleitores.ElementAt(13), "::1");
+
+            var apuracao = eleicao.ApurarVotos();
+
+            Assert.Collection(apuracao,
+                inscricao =>
+                {
+                    Assert.Equal(inscricao, inscricao1);
+                    Assert.Equal(4, inscricao.Votos);
+                    Assert.Equal(ResultadoApuracao.Efetivo, inscricao.ResultadoApuracao);
+                },
+                inscricao =>
+                {
+                    Assert.Equal(inscricao, inscricao3);
+                    Assert.Equal(3, inscricao.Votos);
+                    Assert.Equal(ResultadoApuracao.Suplente, inscricao.ResultadoApuracao);
+                },
+                inscricao =>
+                {
+                    Assert.Equal(inscricao, inscricao2);
+                    Assert.Equal(3, inscricao.Votos);
+                    Assert.Equal(ResultadoApuracao.NaoEleito, inscricao.ResultadoApuracao);
+                },
+                votosBrancos =>
+                {
+                    Assert.Equal("(Em Branco)", votosBrancos.Eleitor.Nome);
+                    Assert.Equal(4, votosBrancos.Votos);
+                    Assert.Equal(ResultadoApuracao.NaoEleito, votosBrancos.ResultadoApuracao);
                 }
             );
 

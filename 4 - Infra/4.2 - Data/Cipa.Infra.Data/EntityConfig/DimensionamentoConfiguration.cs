@@ -1,21 +1,16 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class DimensionamentoConfiguration : DimensionamentoBaseConfiguration<Dimensionamento>
     {
         public override void Configure(EntityTypeBuilder<Dimensionamento> builder)
         {
             base.Configure(builder);
-            
-            builder.ToTable("Eleicoes");
 
-            builder.Ignore(e => e.QtdaEleitores);
-            builder.Ignore(e => e.QtdaVotos);
-            builder.Ignore(e => e.QtdaInscricoesAprovadas);
-            builder.Ignore(e => e.QtdaInscricoesPendentes);
-            builder.Ignore(e => e.QtdaInscricoesReprovadas);
+            builder.ToTable("Eleicoes");
 
             builder.Property(e => e.Minimo).HasColumnName("DimensionamentoMinEleitores");
             builder.Property(e => e.Maximo).HasColumnName("DimensionamentoMaxEleitores");

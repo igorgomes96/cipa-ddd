@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cipa.Domain.Entities
 {
@@ -10,21 +11,47 @@ namespace Cipa.Domain.Entities
         Reprovada
     }
 
+    public enum ResultadoApuracao
+    {
+        NaoEleito,
+        Efetivo,
+        Suplente
+    }
+
     public class Inscricao : Entity<int>
     {
-        public int Votos { get; set; }
-        public StatusInscricao StatusInscricao { get; set; }
-        public int EleitorId { get; set; }
-        public int EleicaoId { get; set; }
+        public Inscricao(int eleicaoId, int eleitorId, string objetivos)
+        {
+            EleitorId = eleitorId;
+            EleicaoId = eleicaoId;
+            Objetivos = objetivos;
+            StatusInscricao = StatusInscricao.Pendente;
+            Votos = 0;
+        }
+        public Inscricao(Eleicao eleicao, Eleitor eleitor, string objetivos)
+        {
+            Eleicao = eleicao;
+            EleicaoId = eleicao.Id;
+            Eleitor = eleitor;
+            EleitorId = eleitor.Id;
+            Objetivos = objetivos;
+            StatusInscricao = StatusInscricao.Pendente;
+            Votos = 0;
+        }
+        public int Votos { get; internal set; }
+        public StatusInscricao StatusInscricao { get; internal set; }
+        public int EleitorId { get; private set; }
+        public int EleicaoId { get; private set; }
         public string Foto { get; set; }
         public string Objetivos { get; set; }
         public string EmailAprovador { get; set; }
         public string NomeAprovador { get; set; }
         public DateTime? HorarioAprovacao { get; set; }
         public DateTime DataCadastro { get; set; }
+        public ResultadoApuracao ResultadoApuracao { get; internal set; } = ResultadoApuracao.NaoEleito;
 
-        public virtual Eleitor Eleitor { get; set; }
-        public virtual Eleicao Eleicao { get; set; }
+        public virtual Eleitor Eleitor { get; private set; }
+        public virtual Eleicao Eleicao { get; private set; }
         public virtual ICollection<Reprovacao> Reprovacoes { get; } = new List<Reprovacao>();
 
         public void AtualizarInscricao(string objetivos)
@@ -32,15 +59,16 @@ namespace Cipa.Domain.Entities
             Objetivos = objetivos;
             StatusInscricao = StatusInscricao.Pendente;
         }
-        
-        public void AprovarInscricao(Usuario usuarioAprovador)
+
+        internal void AprovarInscricao(Usuario usuarioAprovador)
         {
             StatusInscricao = StatusInscricao.Aprovada;
             EmailAprovador = usuarioAprovador.Email;
             NomeAprovador = usuarioAprovador.Nome;
+            HorarioAprovacao = DateTime.Now;
         }
 
-        public void ReprovarInscricao(Usuario usuarioAprovador, string motivoReprovacao)
+        internal void ReprovarInscricao(Usuario usuarioAprovador, string motivoReprovacao)
         {
             StatusInscricao = StatusInscricao.Reprovada;
             Reprovacoes.Add(new Reprovacao
@@ -50,5 +78,9 @@ namespace Cipa.Domain.Entities
                 NomeAprovador = usuarioAprovador.Nome
             });
         }
+
+
+        public Reprovacao BuscarUltimaReprovacao() =>
+            Reprovacoes.OrderBy(r => r.DataCadastro).LastOrDefault();
     }
 }

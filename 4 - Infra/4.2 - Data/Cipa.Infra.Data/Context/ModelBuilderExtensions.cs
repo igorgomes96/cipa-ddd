@@ -1,12 +1,73 @@
-using System;
 using Cipa.Domain.Entities;
+using Cipa.Domain.Enums;
 using Cipa.Domain.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Cipa.Infra.Data.Context
 {
+
     public static class ModelBuilderExtensions
     {
+
+        private static string mensagemEditalConvocacao =
+            @"@DATA_COMPLETA, a empresa @EMPRESA_CNPJ, situada na @ENDERECO, através de seu SESMT – Serviço Especializado em Engenharia de Segurança e Medicina do Trabalho - informa a todos os funcionários que na data de hoje tem início o processo de constituição da CIPA – Comissão Interna de Prevenção de Acidentes – de acordo com o item 5.38 da Norma Regulamentadora – 05, aprovada pela portaria nº3. 214 de 08 de Junho de 1978 com alteração da Portaria SIT n.º 247, de 12 de Julho de 2011.<br>
+            Todo o processo atenderá ao disposto na legislação citada acima.<br><br>
+            As inscrições serão aceitas <strong>@PERIODO_INSCRICAO</strong>.<br>
+            A votação será realizada <strong>@PERIODO_VOTACAO</strong>.<br><br>
+            Todos os eventos do processo serão comunicados através de e-mails.<br><br>
+            Link de Acesso: <a href=""@LINK"">@LINK</a><br>
+            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>";
+
+        private static string mensagemConviteInscricao =
+            @"A empresa @EMPRESA_CNPJ, situada na @ENDERECO, convida seus funcionários a realizarem suas inscrições para eleição dos membros representantes dos Empregados da Comissão Interna de Prevenção de Acidentes – CIPA – Gestão @GESTAO, de acordo com o item 5.40, alínea a, b e c, da Norma Regulamentadora – Nº 05, aprovada pela Portaria nº 3.214 de 08 de Junho de 1978, com alteração da Portaria SIT n.º 247, de 12 de julho de 2011.<br>
+            <strong>As inscrições poderão ser realizadas @PERIODO_INSCRICAO.</strong><br><br>
+            Link de Acesso: <a href=""@LINK"">@LINK</a><br>
+            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>";
+
+        private static string mensagemConviteVotacao =
+            @"Ficam convocados os funcionários da empresa @EMPRESA_CNPJ, situada na @ENDERECO, para a eleição de seus representantes na Comissão Interna de Prevenção de Acidentes - CIPA Gestão @GESTAO, de acordo com a Norma Regulamentadora - NR 5, aprovada pela Portaria nº 3.214 de 8 de junho de 1978, baixada pelo Ministério do Trabalho, a ser realizada em escrutínio secreto @PERIODO_VOTACAO.<br><br>
+            Apresentaram-se e estão aptos para serem votados os seguintes candidatos:<br><br>
+            @CANDIDATOS<br><br>
+            Link de Acesso: <a href=""@LINK"">@LINK</a><br>
+            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>";
+
+        private static string mensagemMudancaEtapaSucesso = 
+            @"O cronograma da eleição da CIPA, que está sendo realizada na empresa @EMPRESA_CNPJ, foi atualizado com sucesso!<br><br>
+            Etapa Anterior: <strong>@ETAPA_ANTERIOR</strong><br>
+            Etapa Atual: <strong>@ETAPA_ATUAL</strong>";
+
+        private static string mensagemMudancaEtapaErro = 
+            @" Ocorreu um erro ao finalizar a etapa atual da eleição da CIPA, que está sendo realizada na empresa @EMPRESA_CNPJ. Por favor, verifique.<br><br>
+            Mensagem de erro: <strong>@ERRO</strong><br>
+            Etapa Atual: <strong>@ETAPA_ATUAL</strong><br>
+            Etapa Posterior: <strong>@ETAPA_POSTERIOR</strong><br><br>
+            Obs.: A etapa atual deverá ser finalizada manualmente. Para isso, clique no botão ""Próxima Etapa"" do cronograma.";
+
+        private static string mensagemInscricaoRealizada =
+            @"Parabéns, @CANDIDATO_NOME, sua inscrição foi registrada com sucesso. Agora ela será submetida à aprovação do SESMT e você será
+            notificado quando sua inscrição for aprovada ou reprovada.<br><br>
+            Confira seus dados abaixo:<br>
+            @CANDIDATO_DADOS<br>
+            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>";
+
+        private static string mensagemInscricaoAprovada = 
+            @"Parabéns, @CANDIDATO_NOME, sua inscrição foi aprovada pelo SESMT.<br>
+            Dados da inscrição:<br><br>
+            @CANDIDATO_DADOS<br>
+            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>";
+
+        private static string mensagemInscricaoReprovada = 
+            @"@CANDIDATO_NOME, sua inscrição foi reprovada pelo SESMT. Mas, não se preocupe: verifique o motivo da reprovação e submeta sua inscrição a uma nova aprovação, dentro do prazo de inscrição, que acontece até o dia @FIM_INSCRICAO.<br><br>
+            @REPROVACAO_DADOS<br>
+            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>";
+
+        private static string mensagemReanaliseInscricao = 
+            @"@CANDIDATO_NOME, sua inscrição será novamente submetida à aprovação do SESMT para reanálise e você será notificado quando a mesma for aprovada ou reprovada.<br><br>
+            Confira seus dados abaixo:<br>
+            @CANDIDATO_DADOS<br>
+            <div class=""assinatura""><strong>@TECNICO_SESMT</strong><br>@TECNICO_CARGO</div>";
+
         public static void Seed(this ModelBuilder modelBuilder)
         {
             Conta conta = new Conta
@@ -16,104 +77,179 @@ namespace Cipa.Infra.Data.Context
                 DataInicio = new DateTime(2019, 1, 1),
                 DataFim = new DateTime(2020, 12, 31),
                 PlanoId = null,
-                QtdaEstabelecimentos = 2,
-                DataCadastro = new DateTime(2019, 1, 1)
+                QtdaEstabelecimentos = 2
+            };
+            
+            TemplateEmail templateEditalConvocao = 
+                new TemplateEmail(ETipoTemplateEmail.EditalConvocacao, "[CIPA] Edital de Convocação") {
+                    ContaId = 1,
+                    Template = mensagemEditalConvocacao,
+                    Id = 1
+                };
+
+            TemplateEmail templateConviteInscricao = 
+                new TemplateEmail(ETipoTemplateEmail.ConviteParaInscricao, "[CIPA] Inscrições Abertas") {
+                    ContaId = 1,
+                    Template = mensagemConviteInscricao,
+                    Id = 2
+                };
+
+            TemplateEmail templateConviteVotacao = 
+                new TemplateEmail(ETipoTemplateEmail.ConviteParaVotacao, "[CIPA] Início da Votação") {
+                    ContaId = 1,
+                    Template = mensagemConviteVotacao,
+                    Id = 3
+                };
+
+            TemplateEmail templateMudancaEtapaSucesso = 
+                new TemplateEmail(ETipoTemplateEmail.SucessoMudancaEtapaCronograma, "[CIPA] Mudança de Etapa Realizada com Sucesso") {
+                    ContaId = 1,
+                    Template = mensagemMudancaEtapaSucesso,
+                    Id = 4
+                };
+
+            TemplateEmail templateMudancaEtapaErro = 
+                new TemplateEmail(ETipoTemplateEmail.ErroMudancaEtapaCronograma, "[CIPA] Erro ao Realizar Mudança de Etapa") {
+                    ContaId = 1,
+                    Template = mensagemMudancaEtapaErro,
+                    Id = 5
+                };
+
+
+            TemplateEmail templateInscricaoRealizada = 
+                new TemplateEmail(ETipoTemplateEmail.InscricaoRealizada, "[CIPA] Inscrição Realizada") {
+                    ContaId = 1,
+                    Template = mensagemInscricaoRealizada,
+                    Id = 6
+                };
+
+            TemplateEmail templateInscricaoAprovada = 
+                new TemplateEmail(ETipoTemplateEmail.InscricaoAprovada, "[CIPA] Inscrição Aprovada") {
+                    ContaId = 1,
+                    Template = mensagemInscricaoAprovada,
+                    Id = 7
+                };
+
+            TemplateEmail templateInscricaoReprovada = 
+                new TemplateEmail(ETipoTemplateEmail.InscricaoReprovada, "[CIPA] Inscrição Reprovada") {
+                    ContaId = 1,
+                    Template = mensagemInscricaoReprovada,
+                    Id = 8
+                };
+
+            TemplateEmail templateReanaliseInscricao = 
+                new TemplateEmail(ETipoTemplateEmail.ReanaliseInscricao, "[CIPA] Inscrição - Solicitação de Reanálise") {
+                    ContaId = 1,
+                    Template = mensagemReanaliseInscricao,
+                    Id = 9
+                };
+
+            var templatesEmails = new TemplateEmail[9] {
+                templateEditalConvocao,
+                templateConviteInscricao,
+                templateConviteVotacao,
+                templateMudancaEtapaSucesso,
+                templateMudancaEtapaErro,
+                templateInscricaoRealizada,
+                templateInscricaoAprovada,
+                templateInscricaoReprovada,
+                templateReanaliseInscricao
             };
 
             Grupo[] grupos = new Grupo[45] {
-                new Grupo { CodigoGrupo = "C-1", Id = 1 },
-                new Grupo { CodigoGrupo = "C-1a", Id = 2 },
-                new Grupo { CodigoGrupo = "C-2", Id = 3 },
-                new Grupo { CodigoGrupo = "C-3", Id = 4 },
-                new Grupo { CodigoGrupo = "C-3a", Id = 5 },
-                new Grupo { CodigoGrupo = "C-4", Id = 6 },
-                new Grupo { CodigoGrupo = "C-5", Id = 7 },
-                new Grupo { CodigoGrupo = "C-5a", Id = 8 },
-                new Grupo { CodigoGrupo = "C-6", Id = 9 },
-                new Grupo { CodigoGrupo = "C-7", Id = 10 },
-                new Grupo { CodigoGrupo = "C-7a", Id = 11 },
-                new Grupo { CodigoGrupo = "C-8", Id = 12 },
-                new Grupo { CodigoGrupo = "C-9", Id = 13 },
-                new Grupo { CodigoGrupo = "C-10", Id = 14 },
-                new Grupo { CodigoGrupo = "C-11", Id = 15 },
-                new Grupo { CodigoGrupo = "C-12", Id = 16 },
-                new Grupo { CodigoGrupo = "C-13", Id = 17 },
-                new Grupo { CodigoGrupo = "C-14", Id = 18 },
-                new Grupo { CodigoGrupo = "C-14a", Id = 19 },
-                new Grupo { CodigoGrupo = "C-15", Id = 20 },
-                new Grupo { CodigoGrupo = "C-16", Id = 21 },
-                new Grupo { CodigoGrupo = "C-17", Id = 22 },
-                new Grupo { CodigoGrupo = "C-18", Id = 23 },
-                new Grupo { CodigoGrupo = "C-18a", Id = 24 },
-                new Grupo { CodigoGrupo = "C-19", Id = 25 },
-                new Grupo { CodigoGrupo = "C-20", Id = 26 },
-                new Grupo { CodigoGrupo = "C-21", Id = 27 },
-                new Grupo { CodigoGrupo = "C-22", Id = 28 },
-                new Grupo { CodigoGrupo = "C-23", Id = 29 },
-                new Grupo { CodigoGrupo = "C-24", Id = 30 },
-                new Grupo { CodigoGrupo = "C-24a", Id = 31 },
-                new Grupo { CodigoGrupo = "C-24b", Id = 32 },
-                new Grupo { CodigoGrupo = "C-24c", Id = 33 },
-                new Grupo { CodigoGrupo = "C-24d", Id = 34 },
-                new Grupo { CodigoGrupo = "C-25", Id = 35 },
-                new Grupo { CodigoGrupo = "C-26", Id = 36 },
-                new Grupo { CodigoGrupo = "C-27", Id = 37 },
-                new Grupo { CodigoGrupo = "C-28", Id = 38 },
-                new Grupo { CodigoGrupo = "C-29", Id = 39 },
-                new Grupo { CodigoGrupo = "C-30", Id = 40 },
-                new Grupo { CodigoGrupo = "C-31", Id = 41 },
-                new Grupo { CodigoGrupo = "C-32", Id = 42 },
-                new Grupo { CodigoGrupo = "C-33", Id = 43 },
-                new Grupo { CodigoGrupo = "C-34", Id = 44 },
-                new Grupo { CodigoGrupo = "C-35", Id = 45 }
+                new Grupo("C-1") { Id = 1 },
+                new Grupo("C-1a") { Id = 2 },
+                new Grupo("C-2") { Id = 3 },
+                new Grupo("C-3") { Id = 4 },
+                new Grupo("C-3a") { Id = 5 },
+                new Grupo("C-4") { Id = 6 },
+                new Grupo("C-5") { Id = 7 },
+                new Grupo("C-5a") { Id = 8 },
+                new Grupo("C-6") { Id = 9 },
+                new Grupo("C-7") { Id = 10 },
+                new Grupo("C-7a") { Id = 11 },
+                new Grupo("C-8") { Id = 12 },
+                new Grupo("C-9") { Id = 13 },
+                new Grupo("C-10") { Id = 14 },
+                new Grupo("C-11") { Id = 15 },
+                new Grupo("C-12") { Id = 16 },
+                new Grupo("C-13") { Id = 17 },
+                new Grupo("C-14") { Id = 18 },
+                new Grupo("C-14a") { Id = 19 },
+                new Grupo("C-15") { Id = 20 },
+                new Grupo("C-16") { Id = 21 },
+                new Grupo("C-17") { Id = 22 },
+                new Grupo("C-18") { Id = 23 },
+                new Grupo("C-18a") { Id = 24 },
+                new Grupo("C-19") { Id = 25 },
+                new Grupo("C-20") { Id = 26 },
+                new Grupo("C-21") { Id = 27 },
+                new Grupo("C-22") { Id = 28 },
+                new Grupo("C-23") { Id = 29 },
+                new Grupo("C-24") { Id = 30 },
+                new Grupo("C-24a") { Id = 31 },
+                new Grupo("C-24b") { Id = 32 },
+                new Grupo("C-24c") { Id = 33 },
+                new Grupo("C-24d") { Id = 34 },
+                new Grupo("C-25") { Id = 35 },
+                new Grupo("C-26") { Id = 36 },
+                new Grupo("C-27") { Id = 37 },
+                new Grupo("C-28") { Id = 38 },
+                new Grupo("C-29") { Id = 39 },
+                new Grupo("C-30") { Id = 40 },
+                new Grupo("C-31") { Id = 41 },
+                new Grupo("C-32") { Id = 42 },
+                new Grupo("C-33") { Id = 43 },
+                new Grupo("C-34") { Id = 44 },
+                new Grupo("C-35") { Id = 45 }
             };
 
             LimiteDimensionamento[] limitesDimensionamentos = new LimiteDimensionamento[45] {
-                new LimiteDimensionamento { Id = 1, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 2, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 3, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 4, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 5, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 6, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 7, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 8, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 9, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 10, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 11, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 12, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 13, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 14, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 15, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 16, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 17, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 18, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 19, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 20, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 21, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 22, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 23, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 24, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 25, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 26, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 27, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 28, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 29, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 30, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 31, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 32, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 33, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 34, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 35, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 36, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 37, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 38, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 39, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 40, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 41, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 42, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 43, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 },
-                new LimiteDimensionamento { Id = 44, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 2,  AcrescimoSuplentes = 2 },
-                new LimiteDimensionamento { Id = 45, Limite = 10000, IntervaloAcrescimo = 2500, AcrescimoEfetivos = 1,  AcrescimoSuplentes = 1 }
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 1 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 2 },
+                new LimiteDimensionamento(10000, 2500, 2, 1) { Id = 3 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 4 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 5 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 6 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 7 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 8 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 9 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 10 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 11 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 12 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 13 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 14 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 15 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 16 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 17 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 18 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 19 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 20 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 21 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 22 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 23 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 24 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 25 },
+                new LimiteDimensionamento(10000, 2500, 2, 1) { Id = 26 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 27 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 28 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 29 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 30 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 31 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 32 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 33 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 34 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 35 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 36 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 37 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 38 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 39 },
+                new LimiteDimensionamento(10000, 2500, 2, 1) { Id = 40 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 41 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 42 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 43 },
+                new LimiteDimensionamento(10000, 2500, 2, 2) { Id = 44 },
+                new LimiteDimensionamento(10000, 2500, 1, 1) { Id = 45 }
             };
 
             LinhaDimensionamento[] linhaDimensionamentos = new LinhaDimensionamento[366] {
@@ -485,111 +621,80 @@ namespace Cipa.Infra.Data.Context
                 new LinhaDimensionamento(10000, 5001, 6, 5) { Id = 366, GrupoId = 45 }
             };
 
-            Usuario usuario = new Usuario
+            Usuario usuario = new Usuario("teste@email.com", "Teste", "Cargo Teste")
             {
                 Id = 1,
-                Email = "teste@email.com",
-                Nome = "Teste",
-                Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc",// Teste12
-                Perfil = Perfil.SESMT,
-                ContaId = 1,
-                DataCadastro = new DateTime(2019, 1, 1)
-            };
-
-            Empresa empresa = new Empresa
-            {
-                Id = 1,
-                Cnpj = "01540533000390",
-                Ativa = true,
-                ContaId = 1,
-                RazaoSocial = "Empresa Teste",
-                DataCadastro = new DateTime(2019, 1, 1)
-            };
-
-            Estabelecimento estabelecimento = new Estabelecimento
-            {
-                Id = 1,
-                Ativo = true,
-                Cidade = "Uberlândia",
-                Descricao = "Teste",
-                EmpresaId = 1,
-                Endereco = "Teste",
-                GrupoId = 1,
-                DataCadastro = new DateTime(2019, 1, 1)
+                Senha = "03c32dc379d1b0958f3ef87d94ebb4ec859b9e2fdd297f44d68d8dd5f36800cc", // Teste12
+                Perfil = PerfilUsuario.SESMT,
+                ContaId = 1
             };
 
             var etapasObrigatorias = new EtapaObrigatoria[6] {
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Convocacao,
+                    Id = ECodigoEtapaObrigatoria.Convocacao,
                     Nome = "Convocação para a Eleição",
                     Descricao = "No início do processo eleitoral, o empregador deve convocar as eleições para a escolha dos representantes dos empregados na CIPA. Essa convocação precisa ocorrer no prazo mínimo de 60 dias antes do término do mandato em curso (NR-05 - 5.38)",
-                    Ordem = (int)CodigoEtapaObrigatoria.Convocacao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.Convocacao,
                     PrazoMandatoAnterior = 60
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.FormacaoComissao,
+                    Id = ECodigoEtapaObrigatoria.FormacaoComissao,
                     Nome = "Formação da Comissão Eleitoral",
                     Descricao = "A Norma Regulamentadora 05 também determina que, no prazo mínimo de 55 dias antes do término do mandato em curso, seja constituída a Comissão Eleitoral (CE). Essa comissão deve ser formada pelos membros atuais da CIPA e será responsável pela organização e acompanhamento do processo eleitoral (NR-05 5.39). O edital de convocação também deve ser enviado para o sindicatos 5 dias após sua publicação.",
-                    Ordem = (int)CodigoEtapaObrigatoria.FormacaoComissao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.FormacaoComissao,
                     PrazoMandatoAnterior = 55
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.EditalInscricao,
+                    Id = ECodigoEtapaObrigatoria.EditalInscricao,
                     Nome = "Edital de Inscrição dos Candidatos",
                     Descricao = "Nessa etapa, é preciso publicar e divulgar o edital de inscrição para a CIPA, em locais de fácil acesso e visualização. Atente-se ao prazo! A NR-5 determina que a publicação ocorra no prazo mínimo de 45 dias antes do término do mandato em curso. (NR-05 - 5.40 a)",
-                    Ordem = (int)CodigoEtapaObrigatoria.EditalInscricao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.EditalInscricao,
                     PrazoMandatoAnterior = 45
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Inscricao,
+                    Id = ECodigoEtapaObrigatoria.Inscricao,
                     Nome = "Inscrição dos Candidatos",
                     Descricao = "Nessa etapa, o sistema libera acesso aos eleitores cadastrados nessa eleição para eles realizarem sua inscrição. Essa etapa deve ter duração mínima de 15 dias. É importante lembrar que qualquer empregado do estabelecimento, independentemente do setor ou local de trabalho, pode se inscrever. (NR-05 5.40 b. c.)",
                     DuracaoMinima = 15,
-                    Ordem = (int)CodigoEtapaObrigatoria.Inscricao
+                    Ordem = (int)ECodigoEtapaObrigatoria.Inscricao
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Votacao,
+                    Id = ECodigoEtapaObrigatoria.Votacao,
                     Nome = "Votação",
                     Descricao = "Nessa etapa, todos os eleitores podem acessar o sistema e escolher um dos candidatos como representante para o próximo mandato da CIPA. A eleição deve ser realizada em um dia normal de trabalho e 30 dias antes do término do mandato em curso, no mínimo. (NR-05 5.40 e. f.)",
-                    Ordem = (int)CodigoEtapaObrigatoria.Votacao,
+                    Ordem = (int)ECodigoEtapaObrigatoria.Votacao,
                     PrazoMandatoAnterior = 30
                 },
                 new EtapaObrigatoria
                 {
-                    Id = CodigoEtapaObrigatoria.Ata,
+                    Id = ECodigoEtapaObrigatoria.Ata,
                     Nome = "Ata de Eleição",
                     Descricao = "Os candidatos votados e não eleitos devem estar relacionados nessa ata, em ordem decrescente de votos para nomeação posterior, em caso de vacância de suplentes. Não se preocupe, a criação desse documento é por nossa conta!",
-                    Ordem = (int)CodigoEtapaObrigatoria.Ata
+                    Ordem = (int)ECodigoEtapaObrigatoria.Ata
                 }
             };
 
             var etapasPadroesConta = new EtapaPadraoConta[6];
             for (var i = 0; i < 6; i++)
             {
-                etapasPadroesConta[i] = new EtapaPadraoConta
+                etapasPadroesConta[i] = new EtapaPadraoConta(
+                    etapasObrigatorias[i].Nome, etapasObrigatorias[i].Descricao, etapasObrigatorias[i].Ordem, 1, 5, etapasObrigatorias[i].Id)
                 {
-                    Id = (int)etapasObrigatorias[i].Id,
-                    ContaId = 1,
-                    Descricao = etapasObrigatorias[i].Descricao,
-                    DuracaoPadrao = 5,
-                    EtapaObrigatoriaId = etapasObrigatorias[i].Id,
-                    Nome = etapasObrigatorias[i].Nome,
-                    Ordem = etapasObrigatorias[i].Ordem
+                    Id = (int)etapasObrigatorias[i].Id
                 };
             }
 
             modelBuilder.Entity<Conta>().HasData(conta);
-            modelBuilder.Entity<Empresa>().HasData(empresa);
+            modelBuilder.Entity<TemplateEmail>().HasData(templatesEmails);
             modelBuilder.Entity<Grupo>().HasData(grupos);
             modelBuilder.Entity<LimiteDimensionamento>().HasData(limitesDimensionamentos);
             modelBuilder.Entity<LinhaDimensionamento>().HasData(linhaDimensionamentos);
             modelBuilder.Entity<Usuario>().HasData(usuario);
-            modelBuilder.Entity<Estabelecimento>().HasData(estabelecimento);
             modelBuilder.Entity<EtapaObrigatoria>().HasData(etapasObrigatorias);
             modelBuilder.Entity<EtapaPadraoConta>().HasData(etapasPadroesConta);
         }

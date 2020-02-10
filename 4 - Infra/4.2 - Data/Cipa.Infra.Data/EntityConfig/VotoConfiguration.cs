@@ -2,7 +2,8 @@ using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class VotoConfiguration : IEntityTypeConfiguration<Voto>
     {
         public void Configure(EntityTypeBuilder<Voto> builder)

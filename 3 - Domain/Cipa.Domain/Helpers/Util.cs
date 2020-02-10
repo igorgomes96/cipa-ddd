@@ -51,7 +51,7 @@ namespace Cipa.Domain.Helpers
 
         public static string FormataCNPJ(string CNPJ) =>
             Convert.ToUInt64(CNPJ).ToString(@"00\.000\.000\/0000\-00");
-        
+
 
         public static DateTime HorarioBrasilia(this DateTime data) =>
             TimeZoneInfo.ConvertTimeBySystemTimeZoneId(data, TimeZoneInfo.Local.Id, FusosHorarios.Brasilia);

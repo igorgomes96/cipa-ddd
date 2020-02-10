@@ -2,7 +2,7 @@
 
 namespace Cipa.Domain.Entities
 {
-    public class Plano: Entity<int>
+    public class Plano : Entity<int>
     {
         public string Descricao { get; set; }
         public decimal? ValorMes { get; set; }

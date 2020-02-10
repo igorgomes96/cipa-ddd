@@ -1,6 +1,6 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
 namespace Cipa.Infra.Data.EntityConfig
 {
@@ -8,6 +8,7 @@ namespace Cipa.Infra.Data.EntityConfig
     {
         public void Configure(EntityTypeBuilder<Eleicao> builder)
         {
+
             builder.HasKey(e => e.Id);
 
             builder.Property(e => e.Gestao)
@@ -15,9 +16,9 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.Property(e => e.DuracaoGestao)
                 .IsRequired();
-            
+
             builder.HasOne(e => e.Estabelecimento)
-                .WithMany()
+                .WithMany(e => e.Eleicoes)
                 .HasForeignKey(e => e.EstabelecimentoId)
                 .IsRequired();
 
@@ -33,21 +34,29 @@ namespace Cipa.Infra.Data.EntityConfig
                 .WithMany()
                 .HasForeignKey(e => e.ContaId)
                 .IsRequired();
-            
+
             builder.Property(e => e.DataCadastro)
+                .IsRequired();
+
+            builder.Property(e => e.DataFinalizacaoPrevista)
                 .IsRequired();
 
             builder.HasOne(e => e.Grupo)
                 .WithMany()
                 .HasForeignKey(e => e.GrupoId)
-                .IsRequired();
+                .IsRequired()
+                .Metadata.DependentToPrincipal.SetPropertyAccessMode(PropertyAccessMode.Field);
 
             builder.HasOne(e => e.Dimensionamento)
                 .WithOne()
-                .HasForeignKey<Dimensionamento>(d => d.Id);
+                .HasForeignKey<Dimensionamento>(d => d.Id)
+                .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
+
+            builder.HasOne(e => e.Configuracao)
+                 .WithOne()
+                 .HasForeignKey<ConfiguracaoEleicao>(c => c.Id);
 
             builder.HasIndex(e => new { e.EstabelecimentoId, e.Gestao }).IsUnique();
-            
         }
     }
 }

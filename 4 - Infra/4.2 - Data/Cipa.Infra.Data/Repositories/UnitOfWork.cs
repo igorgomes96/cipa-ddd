@@ -1,6 +1,8 @@
-using System;
-using Cipa.Domain.Interfaces.Repositories;
+using Cipa.Application.Repositories;
 using Cipa.Infra.Data.Context;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -24,7 +26,7 @@ namespace Cipa.Infra.Data.Repositories
                     Context.SaveChanges();
                     dbContextTransaction.Commit();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     //Log Exception Handling message                      
                     dbContextTransaction.Rollback();
@@ -34,15 +36,41 @@ namespace Cipa.Infra.Data.Repositories
 
         }
 
+        public void Rollback()
+        {
+            var changedEntries = Context.ChangeTracker.Entries()
+                .Where(x => x.State != EntityState.Unchanged).ToList();
+
+            foreach (var entry in changedEntries)
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Modified:
+                        entry.CurrentValues.SetValues(entry.OriginalValues);
+                        entry.State = EntityState.Unchanged;
+                        break;
+                    case EntityState.Added:
+                        entry.State = EntityState.Detached;
+                        break;
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Unchanged;
+                        break;
+                }
+            }
+        }
         #region Public Properties  
 
-        // private IContaRepository _contaRepository;
-        // public IContaRepository ContaRepository => _contaRepository ?? (_contaRepository = (IContaRepository)_serviceProvider.GetService(typeof(IContaRepository)));
         public IContaRepository ContaRepository => (IContaRepository)_serviceProvider.GetService(typeof(IContaRepository));
         public IEleicaoRepository EleicaoRepository => (IEleicaoRepository)_serviceProvider.GetService(typeof(IEleicaoRepository));
         public IGrupoRepository GrupoRepository => (IGrupoRepository)_serviceProvider.GetService(typeof(IGrupoRepository));
         public IEstabelecimentoRepository EstabelecimentoRepository => (IEstabelecimentoRepository)_serviceProvider.GetService(typeof(IEstabelecimentoRepository));
         public IUsuarioRepository UsuarioRepository => (IUsuarioRepository)_serviceProvider.GetService(typeof(IUsuarioRepository));
+        public IEmpresaRepository EmpresaRepository => (IEmpresaRepository)_serviceProvider.GetService(typeof(IEmpresaRepository));
+        public IImportacaoRepository ImportacaoRepository => (IImportacaoRepository)_serviceProvider.GetService(typeof(IImportacaoRepository));
+        public IArquivoRepository ArquivoRepository => (IArquivoRepository)_serviceProvider.GetService(typeof(IArquivoRepository));
+        public IEmailRepository EmailRepository => (IEmailRepository)_serviceProvider.GetService(typeof(IEmailRepository));
+        public IProcessamentoEtapaRepository ProcessamentoEtapaRepository => (IProcessamentoEtapaRepository)_serviceProvider.GetService(typeof(IProcessamentoEtapaRepository));
+
         #endregion
 
 

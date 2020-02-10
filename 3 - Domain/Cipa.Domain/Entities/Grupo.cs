@@ -3,8 +3,14 @@ using System.Linq;
 
 namespace Cipa.Domain.Entities
 {
-    public class Grupo: Entity<int>
+    public class Grupo : Entity<int>
     {
+        public Grupo() { } // EF
+        public Grupo(string codigoGrupo)
+        {
+            CodigoGrupo = codigoGrupo;
+        }
+
         public string CodigoGrupo { get; set; }
 
         public virtual LimiteDimensionamento LimiteDimensionamento { get; set; }
@@ -21,10 +27,11 @@ namespace Cipa.Domain.Entities
                 var excedente = qtdaEleitores - limite;
                 var indiceIntervalo = excedente / intervalo + 1;
                 var maximo = limite + intervalo * indiceIntervalo - 1;
-                var minimo = dimensionamento.Maximo - intervalo + 1;
+                var minimo = maximo - intervalo + 1;
                 var qtdaEfetivos = dimensionamento.QtdaEfetivos + LimiteDimensionamento.AcrescimoEfetivos * indiceIntervalo;
                 var qtdaSuplentes = dimensionamento.QtdaSuplentes + LimiteDimensionamento.AcrescimoSuplentes * indiceIntervalo;
-                return new LinhaDimensionamento(maximo, minimo, qtdaEfetivos, qtdaSuplentes) {
+                return new LinhaDimensionamento(maximo, minimo, qtdaEfetivos, qtdaSuplentes)
+                {
                     Grupo = this,
                     GrupoId = Id
                 };

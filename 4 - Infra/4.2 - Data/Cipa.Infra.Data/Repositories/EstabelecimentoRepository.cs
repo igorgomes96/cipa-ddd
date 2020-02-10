@@ -1,10 +1,8 @@
-using System;
+using Cipa.Domain.Entities;
+using Cipa.Application.Repositories;
+using Cipa.Infra.Data.Context;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Cipa.Domain.Interfaces.Repositories;
-using Cipa.Domain.Entities;
-using Cipa.Infra.Data.Context;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -12,13 +10,17 @@ namespace Cipa.Infra.Data.Repositories
     {
         public EstabelecimentoRepository(CipaContext db) : base(db) { }
 
-        public override Estabelecimento BuscarPeloId(int id) {
-            return DbSet.Include(e => e.Empresa).Include(e => e.Grupo).SingleOrDefault(e => e.Id == id);
-        }
+        private IQueryable<Estabelecimento> QueryEstabelecimentos =>
+            DbSet.Where(e => e.Ativo);
 
-        public int QuantidadeEleicoesAno(int estabelecimentoId, int ano)
-        {
-            return _db.Eleicoes.Count(e => e.EstabelecimentoId == estabelecimentoId && e.Gestao == ano);
-        }
+        public IEnumerable<Estabelecimento> BuscarEstabelecimentosPorConta(int contaId) =>
+            QueryEstabelecimentos.Where(e => e.Empresa.ContaId == contaId);
+
+        public IEnumerable<Estabelecimento> BuscarEstabelecimentosPorEmpresa(int empresaId) =>
+            QueryEstabelecimentos.Where(e => e.EmpresaId == empresaId);
+
+        public override Estabelecimento BuscarPeloId(int id) =>
+            QueryEstabelecimentos.SingleOrDefault(e => e.Id == id);
+
     }
 }

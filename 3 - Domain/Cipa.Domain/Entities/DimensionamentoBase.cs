@@ -1,8 +1,8 @@
-using System;
+using System.Collections.Generic;
 
 namespace Cipa.Domain.Entities
 {
-    public class DimensionamentoBase : Entity<int>
+    public class DimensionamentoBase : ValueObject
     {
         protected DimensionamentoBase(int maximo, int minimo, int qtdaEfetivos, int qtdaSuplentes)
         {
@@ -11,6 +11,7 @@ namespace Cipa.Domain.Entities
             QtdaEfetivos = qtdaEfetivos;
             QtdaSuplentes = qtdaSuplentes;
         }
+        public int Id { get; set; }
         public int Minimo { get; internal set; }
         public int Maximo { get; internal set; }
         public int QtdaEfetivos { get; internal set; }
@@ -24,5 +25,12 @@ namespace Cipa.Domain.Entities
             }
         }
 
+        protected override IEnumerable<object> GetAtomicValues()
+        {
+            yield return Minimo;
+            yield return Maximo;
+            yield return QtdaEfetivos;
+            yield return QtdaSuplentes;
+        }
     }
 }

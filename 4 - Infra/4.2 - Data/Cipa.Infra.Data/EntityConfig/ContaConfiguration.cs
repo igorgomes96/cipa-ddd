@@ -2,7 +2,8 @@ using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Cipa.Infra.Data.EntityConfig {
+namespace Cipa.Infra.Data.EntityConfig
+{
     public class ContaConfiguration : IEntityTypeConfiguration<Conta>
     {
         public void Configure(EntityTypeBuilder<Conta> builder)
@@ -26,7 +27,9 @@ namespace Cipa.Infra.Data.EntityConfig {
                 .IsRequired();
 
             builder.Property(c => c.DataCadastro)
-                .IsRequired();  
+                .IsRequired();
+
+            builder.Ignore(c => c.EmpresasAtivas);
         }
     }
 }

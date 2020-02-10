@@ -1,11 +1,9 @@
+using Cipa.Domain.Exceptions;
+using Cipa.Application.Repositories;
+using Cipa.Infra.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Cipa.Domain.Interfaces.Repositories;
-using Microsoft.EntityFrameworkCore.Storage;
-using Cipa.Domain.Exceptions;
-using Cipa.Infra.Data.Context;
-using System.Linq;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -28,6 +26,15 @@ namespace Cipa.Infra.Data.Repositories
         public virtual void Excluir(TEntity obj) => DbSet.Remove(obj);
 
         public virtual void Atualizar(TEntity obj) => _db.Entry(obj).State = EntityState.Modified;
+
+        public virtual TEntity Atualizar(int id, TEntity obj)
+        {
+            var entity = BuscarPeloId(id);
+            if (entity == null) throw new NotFoundException("Código não encontrado.");
+            _db.Entry(entity).CurrentValues.SetValues(obj);
+            Atualizar(entity);
+            return entity;
+        }
 
         public virtual void Dispose() => _db.Dispose();
 

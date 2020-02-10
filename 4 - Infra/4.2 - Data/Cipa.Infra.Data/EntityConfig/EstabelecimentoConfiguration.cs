@@ -1,6 +1,6 @@
+using Cipa.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Cipa.Domain.Entities;
 
 namespace Cipa.Infra.Data.EntityConfig
 {
@@ -35,6 +35,8 @@ namespace Cipa.Infra.Data.EntityConfig
 
             builder.Property(e => e.DataCadastro)
                 .IsRequired();
+
+            builder.Ignore(e => e.EleicoesDoAnoCorrente).Ignore(e => e.EleicoesEmAndamento);
         }
     }
 }
