@@ -20,7 +20,17 @@ steps:
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
-  
+
+- task: DeleteFiles@1
+  inputs:
+    SourceFolder: '$(build.artifactStagingDirectory)'
+    Contents: 'web.config'
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(build.artifactStagingDirectory)\WebApp.zip'
+    xmlTransformationRules: '-transform **\*.release.config -xml **\*.config'
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
@@ -32,16 +42,6 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-
-- task: DeleteFiles@1
-  inputs:
-    SourceFolder: '$(build.artifactStagingDirectory)\WebApp.zip'
-    Contents: 'web.config'
-
-- task: FileTransform@2
-  inputs:
-    folderPath: '$(build.artifactStagingDirectory)\WebApp.zip'
-    xmlTransformationRules: '-transform **\*.release.config -xml **\*.config'
 
 - task: PublishBuildArtifacts@1
   inputs:
