@@ -28,7 +28,7 @@ steps:
 
 - task: FileTransform@2
   inputs:
-    folderPath: '$(build.artifactStagingDirectory)\WebApp.zip'
+    folderPath: '$(build.artifactStagingDirectory)'
     xmlTransformationRules: '-transform **\*.release.config -xml **\*.config'
 
 - task: VSBuild@1
