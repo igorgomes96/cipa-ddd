@@ -33,6 +33,11 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
+- task: DeleteFiles@1
+  inputs:
+    SourceFolder: '$(build.artifactStagingDirectory)\WebApp.zip'
+    Contents: 'web.config'
+
 - task: FileTransform@2
   inputs:
     folderPath: '$(build.artifactStagingDirectory)\WebApp.zip'
