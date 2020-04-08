@@ -33,11 +33,6 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: FileTransform@2
-  inputs:
-    folderPath: '$(build.artifactStagingDirectory)\WebApp.zip'
-    xmlTransformationRules: '-transform **\*.release.config -xml **\*.config'
-
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
