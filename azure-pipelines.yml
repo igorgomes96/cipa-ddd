@@ -21,15 +21,10 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- task: DeleteFiles@1
-  inputs:
-    SourceFolder: '$(build.artifactStagingDirectory)'
-    Contents: 'web.config'
-
 - task: FileTransform@2
   inputs:
     folderPath: '$(build.artifactStagingDirectory)'
-    xmlTransformationRules: '-transform **\*.release.config -xml **\*.config'
+    xmlTransformationRules: '-transform **\web.release.config -xml **\web.config'
 
 - task: VSBuild@1
   inputs:
