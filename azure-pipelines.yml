@@ -21,11 +21,6 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- task: FileTransform@2
-  inputs:
-    folderPath: '$(build.artifactStagingDirectory)'
-    xmlTransformationRules: '-transform **\web.release.config -xml **\web.config'
-
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
