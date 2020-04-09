@@ -9,7 +9,7 @@ namespace Cipa.WebApi.BackgroundTasks.Scheduler
     public class AlteracaoEtapaScheduler : ScheduledProcessor
     {
         public AlteracaoEtapaScheduler(IServiceProvider serviceProvider, ILogger<AlteracaoEtapaScheduler> logger): base(serviceProvider, logger) { } 
-        protected override string Schedule => "0 13 * * *";  // Diariamente à 00:01
+        protected override string Schedule => "15 13 * * *";  // Diariamente à 00:01
 
         public override Task ProcessInScope(IServiceProvider serviceProvider)
         {
