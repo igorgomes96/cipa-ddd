@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
-  <system.webServer xdt:Transform="Remove"></system.webServer>
-  <location path="." inheritInChildApplications="false" xdt:Transform="Insert">
-    <system.webServer>
+
+  <location path="." inheritInChildApplications="false">
+    <system.webServer xdt:Transform="Replace">
       <rewrite>
         <rules>
           <rule name="Redirect to https" stopProcessing="true">
@@ -34,6 +34,15 @@
             <action type="Rewrite" url="wwwroot/index.html" />
           </rule>
         </rules>
+        <outboundRules>
+          <rule name="Add Strict-Transport-Security when HTTPS" enabled="true">
+            <match serverVariable="RESPONSE_Strict_Transport_Security" pattern=".*" />
+            <conditions>
+              <add input="{HTTPS}" pattern="on" ignoreCase="true" />
+            </conditions>
+            <action type="Rewrite" value="max-age=63072000; includeSubDomains; preload" />
+          </rule>
+        </outboundRules>
       </rewrite>
       <handlers accessPolicy="Read, Write, Script">
         <add name="PHP-FastCGI-sub7.3" path="*.php" verb="*" modules="FastCgiModule" scriptProcessor="C:\php7.3\php-cgi_8.exe" resourceType="File" />
@@ -49,31 +58,25 @@
         <add name="StaticFileModuleIco" path="*.ico" verb="*" modules="StaticFileModule" resourceType="File" requireAccess="Read" />
         <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
       </handlers>
-      <aspNetCore processPath="dotnet" arguments=".\Cipa.WebApi.dll" stdoutLogEnabled="false" stdoutLogFile="..\logs\cipa\log" />
-        <environmentVariables>
-          <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Development" />
-          <environmentVariable name="COMPLUS_ForceENC" value="1" />
-        </environmentVariables>
-      </aspNetCore>
+      <aspNetCore processPath="dotnet" arguments=".\Cipa.WebApi.dll" stdoutLogEnabled="true" stdoutLogFile="..\logs\cipa\log" />
     </system.webServer>
   </location>
+
   <location path="" xdt:Transform="Insert">
-  <system.webServer>
-    <directoryBrowse enabled="false" />
-    <urlCompression doDynamicCompression="false" />
-    <defaultDocument enabled="true">
-      <files>
-        <clear />
-        <add value="index.htm" />
-        <add value="index.html" />
-        <add value="index.php" />
-        <add value="index.asp" />
-        <add value="default.asp" />
-        <add value="index.aspx" />
-        <add value="default.aspx" />
-      </files>
-    </defaultDocument>
-  </system.webServer>
+   <system.webServer>
+      <httpErrors errorMode="DetailedLocalOnly" />
+      <urlCompression doDynamicCompression="false" />
+      <defaultDocument enabled="true">
+        <files>
+          <clear />
+          <add value="index.html" />
+          <add value="index.php" />
+          <add value="index.asp" />
+          <add value="default.asp" />
+          <add value="index.aspx" />
+          <add value="default.aspx" />
+        </files>
+      </defaultDocument>
+    </system.webServer>
   </location>
 </configuration>
-<!--ProjectGuid: 44149ba3-ae2f-4d1d-bd93-6b6966f17bd7-->

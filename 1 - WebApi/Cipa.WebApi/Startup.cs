@@ -111,11 +111,11 @@ namespace Cipa.WebApi
             });
 
             services.AddHsts(options =>
-                {
-                    options.Preload = true;
-                    options.IncludeSubDomains = true;
-                    options.MaxAge = TimeSpan.FromDays(30);
-                });
+            {
+                options.Preload = true;
+                options.IncludeSubDomains = true;
+                options.MaxAge = TimeSpan.FromSeconds(63072000);
+            });
 
             services.AddResponseCompression(options =>
             {
@@ -162,7 +162,6 @@ namespace Cipa.WebApi
 
             app.UseHttpErrorMiddleware();
 
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
 
             notificacaoProgressoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) =>
