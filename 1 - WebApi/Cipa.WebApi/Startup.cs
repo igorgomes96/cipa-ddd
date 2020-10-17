@@ -20,32 +20,28 @@ using Cipa.WebApi.SignalR;
 using Cipa.WebApi.ViewModels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Cipa.WebApi.BackgroundTasks.Scheduler;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using System.Collections.Generic;
+using System;
 
 namespace Cipa.WebApi
 {
     public class Startup
     {
         private readonly ILogger<Startup> _logger;
-        public Startup(ILogger<Startup> logger, IConfiguration configuration, IHostingEnvironment environment)
+        public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
             Configuration = configuration;
-            Environment = environment;
         }
 
-        public IHostingEnvironment Environment { get; }
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -98,21 +94,27 @@ namespace Cipa.WebApi
             // Dependências
             AddDependencies(services);
 
-            services.AddCors(options => options.AddPolicy("AllowAll", builder =>
-                builder
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials()));
+            services.AddCors(options => options.AddPolicy("AllowAll", builder => builder
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()
+                .WithOrigins("http://localhost:4200")));
 
             services.AddHostedService<ImportacaoHostedService>();
             services.AddHostedService<EmailHostedService>();
             services.AddHostedService<ProcesssamentoEtapasHostedService>();
-            services.AddHostedService<AlteracaoEtapaScheduler>();
+            services.AddHostedService<AlteracaoEtapaService>();
 
             services.Configure<GzipCompressionProviderOptions>(options =>
             {
                 options.Level = CompressionLevel.Optimal;
+            });
+
+            services.AddHsts(options =>
+            {
+                options.Preload = true;
+                options.IncludeSubDomains = true;
+                options.MaxAge = TimeSpan.FromSeconds(63072000);
             });
 
             services.AddResponseCompression(options =>
@@ -134,45 +136,33 @@ namespace Cipa.WebApi
                 options.Providers.Add<GzipCompressionProvider>();
             });
 
-            services.AddSignalR();
-            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(Configuration.GetSection("Logging"));
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddDebug();
             });
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddRouting();
+            services.AddSignalR();
+            services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+            services.AddControllers()
+                .AddJsonOptions(options => options.JsonSerializerOptions.IgnoreNullValues = true);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
-            IHostingEnvironment env,
             IHubContext<ProgressHub> hubContext,
             IProgressoImportacaoEvent notificacaoProgressoEvent,
             IMapper mapper)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+
+            app.UseForwardedHeaders();
+            app.UseCors("AllowAll");
 
             app.UseHttpErrorMiddleware();
-            app.UseCors("AllowAll");
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<ProgressHub>("/api/signalr");
-            });
-            app.UseAuthentication();
 
+            app.UseHsts();
 
             notificacaoProgressoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) =>
             {
@@ -186,8 +176,17 @@ namespace Cipa.WebApi
 
             app.UseHttpsRedirection();
             app.UseResponseCompression();
+            app.UseDefaultFiles();
             app.UseStaticFiles();
-            app.UseMvc();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<ProgressHub>("/api/hub");
+            });
         }
 
         private void AddDependencies(IServiceCollection services)

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Cipa.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -34,7 +35,11 @@ namespace Cipa.Infra.Data.Repositories
         public IEnumerable<Eleicao> BuscarEleicoesComMudancaEtapaAgendadaParaHoje()
         {
             var dataInicio = DateTime.Today.AddDays(-2);  // Intervalo máximo de 2 dias
-            return BuscarTodos().Where(e =>
+            var eleicoesAndamento = _db.Eleicoes
+                .Include(e => e.Cronograma)
+                .Where(e => !e.DataFinalizacao.HasValue)
+                .ToList();
+            return eleicoesAndamento.Where(e =>
                 (e.EtapaAtual == null 
                 && e.Cronograma.All(c => c.PosicaoEtapa == EPosicaoEtapa.Futura)
                 && e.Cronograma.First().DataPrevista.Date <= DateTime.Today

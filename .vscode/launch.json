@@ -9,18 +9,16 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/1 - WebApi/Cipa.WebApi/bin/Debug/netcoreapp2.2/Cipa.WebApi.dll",
+            "program": "${workspaceFolder}/1 - WebApi/Cipa.WebApi/bin/Debug/netcoreapp3.1/Cipa.WebApi.dll",
             "args": [],
             "cwd": "${workspaceFolder}/1 - WebApi/Cipa.WebApi",
             "stopAtEntry": false,
-            "launchBrowser": {
-                "enabled": false
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
             },
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "sourceFileMap": {
-                "/Views": "${workspaceFolder}/Views"
             }
         },
         {
