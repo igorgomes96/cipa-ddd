@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/0 - WebApi/Cipa.WebApi/Cipa.WebApi.csproj",
+                "${workspaceFolder}/1 - WebApi/Cipa.WebApi/Cipa.WebApi.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/0 - WebApi/Cipa.WebApi/Cipa.WebApi.csproj",
+                "${workspaceFolder}/1 - WebApi/Cipa.WebApi/Cipa.WebApi.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -32,7 +32,7 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/0 - WebApi/Cipa.WebApi/Cipa.WebApi.csproj",
+                "${workspaceFolder}/1 - WebApi/Cipa.WebApi/Cipa.WebApi.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

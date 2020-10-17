@@ -2,7 +2,6 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
-using Cipa.Domain.Helpers;
 using Cipa.WebApi.Authentication;
 using Cipa.WebApi.Filters;
 using Cipa.WebApi.ViewModels;
@@ -56,7 +55,7 @@ namespace Cipa.WebApi.Controllers
                 else
                     eleicoes = eleicoes.Where(e => e.DataFinalizacao != null);
             }
-            return _mapper.Map<List<EleicaoDetalheViewModel>>(eleicoes);
+            return _mapper.Map<List<EleicaoDetalheViewModel>>(eleicoes.ToList());
         }
 
         [HttpGet("{id}/usuarioeleitor")]
@@ -117,17 +116,17 @@ namespace Cipa.WebApi.Controllers
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpGet("{id}/cronograma")]
         public IEnumerable<EtapaCronogramaViewModel> GetCronograma(int id) =>
-            _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.BuscarCronograma(id));
+            _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.BuscarCronograma(id).ToList());
 
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPost("{id}/proximaetapa")]
         public IEnumerable<EtapaCronogramaViewModel> PassarParaProximaEtapa(int id) =>
-             _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.PassarParaProximaEtapa(id)?.Cronograma);
+             _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.PassarParaProximaEtapa(id)?.Cronograma.ToList());
 
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPut("{id}/cronograma")]
         public IEnumerable<EtapaCronogramaViewModel> AtualizarCronograma(int id, EtapaCronogramaViewModel etapaCronograma) =>
-             _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.AtualizarCronograma(id, _mapper.Map<EtapaCronograma>(etapaCronograma)));
+             _mapper.Map<List<EtapaCronogramaViewModel>>(_eleicaoAppService.AtualizarCronograma(id, _mapper.Map<EtapaCronograma>(etapaCronograma)).ToList());
 
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPost("{id}/cronograma/{etapaId}/arquivos"), DisableRequestSizeLimit]
@@ -152,7 +151,7 @@ namespace Cipa.WebApi.Controllers
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpGet("{id}/cronograma/{etapaId}/arquivos")]
         public IEnumerable<ArquivoViewModel> BuscarArquivos(int id, int etapaId) =>
-            _mapper.Map<List<ArquivoViewModel>>(_arquivoAppService.BuscaArquivos(DependencyFileType.DocumentoCronograma, etapaId));
+            _mapper.Map<List<ArquivoViewModel>>(_arquivoAppService.BuscaArquivos(DependencyFileType.DocumentoCronograma, etapaId).ToList());
         #endregion
 
         #region Eleitores
@@ -220,9 +219,9 @@ namespace Cipa.WebApi.Controllers
             if (seedOrder.HasValue)
             {
                 Random rnd = new Random(seedOrder.Value);
-                return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(_ => rnd.Next())));
+                return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(_ => rnd.Next()).ToList()));
             }
-            return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(i => i.Eleitor.Nome)));
+            return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(i => i.Eleitor.Nome).ToList()));
         }
 
         [HttpPost("{id}/inscricoes")]
@@ -311,7 +310,7 @@ namespace Cipa.WebApi.Controllers
 
         [HttpGet("{id}/apuracao")]
         public IEnumerable<ApuracaoViewModel> GetApuracao(int id) =>
-            _mapper.Map<List<ApuracaoViewModel>>(_eleicaoAppService.ApurarVotos(id));
+            _mapper.Map<List<ApuracaoViewModel>>(_eleicaoAppService.ApurarVotos(id).ToList());
 
         [HttpPost("{id}/registrarresultado")]
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
@@ -332,7 +331,7 @@ namespace Cipa.WebApi.Controllers
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpGet("{id}/importacoes/{idImportacao}/inconsistencias")]
         public IEnumerable<InconsistenciaViewModel> GetInconsistenciasImportacao(int id, int idImportacao) =>
-            _mapper.Map<List<InconsistenciaViewModel>>(_importacaoAppService.RetornarInconsistenciasDaImportacao(idImportacao));
+            _mapper.Map<List<InconsistenciaViewModel>>(_importacaoAppService.RetornarInconsistenciasDaImportacao(idImportacao).ToList());
 
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPost("{id}/importacoes"), DisableRequestSizeLimit]
