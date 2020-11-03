@@ -219,9 +219,9 @@ namespace Cipa.WebApi.Controllers
             if (seedOrder.HasValue)
             {
                 Random rnd = new Random(seedOrder.Value);
-                return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(_ => rnd.Next()).ToList()));
+                return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.ToList().OrderBy(_ => rnd.Next())));
             }
-            return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.OrderBy(i => i.Eleitor.Nome).ToList()));
+            return Ok(_mapper.Map<List<InscricaoViewModel>>(inscricoes.ToList().OrderBy(i => i.Eleitor.Nome)));
         }
 
         [HttpPost("{id}/inscricoes")]
