@@ -2,7 +2,7 @@ using System;
 
 namespace Cipa.WebApi.ViewModels
 {
-    
+
     public class ArquivoViewModel
     {
         public int Id { get; set; }
@@ -10,6 +10,7 @@ namespace Cipa.WebApi.ViewModels
         public string Nome { get; set; }
         public long Tamanho { get; set; }
         public string ContentType { get; set; }
+        public string Path { get; set; }
 
     }
 }

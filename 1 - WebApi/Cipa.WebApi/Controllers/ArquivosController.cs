@@ -25,12 +25,6 @@ namespace Cipa.WebApi.Controllers
             return Ok();
         }
 
-        [HttpGet("{id}/download")]
-        public ActionResult<string> DownloadArquivo(int id)
-        {
-            return _arquivoAppService.GerarURLTemporaria(id);
-        }
-
         [HttpGet("templateimportacao")]
         public ActionResult DonwloadTemplateImportacao()
         {

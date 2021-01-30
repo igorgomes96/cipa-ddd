@@ -18,10 +18,6 @@ namespace Cipa.Application
         public IEnumerable<Arquivo> BuscaArquivos(DependencyFileType dependency, int id) =>
             (_repositoryBase as IArquivoRepository).BuscaArquivos(dependency, id);
 
-        public string GerarURLTemporaria(int id)
-        {
-            return _unitOfWork.ArquivoRepository.GerarURLTemporaria(id);
-        }
 
         public void ExcluiArquivos(DependencyFileType dependency, int id)
         {

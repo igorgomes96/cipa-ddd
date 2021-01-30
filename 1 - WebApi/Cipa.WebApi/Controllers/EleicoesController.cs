@@ -236,7 +236,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpPost("{id}/inscricoes/foto"), DisableRequestSizeLimit]
-        public ActionResult<InscricaoViewModel> PostAtualizaFotoInscricao(int id)
+        public async Task<ActionResult<InscricaoViewModel>> PostAtualizaFotoInscricao(int id)
         {
             if (Request.Form.Files == null || Request.Form.Files.Count == 0)
                 return BadRequest("Nenhuma foto foi enviada.");
@@ -246,13 +246,11 @@ namespace Cipa.WebApi.Controllers
 
             var formFile = Request.Form.Files.First();
             var fileName = formFile.FileName;
-            byte[] foto = null;
             using (var ms = new MemoryStream())
             {
                 formFile.CopyTo(ms);
-                foto = ms.ToArray();
+                return _mapper.Map<InscricaoViewModel>(await _eleicaoAppService.AtualizarFotoInscricao(id, UsuarioId, ms, fileName));
             }
-            return _mapper.Map<InscricaoViewModel>(_eleicaoAppService.AtualizarFotoInscricao(id, UsuarioId, foto, fileName));
         }
 
         [HttpGet("{id}/inscricoes/{inscricaoId}/foto")]

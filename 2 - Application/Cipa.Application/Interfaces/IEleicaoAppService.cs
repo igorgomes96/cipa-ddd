@@ -33,7 +33,7 @@ namespace Cipa.Application.Interfaces
         Voto BuscarVotoUsuario(int eleicaoId, int usuarioId);
         IEnumerable<Inscricao> ApurarVotos(int eleicaoId);
         IEnumerable<Inscricao> RegistrarResultadoApuracao(int eleicaoId);
-        Inscricao AtualizarFotoInscricao(int eleicaoId, int usuarioId, byte[] foto, string fotoFileName);
+        Task<Inscricao> AtualizarFotoInscricao(int eleicaoId, int usuarioId, Stream file, string fotoFileName);
         Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId);
         Task<Importacao> ImportarEleitores(int eleicaoId, int usuarioId, Stream file, string nomeArquivo, string contentType);
         Task<Arquivo> FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, Stream file, string nomeArquivo, string contentType);

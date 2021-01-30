@@ -18,7 +18,6 @@ namespace Cipa.Infra.Data.Repositories
     public class ArquivoRepository : RepositoryBase<Arquivo>, IArquivoRepository
     {
         private const string BUCKET_NAME = "cipaonline";
-        // private const string BUCKET_URL = "https://cipaonline.s3.us-east-2.amazonaws.com/";
         private readonly IAmazonS3 _s3Client;
         private readonly ILogger<ArquivoRepository> _logger;
 
@@ -36,13 +35,17 @@ namespace Cipa.Infra.Data.Repositories
         public override void Excluir(Arquivo obj)
         {
             base.Excluir(obj);
+            ExluirArquivoNuvem(obj.Path);
+        }
 
+        public void ExluirArquivoNuvem(string arquivo)
+        {
             try
             {
                 var deleteObjectRequest = new DeleteObjectRequest
                 {
                     BucketName = BUCKET_NAME,
-                    Key = obj.Path
+                    Key = arquivo
                 };
                 _s3Client.DeleteObjectAsync(deleteObjectRequest).Wait();
             }
@@ -51,20 +54,25 @@ namespace Cipa.Infra.Data.Repositories
                 _logger.LogError(ex, "Erro ao excluir arquivo do S3: " + ex.Message);
             }
         }
-
-        public async Task<Arquivo> Adicionar(Arquivo obj, Stream file)
+        public async Task<string> RealizarUpload(Stream file, string fileKey)
         {
-            string relativePath = GetRelativePath(obj.DependencyType, obj.DependencyId);
-            obj.Path = $"{relativePath}/{obj.Nome}";
+            var newKey = Helpers.RemoverCaracteresEspeciais(fileKey);
             var uploadRequest = new TransferUtilityUploadRequest
             {
                 InputStream = file,
-                Key = obj.Path,
+                Key = newKey,
                 BucketName = BUCKET_NAME
             };
 
             var fileTransferUtility = new TransferUtility(_s3Client);
             await fileTransferUtility.UploadAsync(uploadRequest);
+            return newKey;
+        }
+
+        public async Task<Arquivo> Adicionar(Arquivo obj, Stream file)
+        {
+            string relativePath = GetRelativePath(obj.DependencyType, obj.DependencyId);
+            obj.Path = await RealizarUpload(file, $"{relativePath}/{obj.Nome}");
             return base.Adicionar(obj);
         }
 

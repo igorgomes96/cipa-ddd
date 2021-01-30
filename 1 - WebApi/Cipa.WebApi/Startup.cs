@@ -55,7 +55,7 @@ namespace Cipa.WebApi
                     b => b.MigrationsAssembly("Cipa.WebApi"));
             });
 
-            var signingConfigurations = new SigningConfigurations();
+            var signingConfigurations = new SigningConfigurations(Configuration.GetSection("TokenConfigurations:Secret").Value);
             services.AddSingleton(signingConfigurations);
 
             var tokenConfigurations = new TokenConfigurations();

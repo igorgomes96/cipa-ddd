@@ -10,6 +10,5 @@ namespace Cipa.Application.Interfaces
         void ExcluiArquivos(DependencyFileType dependency, int id);
         IEnumerable<Arquivo> BuscaArquivos(DependencyFileType dependency, int id);
         Task<Arquivo> SalvarArquivo(Stream file, DependencyFileType dependencyType, int dependencyId, string emailUsuario, string nomeUsuario, string nomeArquivo, string contentType);
-        string GerarURLTemporaria(int id);
     }
 }
