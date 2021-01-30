@@ -26,12 +26,9 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpGet("{id}/download")]
-        public ActionResult DownloadArquivo(int id)
+        public ActionResult<string> DownloadArquivo(int id)
         {
-            var arquivo = _arquivoAppService.BuscarPeloId(id);
-            if (string.IsNullOrWhiteSpace(arquivo.Path))
-                return BadRequest("Arquivo não encontrado");
-            return PhysicalFile(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), arquivo.Path), arquivo.ContentType);
+            return _arquivoAppService.GerarURLTemporaria(id);
         }
 
         [HttpGet("templateimportacao")]

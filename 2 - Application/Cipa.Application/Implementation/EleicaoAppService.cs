@@ -13,6 +13,7 @@ using System.Data;
 using Cipa.Application.Services.Interfaces;
 using System;
 using Cipa.Domain.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace Cipa.Application
 {
@@ -430,7 +431,7 @@ namespace Cipa.Application
             }
         }
 
-        public Importacao ImportarEleitores(int eleicaoId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType)
+        public async Task<Importacao> ImportarEleitores(int eleicaoId, int usuarioId, Stream file, string nomeArquivo, string contentType)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
@@ -438,9 +439,9 @@ namespace Cipa.Application
             var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
             if (usuario == null) throw new CustomException("Usuário inválido!");
 
-            var arquivo = _arquivoAppService.SalvarArquivo(
-                DependencyFileType.Importacao, eleicao.Id, usuario.Email, usuario.Nome,
-                conteudoArquivo, nomeArquivo, contentType);
+            var arquivo = await _arquivoAppService.SalvarArquivo(
+                file, DependencyFileType.Importacao, eleicao.Id,
+                usuario.Email, usuario.Nome, nomeArquivo, contentType);
 
             ValidaFormatoPlanilha(arquivo.Path);
 
@@ -450,7 +451,7 @@ namespace Cipa.Application
             return importacao;
         }
 
-        public Arquivo FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType)
+        public async Task<Arquivo> FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, Stream file, string nomeArquivo, string contentType)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
@@ -458,9 +459,8 @@ namespace Cipa.Application
             var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
             if (usuario == null) throw new CustomException("Usuário inválido!");
 
-            return _arquivoAppService.SalvarArquivo(
-                DependencyFileType.DocumentoCronograma, etapaId, usuario.Email, usuario.Nome,
-                conteudoArquivo, nomeArquivo, contentType);
+            return await _arquivoAppService.SalvarArquivo(
+                file, DependencyFileType.DocumentoCronograma, etapaId, usuario.Email, usuario.Nome, nomeArquivo, contentType);
         }
 
         public void AtualizarCronogramas()

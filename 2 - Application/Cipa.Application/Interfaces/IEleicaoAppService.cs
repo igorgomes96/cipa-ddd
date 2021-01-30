@@ -1,6 +1,7 @@
 using Cipa.Domain.Entities;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Cipa.Application.Interfaces
 {
@@ -34,8 +35,8 @@ namespace Cipa.Application.Interfaces
         IEnumerable<Inscricao> RegistrarResultadoApuracao(int eleicaoId);
         Inscricao AtualizarFotoInscricao(int eleicaoId, int usuarioId, byte[] foto, string fotoFileName);
         Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId);
-        Importacao ImportarEleitores(int eleicaoId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType);
-        Arquivo FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType);
+        Task<Importacao> ImportarEleitores(int eleicaoId, int usuarioId, Stream file, string nomeArquivo, string contentType);
+        Task<Arquivo> FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, Stream file, string nomeArquivo, string contentType);
         bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId);
         Stream GerarRelatorioInscricoes(int eleicaoId);
         Stream GerarRelatorioVotos(int eleicaoId);
