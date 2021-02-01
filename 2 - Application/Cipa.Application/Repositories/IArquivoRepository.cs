@@ -11,5 +11,6 @@ namespace Cipa.Application.Repositories
         Task<string> RealizarUpload(Stream file, string fileKey);
         void ExluirArquivoNuvem(string arquivo);
         IEnumerable<Arquivo> BuscaArquivos(DependencyFileType dependency, int id);
+        Task<string> RealizarDownloadArquivo(Arquivo arquivo);
     }
 }

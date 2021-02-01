@@ -10,14 +10,13 @@ namespace Cipa.WebApi.BackgroundTasks
     {
         public ImportacaoHostedService(IServiceProvider serviceScopeFactory, ILogger<ImportacaoHostedService> logger) : base(serviceScopeFactory, logger) { }
 
-        public override Task ProcessInScope(IServiceProvider serviceProvider)
+        public override async Task ProcessInScope(IServiceProvider serviceProvider)
         {
             using (var scope = serviceProvider.CreateScope())
             {
                 var scopedProcessingService = scope.ServiceProvider.GetRequiredService<IImportacaoAppService>();
-                scopedProcessingService.RealizarImportacaoEmBrackground();
+                await scopedProcessingService.RealizarImportacaoEmBrackground();
             }
-            return Task.CompletedTask;
         }
 
         protected override int Delay { get { return (int)TimeSpan.FromSeconds(10).TotalMilliseconds; } }

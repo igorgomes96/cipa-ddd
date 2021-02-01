@@ -422,7 +422,7 @@ namespace Cipa.Application
 
             var arquivo = await _arquivoAppService.SalvarArquivo(
                 file, DependencyFileType.Importacao, eleicao.Id,
-                usuario.Email, usuario.Nome, nomeArquivo, contentType);
+                usuario.Email, usuario.Nome, Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(nomeArquivo), contentType);
 
             ValidaFormatoPlanilha(arquivo.Path);
 

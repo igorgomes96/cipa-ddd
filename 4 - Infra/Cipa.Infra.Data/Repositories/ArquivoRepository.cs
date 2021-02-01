@@ -54,6 +54,24 @@ namespace Cipa.Infra.Data.Repositories
                 _logger.LogError(ex, "Erro ao excluir arquivo do S3: " + ex.Message);
             }
         }
+
+        public async Task<string> RealizarDownloadArquivo(Arquivo arquivo)
+        {
+            GetObjectRequest request = new GetObjectRequest
+            {
+                BucketName = BUCKET_NAME,
+                Key = arquivo.Path
+            };
+            var fileName = Path.GetTempFileName() + Path.GetExtension(arquivo.Path);
+            using (GetObjectResponse response = await _s3Client.GetObjectAsync(request))
+            using (Stream responseStream = response.ResponseStream)
+            using (var fileStream = File.Create(fileName)) {
+                await responseStream.CopyToAsync(fileStream);
+            }
+            return fileName;
+
+        }
+
         public async Task<string> RealizarUpload(Stream file, string fileKey)
         {
             var newKey = Helpers.RemoverCaracteresEspeciais(fileKey);
