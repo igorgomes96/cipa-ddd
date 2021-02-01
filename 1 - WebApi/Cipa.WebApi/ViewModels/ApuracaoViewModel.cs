@@ -16,5 +16,6 @@ namespace Cipa.WebApi.ViewModels
         public DateTime? DataNascimento { get; set; }
         public int? InscricaoId { get; set; }
         public string ResultadoApuracao { get; set; }
+        public string Foto { get; set; }
     }
 }

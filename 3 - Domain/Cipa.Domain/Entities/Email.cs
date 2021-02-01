@@ -62,12 +62,19 @@ namespace Cipa.Domain.Entities
                     IsBodyHtml = true,
                     Body = MensagemEstilizada
                 };
+
+                if (!string.IsNullOrWhiteSpace(emailConfiguration.Alias) && emailConfiguration.UserName != emailConfiguration.Alias)
+                {
+                    mailMessage.From = new MailAddress(emailConfiguration.Alias);
+                    mailMessage.Headers.Add("Sender", emailConfiguration.Alias);
+                }
                 DestinatariosLista.ToList().ForEach(to => mailMessage.To.Add(to));
                 CopiasLista.ToList().ForEach(cc => mailMessage.CC.Add(cc));
                 using (SmtpClient smtp = new SmtpClient(emailConfiguration.Host, emailConfiguration.Port))
                 {
                     //IMPORTANT: Your smtp login email MUST be same as your FROM address. 
                     NetworkCredential credentials = new NetworkCredential(emailConfiguration.UserName, emailConfiguration.Password);
+                    smtp.EnableSsl = true;
                     smtp.Credentials = credentials;
                     smtp.Send(mailMessage);
                 }
@@ -125,7 +132,7 @@ namespace Cipa.Domain.Entities
                         + Assunto.Replace("[CIPA] ", "") +
             @"      </div>
                     <div class=""conteudo"">"
-                        + Mensagem + 
+                        + Mensagem +
             @"      </div>
                 </div>
             </body>";

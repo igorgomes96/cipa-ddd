@@ -1,42 +1,23 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Cipa.Application.Helpers;
 using Cipa.Application.Interfaces;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Application.Repositories;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Cipa.Application
 {
     public class ArquivoAppService : AppServiceBase<Arquivo>, IArquivoAppService
     {
-        private const string PATH_DOCUMENTOS = @"StaticFiles\Documentos\";
         public ArquivoAppService(IUnitOfWork unitOfWork) : base(unitOfWork, unitOfWork.ArquivoRepository)
-        {
-
-        }
+        { }
 
         public IEnumerable<Arquivo> BuscaArquivos(DependencyFileType dependency, int id) =>
             (_repositoryBase as IArquivoRepository).BuscaArquivos(dependency, id);
 
-        public override Arquivo Excluir(int id)
-        {
-            var arquivo = base.BuscarPeloId(id);
-            if (arquivo == null) throw new NotFoundException("Arquivo não encontrado.");
-            return Excluir(arquivo);
-        }
-
-        public override Arquivo Excluir(Arquivo arquivo)
-        {
-            if (!string.IsNullOrWhiteSpace(arquivo.Path))
-            {
-                string file = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), arquivo.Path);
-                if (File.Exists(file))
-                    File.Delete(file);
-            }
-            return base.Excluir(arquivo);
-        }
 
         public void ExcluiArquivos(DependencyFileType dependency, int id)
         {
@@ -45,27 +26,20 @@ namespace Cipa.Application
                 Excluir(arquivo);
         }
 
-        private string GetRelativePath(DependencyFileType dependencyType, int dependencyId)
+        public async Task<Arquivo> SalvarArquivo(Stream file, DependencyFileType dependencyType, int dependencyId, string emailUsuario, string nomeUsuario, string nomeArquivo, string contentType)
         {
-            return $@"{PATH_DOCUMENTOS}{dependencyType.ToString().ToLower()}\{dependencyId.ToString()}";
-        }
-
-
-        public Arquivo SalvarArquivo(DependencyFileType dependencyType, int dependencyId, string emailUsuario, string nomeUsuario, byte[] arquivo, string nomeArquivo, string contentType)
-        {
-            string relativePath = GetRelativePath(dependencyType, dependencyId);
-            string path = FileSystemHelpers.GetAbsolutePath(relativePath);
-
-            Directory.CreateDirectory(path);
-            string file = FileSystemHelpers.GetRelativeFileName(path, nomeArquivo);
-            File.WriteAllBytes(file, arquivo);
-
+            var arquivosExistentes = _unitOfWork.ArquivoRepository.BuscaArquivos(dependencyType, dependencyId);
+            if (arquivosExistentes.Any(a => a.Nome == nomeArquivo))
+                throw new DuplicatedException("Já há um arquivo salvo com esse nome.");
+                
             var novoArquivo = new Arquivo(
-                Path.Combine(relativePath, Path.GetFileName(file)), nomeArquivo, new FileInfo(file).Length,
-                contentType, emailUsuario, nomeUsuario, dependencyType, dependencyId
+                nomeArquivo, file.Length, contentType, emailUsuario,
+                nomeUsuario, dependencyType, dependencyId
             );
-
-            return base.Adicionar(novoArquivo);
+            var arquivoSalvo = await _unitOfWork.ArquivoRepository.Adicionar(novoArquivo, file);
+            _unitOfWork.Commit();
+            return arquivoSalvo;
         }
+
     }
 }

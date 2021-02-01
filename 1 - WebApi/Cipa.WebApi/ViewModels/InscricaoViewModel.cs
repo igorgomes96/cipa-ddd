@@ -16,6 +16,8 @@ namespace Cipa.WebApi.ViewModels
         public DateTime? HorarioAprovacao { get; set; }
         public DateTime HorarioInscricao { get; set; }
         public EleitorViewModel Eleitor { get; set; }
+        public string Foto { get; set; }
+
 
     }
 }

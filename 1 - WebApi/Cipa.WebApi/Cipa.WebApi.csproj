@@ -4,7 +4,7 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\3 - Domain\Cipa.Domain\Cipa.Domain.csproj" />
-        <ProjectReference Include="..\..\4 - Infra\4.2 - Data\Cipa.Infra.Data\Cipa.Infra.Data.csproj" />
+        <ProjectReference Include="..\..\4 - Infra\Cipa.Infra.Data\Cipa.Infra.Data.csproj" />
         <ProjectReference Include="..\..\2 - Application\Cipa.Application\Cipa.Application.csproj" />
     </ItemGroup>
     <ItemGroup>

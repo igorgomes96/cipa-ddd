@@ -124,7 +124,7 @@ namespace Cipa.Application
                     ColunasArquivo.Email, 0,
                     $"Há {dic.Value} linhas no arquivo com o e-mail {dic.Key}."));
 
-        public void RealizarImportacaoEmBrackground()
+        public async Task RealizarImportacaoEmBrackground()
         {
             Importacao importacao = (_repositoryBase as IImportacaoRepository).BuscarPrimeiraImportacaoPendenteDaFila();
             if (importacao == null) return;
@@ -132,7 +132,7 @@ namespace Cipa.Application
             {
                 importacao.IniciarProcessamento();
                 base.Atualizar(importacao);
-                var arquivoImportacao = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), importacao.Arquivo.Path);
+                var arquivoImportacao = await _unitOfWork.ArquivoRepository.RealizarDownloadArquivo(importacao.Arquivo);
                 var dataTable = _excelService.LerTabela(arquivoImportacao, LINHA_INICIAL_ARQUIVO, 10);
                 var inconsistencias = ValidarFormatoDataTable(dataTable, importacao.Arquivo.EmailUsuario);
 

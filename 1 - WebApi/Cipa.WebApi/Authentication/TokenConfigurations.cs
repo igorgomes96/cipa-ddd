@@ -1,5 +1,6 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Cipa.WebApi.Authentication
 {
@@ -15,15 +16,12 @@ namespace Cipa.WebApi.Authentication
         public SecurityKey Key { get; }
         public SigningCredentials SigningCredentials { get; }
 
-        public SigningConfigurations()
+        public SigningConfigurations(string plainKey)
         {
-            using (var provider = new RSACryptoServiceProvider(2048))
-            {
-                Key = new RsaSecurityKey(provider.ExportParameters(true));
-            }
+            Key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(plainKey));
 
             SigningCredentials = new SigningCredentials(
-                Key, SecurityAlgorithms.RsaSha256Signature);
+                Key, SecurityAlgorithms.HmacSha256Signature);
         }
     }
 }

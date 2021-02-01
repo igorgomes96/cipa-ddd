@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Cipa.WebApi.Controllers
 {
@@ -130,20 +131,18 @@ namespace Cipa.WebApi.Controllers
 
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPost("{id}/cronograma/{etapaId}/arquivos"), DisableRequestSizeLimit]
-        public ActionResult UploadArquivos(int id, int etapaId)
+        public async Task<ActionResult> UploadArquivos(int id, int etapaId)
         {
             if (Request.Form.Files == null || Request.Form.Files.Count == 0)
                 return BadRequest("Nenhum arquivo foi enviado.");
             foreach (var formFile in Request.Form.Files)
             {
                 var fileName = formFile.FileName;
-                byte[] arquivo = null;
                 using (var ms = new MemoryStream())
                 {
                     formFile.CopyTo(ms);
-                    arquivo = ms.ToArray();
+                    await _eleicaoAppService.FazerUploadArquivo(id, etapaId, UsuarioId, ms, fileName, formFile.ContentType);
                 }
-                _eleicaoAppService.FazerUploadArquivo(id, etapaId, UsuarioId, arquivo, fileName, formFile.ContentType);
             }
             return Ok();
         }
@@ -237,7 +236,7 @@ namespace Cipa.WebApi.Controllers
         }
 
         [HttpPost("{id}/inscricoes/foto"), DisableRequestSizeLimit]
-        public ActionResult<InscricaoViewModel> PostAtualizaFotoInscricao(int id)
+        public async Task<ActionResult<InscricaoViewModel>> PostAtualizaFotoInscricao(int id)
         {
             if (Request.Form.Files == null || Request.Form.Files.Count == 0)
                 return BadRequest("Nenhuma foto foi enviada.");
@@ -247,13 +246,11 @@ namespace Cipa.WebApi.Controllers
 
             var formFile = Request.Form.Files.First();
             var fileName = formFile.FileName;
-            byte[] foto = null;
             using (var ms = new MemoryStream())
             {
                 formFile.CopyTo(ms);
-                foto = ms.ToArray();
+                return _mapper.Map<InscricaoViewModel>(await _eleicaoAppService.AtualizarFotoInscricao(id, UsuarioId, ms, fileName));
             }
-            return _mapper.Map<InscricaoViewModel>(_eleicaoAppService.AtualizarFotoInscricao(id, UsuarioId, foto, fileName));
         }
 
         [HttpGet("{id}/inscricoes/{inscricaoId}/foto")]
@@ -335,7 +332,7 @@ namespace Cipa.WebApi.Controllers
 
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         [HttpPost("{id}/importacoes"), DisableRequestSizeLimit]
-        public ActionResult<ImportacaoViewModel> ImportarFuncionarios(int id)
+        public async Task<ActionResult<ImportacaoViewModel>> ImportarFuncionarios(int id)
         {
             if (Request.Form.Files == null || Request.Form.Files.Count == 0)
                 return BadRequest("Nenhum arquivo foi enviado.");
@@ -345,14 +342,13 @@ namespace Cipa.WebApi.Controllers
 
             var formFile = Request.Form.Files.First();
             var fileName = formFile.FileName;
-            byte[] arquivo = null;
             using (var ms = new MemoryStream())
             {
                 formFile.CopyTo(ms);
-                arquivo = ms.ToArray();
+                return _mapper.Map<ImportacaoViewModel>(await _eleicaoAppService
+                    .ImportarEleitores(id, UsuarioId, ms, fileName, formFile.ContentType));
             }
-            return _mapper.Map<ImportacaoViewModel>(_eleicaoAppService
-                .ImportarEleitores(id, UsuarioId, arquivo, fileName, formFile.ContentType));
+            
         }
         #endregion
 

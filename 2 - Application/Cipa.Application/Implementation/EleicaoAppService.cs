@@ -13,6 +13,7 @@ using System.Data;
 using Cipa.Application.Services.Interfaces;
 using System;
 using Cipa.Domain.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace Cipa.Application
 {
@@ -22,8 +23,8 @@ namespace Cipa.Application
         private readonly IFormatadorEmailServiceFactory _formatadorFactory;
         private readonly EmailConfiguration _emailConfiguration;
         private readonly IExcelService _excelService;
-        private const string PATH_FOTOS = @"StaticFiles\Fotos\";
-        private const string PATH_RELATORIOS = @"StaticFiles\Relatorios\";
+        private const string PATH_FOTOS = @"fotos/";
+        private const string PATH_RELATORIOS = @"StaticFiles/Relatorios/";
 
         public EleicaoAppService(
             IUnitOfWork unitOfWork,
@@ -365,7 +366,7 @@ namespace Cipa.Application
             return eleicao.Cronograma;
         }
 
-        public Inscricao AtualizarFotoInscricao(int eleicaoId, int usuarioId, byte[] foto, string fotoFileName)
+        public async Task<Inscricao> AtualizarFotoInscricao(int eleicaoId, int usuarioId, Stream file, string fotoFileName)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
@@ -373,34 +374,15 @@ namespace Cipa.Application
             var inscricao = eleicao.BuscarEleitorPeloUsuarioId(usuarioId)?.Inscricao;
             if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
 
-            string relativePath = $@"{PATH_FOTOS}{eleicaoId.ToString()}";
-            string absolutePath = @FileSystemHelpers.GetAbsolutePath(relativePath);
-            string tempPath = FileSystemHelpers.GetAbsolutePath($@"{relativePath}/temp");
-
-            if (!Directory.Exists(absolutePath))
-                Directory.CreateDirectory(absolutePath);
-
-            if (!Directory.Exists(tempPath))
-                Directory.CreateDirectory(tempPath);
-
-            // Salva a imagem original
-            string originalFileName = @FileSystemHelpers.GetAbsolutePath(FileSystemHelpers.GetRelativeFileName(tempPath, fotoFileName));
-            File.WriteAllBytes(originalFileName, foto);
-
-            // Converte para JPEG, com 80% da qualidade
-            string destinationFileName = FileSystemHelpers.GetRelativeFileName(relativePath, Path.ChangeExtension(fotoFileName, ".jpeg"));
-            ImageHelpers.SalvarImagemJPEG(originalFileName, @FileSystemHelpers.GetAbsolutePath(destinationFileName), 80);
-
-            // Exclui o arquivo orginal
-            File.Delete(originalFileName);
-
-            if (!string.IsNullOrWhiteSpace(inscricao.Foto))
-            {
-                var fotoAnterior = FileSystemHelpers.GetAbsolutePath(inscricao.Foto);
-                if (File.Exists(fotoAnterior)) File.Delete(FileSystemHelpers.GetAbsolutePath(inscricao.Foto));
-            }
-            inscricao.Foto = destinationFileName;
+            var fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{Path.GetExtension(fotoFileName)}";
+            var fileKey = $@"{PATH_FOTOS}{eleicaoId.ToString()}/{fileName}"; 
+            var fotoAnterior = inscricao.Foto;
+            inscricao.Foto = await _unitOfWork.ArquivoRepository.RealizarUpload(file, fileKey);
             base.Atualizar(eleicao);
+
+            if (!string.IsNullOrWhiteSpace(fotoAnterior)) {
+                _unitOfWork.ArquivoRepository.ExluirArquivoNuvem(fotoAnterior);
+            }
             return inscricao;
         }
 
@@ -430,7 +412,7 @@ namespace Cipa.Application
             }
         }
 
-        public Importacao ImportarEleitores(int eleicaoId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType)
+        public async Task<Importacao> ImportarEleitores(int eleicaoId, int usuarioId, Stream file, string nomeArquivo, string contentType)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
@@ -438,9 +420,9 @@ namespace Cipa.Application
             var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
             if (usuario == null) throw new CustomException("Usuário inválido!");
 
-            var arquivo = _arquivoAppService.SalvarArquivo(
-                DependencyFileType.Importacao, eleicao.Id, usuario.Email, usuario.Nome,
-                conteudoArquivo, nomeArquivo, contentType);
+            var arquivo = await _arquivoAppService.SalvarArquivo(
+                file, DependencyFileType.Importacao, eleicao.Id,
+                usuario.Email, usuario.Nome, Guid.NewGuid().ToString().Replace("-", "") + Path.GetExtension(nomeArquivo), contentType);
 
             ValidaFormatoPlanilha(arquivo.Path);
 
@@ -450,7 +432,7 @@ namespace Cipa.Application
             return importacao;
         }
 
-        public Arquivo FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, byte[] conteudoArquivo, string nomeArquivo, string contentType)
+        public async Task<Arquivo> FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, Stream file, string nomeArquivo, string contentType)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
@@ -458,9 +440,8 @@ namespace Cipa.Application
             var usuario = _unitOfWork.UsuarioRepository.BuscarPeloId(usuarioId);
             if (usuario == null) throw new CustomException("Usuário inválido!");
 
-            return _arquivoAppService.SalvarArquivo(
-                DependencyFileType.DocumentoCronograma, etapaId, usuario.Email, usuario.Nome,
-                conteudoArquivo, nomeArquivo, contentType);
+            return await _arquivoAppService.SalvarArquivo(
+                file, DependencyFileType.DocumentoCronograma, etapaId, usuario.Email, usuario.Nome, nomeArquivo, contentType);
         }
 
         public void AtualizarCronogramas()

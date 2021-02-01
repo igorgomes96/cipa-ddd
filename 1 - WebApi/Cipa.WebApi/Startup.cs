@@ -47,7 +47,7 @@ namespace Cipa.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddAWSServices(Configuration);
             services.AddDbContext<CipaContext>(options =>
             {
                 options.UseLazyLoadingProxies();
@@ -55,7 +55,7 @@ namespace Cipa.WebApi
                     b => b.MigrationsAssembly("Cipa.WebApi"));
             });
 
-            var signingConfigurations = new SigningConfigurations();
+            var signingConfigurations = new SigningConfigurations(Configuration.GetSection("TokenConfigurations:Secret").Value);
             services.AddSingleton(signingConfigurations);
 
             var tokenConfigurations = new TokenConfigurations();
@@ -173,7 +173,9 @@ namespace Cipa.WebApi
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("importacaofinalizada", mapper.Map<FinalizacaoImportacaoStatusViewModel>(args));
             };
 
+            #if !DEBUG
             app.UseHttpsRedirection();
+            #endif
             app.UseResponseCompression();
             app.UseDefaultFiles();
             app.UseStaticFiles();
