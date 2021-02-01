@@ -95,10 +95,10 @@ namespace Cipa.WebApi
             AddDependencies(services);
 
             services.AddCors(options => options.AddPolicy("AllowAll", builder => builder
-                .AllowAnyMethod()
-                .AllowAnyHeader()
+                .WithMethods("DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT ")
+                .WithHeaders("Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key", "X-Amz-Security-Token", "X-Requested-With")
                 .AllowCredentials()
-                .WithOrigins("http://localhost:4200")));
+                .WithOrigins("http://localhost:4200", "https://cipa.4uptech.com.br")));
 
             services.AddHostedService<ImportacaoHostedService>();
             services.AddHostedService<EmailHostedService>();
