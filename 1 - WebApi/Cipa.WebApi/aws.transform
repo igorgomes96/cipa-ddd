@@ -10,7 +10,7 @@
             <conditions>
               <add input="{HTTPS}" pattern="off" ignoreCase="true" />
             </conditions>
-            <action type="Redirect" url="https://cipa.solucoesti.online{REQUEST_URI}" redirectType="Permanent" appendQueryString="false" />
+            <action type="Redirect" url="https://cipa.4uptech.com.br{REQUEST_URI}" redirectType="Permanent" appendQueryString="false" />
           </rule>
           <rule name="wwwroot-static-font" stopProcessing="true">
             <match url="([\S]+[.](woff2))" />

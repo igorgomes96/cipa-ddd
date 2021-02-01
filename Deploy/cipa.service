@@ -1,0 +1,22 @@
+[Unit]
+Description=Servioo da CIPA
+ 
+[Service]
+WorkingDirectory=/var/www/cipa
+ExecStart=/usr/bin/dotnet /var/www/cipa/Cipa.WebApi.dll
+Restart=always
+# Restart service after 10 seconds if the dotnet service crashes:
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=cipa
+User=ec2-user
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+ 
+# How many seconds to wait for the app to shut down after it receives the initial interrupt signal. 
+# If the app doesn't shut down in this period, SIGKILL is issued to terminate the app. 
+# The default timeout for most distributions is 90 seconds.
+TimeoutStopSec=90
+ 
+[Install]
+WantedBy=multi-user.target
