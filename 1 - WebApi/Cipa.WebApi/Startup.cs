@@ -161,7 +161,7 @@ namespace Cipa.WebApi
 
             app.UseHttpErrorMiddleware();
 
-            app.UseHsts();
+            // app.UseHsts();
 
             notificacaoProgressoEvent.NotificacaoProgresso += (object sender, ProgressoImportacaoEventArgs args) =>
             {
@@ -173,9 +173,6 @@ namespace Cipa.WebApi
                 hubContext.Clients.User(args.EmailUsuario).SendAsync("importacaofinalizada", mapper.Map<FinalizacaoImportacaoStatusViewModel>(args));
             };
 
-            #if !DEBUG
-            app.UseHttpsRedirection();
-            #endif
             app.UseResponseCompression();
             app.UseDefaultFiles();
             app.UseStaticFiles();
