@@ -183,7 +183,7 @@ namespace Cipa.WebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<ProgressHub>("/api/hub");
+                endpoints.MapHub<ProgressHub>("/api/signalr");
             });
         }
 
