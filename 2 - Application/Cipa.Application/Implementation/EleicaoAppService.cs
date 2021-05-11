@@ -53,11 +53,15 @@ namespace Cipa.Application
             if (grupo == null)
                 throw new NotFoundException($"Grupo {eleicao.GrupoId} não encontrado.");
 
+            var conta = _unitOfWork.ContaRepository.BuscarPeloId(eleicao.ContaId);
+            if (conta == null)
+                throw new NotFoundException($"Conta {eleicao.ContaId} não encontrada.");
+
             var novaEleicao = new Eleicao(
                 eleicao.DataInicio,
                 eleicao.DuracaoGestao,
                 eleicao.TerminoMandatoAnterior,
-                usuario, estabelecimento, grupo);
+                usuario, estabelecimento, grupo, conta);
             novaEleicao.GerarCronograma();
 
             return base.Adicionar(novaEleicao);

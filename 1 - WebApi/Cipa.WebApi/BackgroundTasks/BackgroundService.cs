@@ -63,9 +63,9 @@ namespace Cipa.WebApi.BackgroundTasks
             {
                 try
                 {
-                    _logger.LogInformation($"Tarefa em backgound sendo processada: {this.GetType().Name}.");
+                    _logger.LogDebug($"Tarefa em backgound sendo processada: {this.GetType().Name}.");
                     await Process();
-                    _logger.LogInformation($"Tarefa executada com sucesso: {this.GetType().Name}.");
+                    _logger.LogDebug($"Tarefa executada com sucesso: {this.GetType().Name}.");
                     await Task.Delay(Delay, stoppingToken);
                 }
                 catch (Exception ex)

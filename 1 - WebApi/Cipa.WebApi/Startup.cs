@@ -141,6 +141,7 @@ namespace Cipa.WebApi
                 loggingBuilder.AddConfiguration(Configuration.GetSection("Logging"));
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddDebug();
+                loggingBuilder.AddAWSProvider(Configuration.GetAWSLoggingConfigSection());
             });
             services.AddRouting();
             services.AddSignalR();

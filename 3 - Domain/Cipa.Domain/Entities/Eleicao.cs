@@ -15,7 +15,17 @@ namespace Cipa.Domain.Entities
             DateTime? terminoMandatoAnterior,
             Usuario usuarioCriacao,
             Estabelecimento estabelecimento,
-            Grupo grupo)
+            Grupo grupo) : this(dataInicio, duracaoGestao, terminoMandatoAnterior, usuarioCriacao, estabelecimento, grupo, usuarioCriacao?.Conta)
+        { }
+
+        public Eleicao(
+            DateTime dataInicio,
+            int duracaoGestao,
+            DateTime? terminoMandatoAnterior,
+            Usuario usuarioCriacao,
+            Estabelecimento estabelecimento,
+            Grupo grupo,
+            Conta conta)
         {
             DataInicio = dataInicio.Date;
             DuracaoGestao = duracaoGestao;
@@ -27,7 +37,7 @@ namespace Cipa.Domain.Entities
                 throw new CustomException($"Existe uma eleição aberta para este estabelecimento.");
             Usuario = usuarioCriacao ?? throw new CustomException("O usuário de criação deve ser informado.");
             _grupo = grupo ?? estabelecimento.Grupo ?? throw new CustomException("O grupo deve ser informado.");
-            Conta = usuarioCriacao.Conta ?? throw new CustomException("O usuário de criação da eleição deve estar vinculado à uma conta.");
+            Conta = conta ?? throw new CustomException("O usuário de criação da eleição deve estar vinculado à uma conta.");;
             _dimensionamento = new Dimensionamento(0, 0, 0, 0);
             Configuracao = new ConfiguracaoEleicao(true, true, true);
         }
