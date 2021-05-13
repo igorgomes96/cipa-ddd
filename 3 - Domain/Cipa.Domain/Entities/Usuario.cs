@@ -14,7 +14,7 @@ namespace Cipa.Domain.Entities
             Nome = nome;
             Cargo = cargo;
             CodigoRecuperacao = Guid.NewGuid();
-            ExpiracaoCodigoRecuperacao = DateTime.Now.AddDays(1);
+            ExpiracaoCodigoRecuperacao = DateTime.Now.HorarioBrasilia().AddDays(1);
             Perfil = Cipa.Domain.Helpers.PerfilUsuario.Eleitor;
         }
         public string Email { get; set; }
@@ -58,7 +58,7 @@ namespace Cipa.Domain.Entities
             if (codigoRecuperacao != CodigoRecuperacao)
                 throw new CustomException("Código de recuperação inválido.");
 
-            if (ExpiracaoCodigoRecuperacao.HasValue && DateTime.Now > ExpiracaoCodigoRecuperacao)
+            if (ExpiracaoCodigoRecuperacao.HasValue && DateTime.Now.HorarioBrasilia() > ExpiracaoCodigoRecuperacao)
                 throw new CustomException("Código de recuperação expirado.");
 
             CodigoRecuperacao = null;
@@ -69,7 +69,7 @@ namespace Cipa.Domain.Entities
         public void ResetarSenha()
         {
             CodigoRecuperacao = Guid.NewGuid();
-            ExpiracaoCodigoRecuperacao = DateTime.Now.AddDays(1);
+            ExpiracaoCodigoRecuperacao = DateTime.Now.HorarioBrasilia().AddDays(1);
             Senha = null;
         }
     }

@@ -1,5 +1,6 @@
 using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
+using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -348,7 +349,7 @@ namespace Cipa.Domain.Entities
             try
             {
                 ValidarMudancaEtapa();
-                var data = DateTime.Today;
+                var data = DateTime.Now.HorarioBrasilia().Date;
                 var proximaEtapa = EtapaPosterior;
                 if (EtapaAtual != null)
                 {
@@ -366,7 +367,7 @@ namespace Cipa.Domain.Entities
                 }
                 else // Eleição finalizada
                 {
-                    DataFinalizacao = DateTime.Now;
+                    DataFinalizacao = DateTime.Now.HorarioBrasilia();
                 }
             }
             catch (Exception ex)

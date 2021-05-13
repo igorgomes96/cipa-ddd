@@ -57,11 +57,11 @@ namespace Cipa.Domain.Helpers
         {
             try
             {
-                return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(data, TimeZoneInfo.Local.Id, FusosHorarios.Brasilia);
+                return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(data, TimeZoneInfo.Local.Id, "America/Sao_Paulo");
             }
             catch
             {
-                return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(data, TimeZoneInfo.Local.Id, "America/Sao_Paulo");
+                return TimeZoneInfo.ConvertTimeBySystemTimeZoneId(data, TimeZoneInfo.Local.Id, FusosHorarios.Brasilia);
             }
         }
 

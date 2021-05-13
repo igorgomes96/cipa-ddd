@@ -255,7 +255,7 @@ namespace Cipa.Domain.Test.Entities
         public void EtapaAnterior_PrimeiraEtapa_RetornaNull()
         {
             var eleicao = CriarEleicao();
-            var retorno = eleicao.RetonarEtapaAnterior(new EtapaCronograma("Etapa", null, 1, eleicao.Id, DateTime.Today, null));
+            var retorno = eleicao.RetonarEtapaAnterior(new EtapaCronograma("Etapa", null, 1, eleicao.Id, DateTime.Now.HorarioBrasilia().Date, null));
             Assert.Null(retorno);
         }
 
@@ -263,7 +263,7 @@ namespace Cipa.Domain.Test.Entities
         public void EtapaAnterior_EtapaDiferenteDaPrimeira_RetornaEtapa()
         {
             var eleicao = CriarEleicao();
-            var retorno = eleicao.RetonarEtapaAnterior(new EtapaCronograma("Etapa", null, 2, eleicao.Id, DateTime.Today, null));
+            var retorno = eleicao.RetonarEtapaAnterior(new EtapaCronograma("Etapa", null, 2, eleicao.Id, DateTime.Now.HorarioBrasilia().Date, null));
             Assert.Equal(1, retorno.Ordem);
             Assert.Equal(ECodigoEtapaObrigatoria.Convocacao, retorno.EtapaObrigatoriaId);
         }
@@ -274,7 +274,7 @@ namespace Cipa.Domain.Test.Entities
             var eleicao = CriarEleicao();
             for (int i = 0; i < eleicao.Cronograma.Count; i++)
                 eleicao.PassarParaProximaEtapa();
-            var retorno = eleicao.RetornarEtapaPosterior(new EtapaCronograma("Etapa", null, 4, eleicao.Id, DateTime.Today, null));
+            var retorno = eleicao.RetornarEtapaPosterior(new EtapaCronograma("Etapa", null, 4, eleicao.Id, DateTime.Now.HorarioBrasilia().Date, null));
             Assert.Null(retorno);
         }
 
@@ -282,7 +282,7 @@ namespace Cipa.Domain.Test.Entities
         public void EtapaPosterior_EtapaDiferenteDaUltima_RetornaEtapa()
         {
             var eleicao = CriarEleicao();
-            var retorno = eleicao.RetornarEtapaPosterior(new EtapaCronograma("Etapa", null, 1, eleicao.Id, DateTime.Today, null));
+            var retorno = eleicao.RetornarEtapaPosterior(new EtapaCronograma("Etapa", null, 1, eleicao.Id, DateTime.Now.HorarioBrasilia().Date, null));
             Assert.Equal(2, retorno.Ordem);
             Assert.Equal(ECodigoEtapaObrigatoria.Inscricao, retorno.EtapaObrigatoriaId);
         }
@@ -291,7 +291,7 @@ namespace Cipa.Domain.Test.Entities
         public void DataTerminoEtapa_EtapaNaoEncontrada_ThrowsException()
         {
             var eleicao = CriarEleicao();
-            var exception = Assert.Throws<CustomException>(() => eleicao.DataTerminoEtapa(new EtapaCronograma("Etapa", null, 5, eleicao.Id, DateTime.Today, null)));
+            var exception = Assert.Throws<CustomException>(() => eleicao.DataTerminoEtapa(new EtapaCronograma("Etapa", null, 5, eleicao.Id, DateTime.Now.HorarioBrasilia().Date, null)));
             Assert.Equal("Etapa não encontrada.", exception.Message);
         }
 
@@ -300,8 +300,8 @@ namespace Cipa.Domain.Test.Entities
         {
             var eleicao = CriarEleicao();
             FinalizarEleicao(eleicao);
-            var retorno = eleicao.DataTerminoEtapa(new EtapaCronograma("Etapa", null, 4, eleicao.Id, DateTime.Today, null));
-            Assert.InRange(retorno, DateTime.Now.AddSeconds(-1), DateTime.Now.AddSeconds(1));
+            var retorno = eleicao.DataTerminoEtapa(new EtapaCronograma("Etapa", null, 4, eleicao.Id, DateTime.Now.HorarioBrasilia().Date, null));
+            Assert.InRange(retorno, DateTime.Now.HorarioBrasilia().AddSeconds(-1), DateTime.Now.HorarioBrasilia().AddSeconds(1));
         }
 
         [Fact]
@@ -323,7 +323,7 @@ namespace Cipa.Domain.Test.Entities
         public void AtualizarCronograma_EtapaNaoEncontrada_ThrowsNotFoundException()
         {
             var eleicao = CriarEleicao();
-            var etapa = new EtapaCronograma("Etapa 5", null, 5, 1, DateTime.Today, ECodigoEtapaObrigatoria.Convocacao);
+            var etapa = new EtapaCronograma("Etapa 5", null, 5, 1, DateTime.Now.HorarioBrasilia().Date, ECodigoEtapaObrigatoria.Convocacao);
 
             var exception = Assert.Throws<NotFoundException>(() => eleicao.AtualizarCronograma(etapa));
             Assert.Equal("Etapa não encontrada no cronograma.", exception.Message);
@@ -636,23 +636,23 @@ namespace Cipa.Domain.Test.Entities
         public static object[][] InlineDataCronograma = new object[][] {
             new object[] {
                 1, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura,
-                DateTime.Today, null, null, null, null
+                DateTime.Now.HorarioBrasilia().Date, null, null, null, null
             },
             new object[] {
                 2, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura,
-                DateTime.Today, DateTime.Today, null, null, null
+                DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, null, null, null
             },
             new object[] {
                 3, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura,
-                DateTime.Today, DateTime.Today, DateTime.Today, null, null
+                DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, null, null
             },
             new object[] {
                 4, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Atual,
-                DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Today, null
+                DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, null
             },
              new object[] {
                 5, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada, EPosicaoEtapa.Passada,
-                DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Today, DateTime.Now
+                DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia().Date, DateTime.Now.HorarioBrasilia()
             }
         };
         [Theory, MemberData(nameof(InlineDataCronograma))]
@@ -731,7 +731,7 @@ namespace Cipa.Domain.Test.Entities
             }
             else
             {
-                Assert.InRange(eleicao.DataFinalizacao.Value, DateTime.Now.AddSeconds(-1), DateTime.Now.AddSeconds(1));
+                Assert.InRange(eleicao.DataFinalizacao.Value, DateTime.Now.HorarioBrasilia().AddSeconds(-1), DateTime.Now.HorarioBrasilia().AddSeconds(1));
             }
         }
 

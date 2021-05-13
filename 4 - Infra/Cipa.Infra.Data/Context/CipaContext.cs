@@ -1,4 +1,5 @@
 using Cipa.Domain.Entities;
+using Cipa.Domain.Helpers;
 using Cipa.Infra.Data.EntityConfig;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -35,7 +36,7 @@ namespace Cipa.Infra.Data.Context
             modelBuilder.ApplyConfiguration(new ArquivoConfiguration());
             modelBuilder.ApplyConfiguration(new ImportacaoConfiguration());
             modelBuilder.ApplyConfiguration(new InconsistenciaConfiguration());
-            modelBuilder.ApplyConfiguration(new EmailConfiguration());
+            modelBuilder.ApplyConfiguration(new Cipa.Infra.Data.EntityConfig.EmailConfiguration());
             modelBuilder.ApplyConfiguration(new ProcessamentoEtapaConfiguration());
             modelBuilder.ApplyConfiguration(new TemplateEmailConfiguration());
             modelBuilder.Seed();
@@ -73,7 +74,7 @@ namespace Cipa.Infra.Data.Context
             foreach (var entry in ChangeTracker.Entries().Where(entry => entry.Entity.GetType().GetProperty("DataCadastro") != null))
             {
                 if (entry.State == EntityState.Added)
-                    entry.Property("DataCadastro").CurrentValue = DateTime.Now;
+                    entry.Property("DataCadastro").CurrentValue = DateTime.Now.HorarioBrasilia();
                 if (entry.State == EntityState.Modified)
                     entry.Property("DataCadastro").IsModified = false;
             }

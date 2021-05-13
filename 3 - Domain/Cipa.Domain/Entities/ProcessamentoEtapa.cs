@@ -13,7 +13,7 @@ namespace Cipa.Domain.Entities
         public ProcessamentoEtapa()
         {  // Entity Framework
             StatusProcessamentoEtapa = EStatusProcessamentoEtapa.Pendente;
-            HorarioMudancaEtapa = DateTime.Now;
+            HorarioMudancaEtapa = DateTime.Now.HorarioBrasilia();
         }
 
         public ProcessamentoEtapa(Eleicao eleicao, EtapaCronograma etapaCronograma, EtapaCronograma etapaCronogramaAnterior)
@@ -24,7 +24,7 @@ namespace Cipa.Domain.Entities
             EtapaCronogramaAnteriorId = etapaCronogramaAnterior?.Id;
             Eleicao = eleicao;
             StatusProcessamentoEtapa = EStatusProcessamentoEtapa.Pendente;
-            HorarioMudancaEtapa = DateTime.Now;
+            HorarioMudancaEtapa = DateTime.Now.HorarioBrasilia();
         }
 
         public DateTime HorarioMudancaEtapa { get; private set; }
@@ -47,7 +47,7 @@ namespace Cipa.Domain.Entities
 
         private void FinalizarProcessamento(EStatusProcessamentoEtapa statusProcessamentoEtapa, string mensagemErro = null)
         {
-            TerminoProcessamento = DateTime.Now;
+            TerminoProcessamento = DateTime.Now.HorarioBrasilia();
             StatusProcessamentoEtapa = statusProcessamentoEtapa;
             MensagemErro = mensagemErro;
         }

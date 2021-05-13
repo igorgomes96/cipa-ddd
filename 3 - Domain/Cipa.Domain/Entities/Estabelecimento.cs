@@ -1,4 +1,5 @@
 using Cipa.Domain.Exceptions;
+using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,8 +30,8 @@ namespace Cipa.Domain.Entities
 
         public List<Eleicao> EleicoesDoAnoCorrente
         {
-            get => Eleicoes.Where(e => (e.DataFinalizacao.HasValue && e.DataFinalizacao.Value.Year == DateTime.Today.Year) ||
-                e.DataInicio.Year == DateTime.Today.Year).ToList();
+            get => Eleicoes.Where(e => (e.DataFinalizacao.HasValue && e.DataFinalizacao.Value.Year == DateTime.Now.HorarioBrasilia().Date.Year) ||
+                e.DataInicio.Year == DateTime.Now.HorarioBrasilia().Date.Year).ToList();
         }
 
         public List<Eleicao> EleicoesEmAndamento { get => Eleicoes.Where(e => !e.DataFinalizacao.HasValue).ToList(); }

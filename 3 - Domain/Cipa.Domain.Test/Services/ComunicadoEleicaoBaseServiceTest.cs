@@ -78,7 +78,7 @@ namespace Cipa.Domain.Test.Services
 
             var emails = comunicadoEleicao.FormatarEmails();
 
-            var hoje = RetornarDataAbreviada(DateTime.Today);
+            var hoje = RetornarDataAbreviada(DateTime.Now.HorarioBrasilia().Date);
             var mensagemSenhaCadastrada = new StringBuilder();
             mensagemSenhaCadastrada.Append("2020, 2020/2021, No 1º dia do mês de Janeiro de 2020, Soluções TI, ");
             mensagemSenhaCadastrada.Append("inscrita no CNPJ 30.271.795/0001-33, entre os dias 2 de Janeiro de 2020 ");

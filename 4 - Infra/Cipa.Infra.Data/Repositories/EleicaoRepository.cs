@@ -6,6 +6,7 @@ using System.Linq;
 using System;
 using Cipa.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Cipa.Domain.Helpers;
 
 namespace Cipa.Infra.Data.Repositories
 {
@@ -34,7 +35,7 @@ namespace Cipa.Infra.Data.Repositories
 
         public IEnumerable<Eleicao> BuscarEleicoesComMudancaEtapaAgendadaParaHoje()
         {
-            var dataInicio = DateTime.Today.AddDays(-2);  // Intervalo máximo de 2 dias
+            var dataInicio = DateTime.Now.HorarioBrasilia().Date.AddDays(-2);  // Intervalo máximo de 2 dias
             var eleicoesAndamento = _db.Eleicoes
                 .Include(e => e.Cronograma)
                 .Where(e => !e.DataFinalizacao.HasValue)
@@ -42,12 +43,12 @@ namespace Cipa.Infra.Data.Repositories
             return eleicoesAndamento.Where(e =>
                 (e.EtapaAtual == null 
                 && e.Cronograma.All(c => c.PosicaoEtapa == EPosicaoEtapa.Futura)
-                && e.Cronograma.First().DataPrevista.Date <= DateTime.Today
+                && e.Cronograma.First().DataPrevista.Date <= DateTime.Now.HorarioBrasilia().Date
                 && e.Cronograma.First().DataPrevista.Date >= dataInicio)  // Início do Processo
                 ||
                 (e.EtapaAtual != null
                 && string.IsNullOrWhiteSpace(e.EtapaAtual.ErroMudancaEtapa)
-                && e.DataTerminoEtapa(e.EtapaAtual) <= DateTime.Today
+                && e.DataTerminoEtapa(e.EtapaAtual) <= DateTime.Now.HorarioBrasilia().Date
                 && e.DataTerminoEtapa(e.EtapaAtual) >= dataInicio)); // Demais etapas após o início 
         }
 

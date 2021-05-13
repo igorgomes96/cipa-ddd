@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Cipa.Domain.Helpers;
 
 namespace Cipa.Domain.Entities
 {
@@ -65,7 +66,7 @@ namespace Cipa.Domain.Entities
             StatusInscricao = StatusInscricao.Aprovada;
             EmailAprovador = usuarioAprovador.Email;
             NomeAprovador = usuarioAprovador.Nome;
-            HorarioAprovacao = DateTime.Now;
+            HorarioAprovacao = DateTime.Now.HorarioBrasilia();
         }
 
         internal void ReprovarInscricao(Usuario usuarioAprovador, string motivoReprovacao)
