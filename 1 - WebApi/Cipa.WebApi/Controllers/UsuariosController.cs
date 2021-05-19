@@ -39,7 +39,7 @@ namespace Cipa.WebApi.Controllers
             _usuarioAppService.BuscarUsuariosAdministradores().AsQueryable().ProjectTo<UsuarioViewModel>(_mapper.ConfigurationProvider);
 
         [HttpPut("redefinirsenha")]
-        [Authorize(Roles = PerfilUsuario.Administrador)]
+        [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
         public async Task<IActionResult> PutRedefinirSenha(UsuarioRedefinirSenhaViewModel usuario)
         {
             var novaSenha = CryptoService.ComputeSha256Hash(usuario.Senha);
