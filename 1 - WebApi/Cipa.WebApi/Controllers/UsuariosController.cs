@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Cipa.WebApi.Controllers
 {
@@ -36,6 +37,15 @@ namespace Cipa.WebApi.Controllers
         [Authorize(Roles = PerfilUsuario.Administrador)]
         public IEnumerable<UsuarioViewModel> GetUsuariosAdministradores() =>
             _usuarioAppService.BuscarUsuariosAdministradores().AsQueryable().ProjectTo<UsuarioViewModel>(_mapper.ConfigurationProvider);
+
+        [HttpPut("redefinirsenha")]
+        [Authorize(Roles = PerfilUsuario.Administrador)]
+        public async Task<IActionResult> PutRedefinirSenha(UsuarioRedefinirSenhaViewModel usuario)
+        {
+            var novaSenha = CryptoService.ComputeSha256Hash(usuario.Senha);
+            await _usuarioAppService.RedefinirSenha(usuario.Email, novaSenha);
+            return NoContent();
+        }
 
         [HttpGet("logado")]
         public ActionResult<UsuarioViewModel> GetUsuarioLogado() =>
@@ -69,7 +79,7 @@ namespace Cipa.WebApi.Controllers
             return _mapper.Map<UsuarioViewModel>(_usuarioAppService.AdicionarAdministrador(novoUsuario));
         }
 
-        
+
 
         [HttpPut("{id}")]
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]

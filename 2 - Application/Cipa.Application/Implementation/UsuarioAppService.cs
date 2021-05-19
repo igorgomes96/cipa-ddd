@@ -8,6 +8,7 @@ using Cipa.Application.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Cipa.Application
 {
@@ -153,6 +154,11 @@ namespace Cipa.Application
             if (usuario == null) throw new NotFoundException("Usuário não encontrado.");
 
             return usuario;
+        }
+
+        public async Task RedefinirSenha(string email, string novaSenha)
+        {
+            await (_repositoryBase as IUsuarioRepository).ResetarSenha(email, novaSenha);
         }
     }
 }

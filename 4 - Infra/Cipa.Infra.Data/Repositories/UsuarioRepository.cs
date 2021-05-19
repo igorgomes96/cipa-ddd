@@ -5,12 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cipa.Domain.Helpers;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using System.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
 namespace Cipa.Infra.Data.Repositories
 {
     public class UsuarioRepository : RepositoryBase<Usuario>, IUsuarioRepository
     {
-        public UsuarioRepository(CipaContext db) : base(db) { }
+        private ILogger<UsuarioRepository> logger;
+        public UsuarioRepository(CipaContext db, ILogger<UsuarioRepository> logger) : base(db)
+        {
+            this.logger = logger;
+        }
 
         public Usuario BuscarUsuario(string email, string senha)
         {
@@ -35,6 +43,20 @@ namespace Cipa.Infra.Data.Repositories
         public IEnumerable<Usuario> BuscarUsuariosPelaConta(int contaId)
         {
             return DbSet.Where(u => u.ContaId == contaId);
+        }
+
+        public async Task ResetarSenha(string email, string senha)
+        {
+            try
+            {
+                var sql = "update Usuarios set Senha = {0} where Email = {1};";
+                await _db.Database.ExecuteSqlRawAsync(sql, senha, email);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Erro ao resetar senha.");
+                throw;
+            }
         }
     }
 }

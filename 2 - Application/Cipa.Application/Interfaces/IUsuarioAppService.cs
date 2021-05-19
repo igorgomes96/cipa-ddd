@@ -1,6 +1,7 @@
 using Cipa.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Cipa.Application.Interfaces
 {
@@ -13,5 +14,6 @@ namespace Cipa.Application.Interfaces
         IEnumerable<Usuario> BuscarUsuariosAdministradores();
         Usuario AdicionarAdministrador(Usuario usuario);
         void ResetarSenha(string email);
+        Task RedefinirSenha(string email, string novaSenha);
     }
 }
