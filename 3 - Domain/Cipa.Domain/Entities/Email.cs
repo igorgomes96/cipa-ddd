@@ -84,7 +84,7 @@ namespace Cipa.Domain.Entities
             catch (Exception e)
             {
                 StatusEnvio = StatusEnvio.FalhaNoEnvio;
-                MensagemErro = e.Message;
+                MensagemErro = e.ToString();
             }
         }
 
