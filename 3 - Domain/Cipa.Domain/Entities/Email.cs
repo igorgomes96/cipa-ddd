@@ -30,8 +30,8 @@ namespace Cipa.Domain.Entities
         public string Copias { get; set; }
         public string Assunto { get; set; }
         public string Mensagem { get; set; }
-        public StatusEnvio StatusEnvio { get; private set; }
-        public string MensagemErro { get; private set; }
+        public StatusEnvio StatusEnvio { get; set; }
+        public string MensagemErro { get; set; }
         public DateTime DataCadastro { get; private set; }
 
         public IEnumerable<string> DestinatariosLista { get => EmailsIndividuais(Destinatarios); }
@@ -88,7 +88,7 @@ namespace Cipa.Domain.Entities
             }
         }
 
-        protected string MensagemEstilizada => @"
+        public string MensagemEstilizada => @"
             <head>
                 <style>
                     .template-email * {

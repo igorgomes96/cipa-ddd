@@ -31,6 +31,9 @@ using System.IO.Compression;
 using System.Collections.Generic;
 using System;
 using Microsoft.AspNetCore.Rewrite;
+using Amazon.SimpleEmail;
+using Cipa.Domain.Services.Interfaces;
+using Cipa.Infra.Data.Utils;
 
 namespace Cipa.WebApi
 {
@@ -49,6 +52,8 @@ namespace Cipa.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAWSServices(Configuration);
+            services.AddAWSService<IAmazonSimpleEmailService>();
+            
             services.AddDbContext<CipaContext>(options =>
             {
                 options.UseLazyLoadingProxies();
@@ -229,6 +234,9 @@ namespace Cipa.WebApi
 
             // Excel
             services.AddScoped<IExcelService, ExcelService>();
+
+            // Email
+            services.AddScoped<IEmailSender, EmailSender>();
 
             // Importações
             services.AddScoped<IImportacaoAppService, ImportacaoAppService>();
