@@ -6,6 +6,8 @@ using Cipa.Application.Repositories;
 using Cipa.Domain.Services.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace Cipa.Application
 {
@@ -33,7 +35,7 @@ namespace Cipa.Application
             foreach (var email in emails)
             {
                 tasks.Add(_emailSender.Send(email));
-                // email.Enviar(_emailConfiguration);
+                Thread.Sleep(TimeSpan.FromMilliseconds(100));  // O SES da AWS tem o limite de 14 envios por segundo.
                 base.Atualizar(email);
             }
             Task.WaitAll(tasks.ToArray());
