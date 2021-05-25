@@ -16,6 +16,7 @@ namespace Cipa.Domain.Entities
     }
     public class Email
     {
+        private const int MaxDestinatarios = 10;
         public Email(string destinatarios, string copias, string assunto, string mensagem)
         {
             Destinatarios = destinatarios;
@@ -86,6 +87,20 @@ namespace Cipa.Domain.Entities
                 StatusEnvio = StatusEnvio.FalhaNoEnvio;
                 MensagemErro = e.ToString();
             }
+        }
+
+        public IEnumerable<Email> DividirDestinatarios() {
+            if (DestinatariosLista.Count() <= MaxDestinatarios) {
+                return new [] { this };
+            }
+
+            string[] destinatarios = DestinatariosLista
+                .Select((s, i) => new { Value = s, Index = i })
+                .GroupBy(x => x.Index / MaxDestinatarios)
+                .Select(grp => string.Join(",", grp.Select(g => g.Value)))
+                .ToArray();
+            
+            return destinatarios.Select(d => new Email(d, Copias, Assunto, Mensagem));
         }
 
         public string MensagemEstilizada => @"

@@ -36,9 +36,11 @@ namespace Cipa.Application
             {
                 tasks.Add(_emailSender.Send(email));
                 Thread.Sleep(TimeSpan.FromMilliseconds(100));  // O SES da AWS tem o limite de 14 envios por segundo.
-                base.Atualizar(email);
             }
             Task.WaitAll(tasks.ToArray());
+            foreach (var email in emails) {
+                base.Atualizar(email);
+            }
         }
     }
 }

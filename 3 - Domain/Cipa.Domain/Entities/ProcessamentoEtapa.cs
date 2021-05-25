@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cipa.Domain.Enums;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Factories.Interfaces;
@@ -62,7 +63,7 @@ namespace Cipa.Domain.Entities
                 IFormatadorEmailService formatador = ObterFomatadorEmail(formatadorFactory);
                 ICollection<Email> emails = new List<Email>();
                 if (formatador != null)
-                    emails = formatador.FormatarEmails();
+                    emails = formatador.FormatarEmails().SelectMany(e => e.DividirDestinatarios()).ToList();
 
                 FinalizarProcessamento(EStatusProcessamentoEtapa.ProcessadoComSucesso);
                 return emails;
