@@ -24,6 +24,7 @@ namespace Cipa.Infra.Data.Utils {
             var sendRequest = new SendEmailRequest
                 {
                     Source = emailConfiguration.Alias,
+                    SourceArn = emailConfiguration.SESArn,
                     Destination = new Destination
                     {
                         ToAddresses = email.DestinatariosLista.ToList(),
