@@ -14,7 +14,10 @@ namespace Cipa.Domain.Test.Entities {
             var destinatarios = "";
             for (var i = 1; i <= qtda; i++)
                 destinatarios += $"dest{i}@email.com,";
-            var email = new Email(destinatarios, null, "Teste", "Mensagem");
+            var email = new Email(destinatarios, null, "Teste", "Mensagem")
+            {
+                MaxDestinatarios = 10
+            };
 
             // Act
             var emails = email.DividirDestinatarios().ToArray();
