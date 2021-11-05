@@ -62,7 +62,7 @@ namespace Cipa.Domain.Services.Implementations
 
         protected string LinkLogin => $"{Links.URL}{Links.Login}";
         protected string LinkCadastro(Usuario usuario) =>
-            $"{Links.URL}{Links.Cadastro}/{usuario.CodigoRecuperacao.ToString()}";
+            $"{Links.URL}{Links.Cadastro}/{usuario.CodigoRecuperacao}";
 
         protected virtual TemplateEmail BuscarTemplateEmail(ETipoTemplateEmail tipoTemplateEmail)
         {

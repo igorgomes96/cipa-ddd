@@ -16,7 +16,7 @@ namespace Cipa.Domain.Entities
     }
     public class Email
     {
-        private const int MaxDestinatarios = 10;
+        private const int MaxDestinatarios = 1;
         public Email(string destinatarios, string copias, string assunto, string mensagem)
         {
             Destinatarios = destinatarios;

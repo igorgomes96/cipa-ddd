@@ -1,14 +1,11 @@
-using System;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Threading.Tasks;
-using Amazon.SimpleEmail;
-using Amazon.SimpleEmail.Model;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
 using Cipa.Domain.Services.Interfaces;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Net;
+using System.Net.Mail;
+using System.Threading.Tasks;
 
 namespace Cipa.Infra.Data.Utils
 {

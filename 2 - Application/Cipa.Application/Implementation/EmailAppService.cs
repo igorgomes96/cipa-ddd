@@ -1,13 +1,11 @@
-using System.Linq;
 using Cipa.Application.Interfaces;
+using Cipa.Application.Repositories;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
-using Cipa.Application.Repositories;
 using Cipa.Domain.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Linq;
+using System.Threading;
 
 namespace Cipa.Application
 {
@@ -31,15 +29,11 @@ namespace Cipa.Application
                 base.Atualizar(email);
             }
 
-            var tasks = new List<Task>();
             foreach (var email in emails)
             {
-                tasks.Add(_emailSender.Send(email));
-                Thread.Sleep(TimeSpan.FromMilliseconds(100));  // O SES da AWS tem o limite de 14 envios por segundo.
-            }
-            Task.WaitAll(tasks.ToArray());
-            foreach (var email in emails) {
+                _emailSender.Send(email).Wait();
                 base.Atualizar(email);
+                Thread.Sleep(TimeSpan.FromMilliseconds(200));  // O SES da AWS tem o limite de 14 envios por segundo.
             }
         }
     }
