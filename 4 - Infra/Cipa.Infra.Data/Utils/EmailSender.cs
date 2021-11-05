@@ -69,11 +69,11 @@ namespace Cipa.Infra.Data.Utils
             // Try to send the message. Show status in console.
             try
             {
-                Console.WriteLine("Attempting to send email...");
+                logger.LogInformation("Enviando email para [{0}], assunto {1}.", email.Destinatarios, email.Assunto);
                 await client.SendMailAsync(message);
                 email.StatusEnvio = StatusEnvio.EnviadoComSucesso;
                 email.MensagemErro = null;
-                Console.WriteLine("Email sent!");
+                logger.LogInformation("Email enviado.");
             }
             catch (Exception ex)
             {
