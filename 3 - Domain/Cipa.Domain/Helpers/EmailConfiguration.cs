@@ -4,6 +4,7 @@
     {
         public string Host { get; set; }
         public int Port { get; set; }
+        public string Name { get; set; }
         public bool EnabledSSL { get; set; }
         public bool UseDefaultCredentials { get; set; }
         public string UserName { get; set; }

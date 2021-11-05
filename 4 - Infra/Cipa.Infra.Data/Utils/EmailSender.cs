@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
@@ -12,46 +14,69 @@ namespace Cipa.Infra.Data.Utils
 {
     public class EmailSender : IEmailSender
     {
-        private IAmazonSimpleEmailService ses;
-        private EmailConfiguration emailConfiguration;
-        private ILogger<EmailSender> logger;
-        public EmailSender(IAmazonSimpleEmailService ses, EmailConfiguration emailConfiguration, ILogger<EmailSender> logger)
+        private readonly EmailConfiguration emailConfiguration;
+        private readonly ILogger<EmailSender> logger;
+        public EmailSender(EmailConfiguration emailConfiguration, ILogger<EmailSender> logger)
         {
-            this.ses = ses;
             this.emailConfiguration = emailConfiguration;
             this.logger = logger;
         }
+
         public async Task Send(Email email)
         {
-            var sendRequest = new SendEmailRequest
-            {
-                Source = emailConfiguration.Alias,
-                SourceArn = emailConfiguration.SESArn,
-                Destination = new Destination
-                {
-                    ToAddresses = email.DestinatariosLista.ToList(),
-                    CcAddresses = email.CopiasLista.ToList()
-                },
-                Message = new Message
-                {
-                    Subject = new Content(email.Assunto),
-                    Body = new Body
-                    {
-                        Html = new Content
-                        {
-                            Charset = "UTF-8",
-                            Data = email.MensagemEstilizada
-                        }
-                    }
-                }
-            };
+            // Replace sender@example.com with your "From" address. 
+            // This address must be verified with Amazon SES.
+            string FROM = emailConfiguration.Alias;
+            string FROMNAME = emailConfiguration.Name;
 
+            // Replace smtp_username with your Amazon SES SMTP user name.
+            string SMTP_USERNAME = emailConfiguration.UserName;
+
+            // Replace smtp_password with your Amazon SES SMTP password.
+            string SMTP_PASSWORD = emailConfiguration.Password;
+
+            // If you're using Amazon SES in a region other than US West (Oregon), 
+            // replace email-smtp.us-west-2.amazonaws.com with the Amazon SES SMTP  
+            // endpoint in the appropriate AWS Region.
+            string HOST = "email-smtp.us-east-2.amazonaws.com";
+
+            // The port you will connect to on the Amazon SES SMTP endpoint. We
+            // are choosing port 587 because we will use STARTTLS to encrypt
+            // the connection.
+            int PORT = 587;
+
+            // The subject line of the email
+            string SUBJECT = email.Assunto;
+
+            // The body of the email
+            string BODY = email.Mensagem;
+
+            // Create and build a new MailMessage object
+            MailMessage message = new MailMessage
+            {
+                IsBodyHtml = true,
+                From = new MailAddress(FROM, FROMNAME),
+                Subject = SUBJECT,
+                Body = BODY
+            };
+            foreach (var to in email.DestinatariosLista)
+                message.To.Add(new MailAddress(to));
+
+            using var client = new SmtpClient(HOST, PORT);
+            // Pass SMTP credentials
+            client.Credentials = new NetworkCredential(SMTP_USERNAME, SMTP_PASSWORD);
+
+            // Enable SSL encryption
+            client.EnableSsl = true;
+
+            // Try to send the message. Show status in console.
             try
             {
-                logger.LogInformation("Enviando email pelo SES: {0}, para [{1}]. Identifier ARN: {2}", sendRequest.Source, email.Destinatarios, sendRequest.SourceArn);
-                var response = await ses.SendEmailAsync(sendRequest);
+                Console.WriteLine("Attempting to send email...");
+                await client.SendMailAsync(message);
                 email.StatusEnvio = StatusEnvio.EnviadoComSucesso;
                 email.MensagemErro = null;
+                Console.WriteLine("Email sent!");
             }
             catch (Exception ex)
             {

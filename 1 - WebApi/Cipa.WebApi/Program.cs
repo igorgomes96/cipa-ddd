@@ -15,11 +15,7 @@ namespace Cipa.WebApi
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    #if DEBUG
-                    config.AddSystemsManager("/Cipa/Dev");
-                    #else
                     config.AddSystemsManager("/Cipa/");
-                    #endif
                 })
                 .UseStartup<Startup>();
     }
