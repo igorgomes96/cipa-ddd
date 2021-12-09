@@ -126,7 +126,7 @@ namespace Cipa.Domain.Services.Implementations
         }
 
         protected virtual string RetornarListaInscricoesHTML() =>
-            Eleicao.Inscricoes.Aggregate("<ol>",
+            Eleicao.Inscricoes.Where(i => i.StatusInscricao == StatusInscricao.Aprovada).Aggregate("<ol>",
                 (acc, cur) => $"{acc}<li><strong>{cur.Eleitor.Nome}</strong><br><small>{cur.Eleitor.Cargo}</small></li>"
             ) + "</ol>";
     }

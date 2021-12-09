@@ -61,7 +61,7 @@ namespace Cipa.Domain.Entities
             StatusInscricao = StatusInscricao.Pendente;
         }
 
-        internal void AprovarInscricao(Usuario usuarioAprovador)
+        public void AprovarInscricao(Usuario usuarioAprovador)
         {
             StatusInscricao = StatusInscricao.Aprovada;
             EmailAprovador = usuarioAprovador.Email;

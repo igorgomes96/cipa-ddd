@@ -73,8 +73,13 @@ namespace Cipa.Domain.Test.Services
             eleicao.PassarParaProximaEtapa();
             eleicao.PassarParaProximaEtapa(); // Inscrições
 
-            eleicao.FazerInscricao(eleitor1, "Objetivos 1");
-            eleicao.FazerInscricao(eleitor3, "Objetivos 3");
+            var inscricao1 = eleicao.FazerInscricao(eleitor1, "Objetivos 1");
+            var inscricao2 = eleicao.FazerInscricao(eleitor2, "Objetivos 2");
+            var inscricao3 = eleicao.FazerInscricao(eleitor3, "Objetivos 3");
+            var inscricao4 = eleicao.FazerInscricao(eleitor4, "Objetivos 4");
+
+            inscricao1.AprovarInscricao(usuario1);
+            inscricao3.AprovarInscricao(usuario1);
 
             var emails = comunicadoEleicao.FormatarEmails();
 
