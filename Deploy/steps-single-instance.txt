@@ -1,5 +1,5 @@
 1. Subir VM com imagem customizada, lembrando de colocar no campo User Data o script do arquivo user-data.sh.
 2. Criar um certificado para o domínio, se não houver.
 3. Criar uma distribuição no Cloud Font, apontando para o DNS da VM.
-4. Na distribuição criada, configurar o Behavior para usar "Legay cache settings", e incluir o token "Authorization", pelo menos (se não o Cloud Front não enviar o header com o token para a aplicação).
+4. Na distribuição criada, configurar o Behavior para usar "Legay cache settings", e incluir o header "Authorization", pelo menos (se não o Cloud Front não enviar o header com o token para a aplicação).
 5. Criar um registro na Hosted Zone no Route 53, apontando para a distribuição do Cloud Front.
