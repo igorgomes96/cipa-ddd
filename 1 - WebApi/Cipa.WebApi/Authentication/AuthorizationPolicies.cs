@@ -38,6 +38,7 @@ namespace Cipa.WebApi.Authentication
         {
             var claim = user.Claims.FirstOrDefault(c => c.Type == claimType);
             if (claim == null) return DateTime.MinValue;
+            if (user.IsInRole(PerfilUsuario.Administrador)) return DateTime.UtcNow.AddMonths(1); // Garante que o adm sempre terá acesso
             bool dataValida = DateTime.TryParse(claim.Value, out DateTime data);
             return dataValida ? data : DateTime.MinValue;
         };
@@ -52,7 +53,7 @@ namespace Cipa.WebApi.Authentication
         private static Func<AuthorizationHandlerContext, bool> usuarioSESMTPossuiContaValidaExpression = (context) =>
             usuarioSESMTPossuiContaExpression(context)
             && hasBooleanClaim(context.User, CustomClaimTypes.ContaValida)
-            && dataExpiracao(context.User, CustomClaimTypes.DataExpiracaoConta) > DateTime.Now.HorarioBrasilia();
+            && dataExpiracao(context.User, CustomClaimTypes.DataExpiracaoConta) > DateTime.UtcNow;
 
 
         public static AuthorizationPolicy UsuarioSESMTAuthorizationPolicy =>
