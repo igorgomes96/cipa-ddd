@@ -6,3 +6,4 @@
     4.2. Desabilitar o cache
     4.3. Criar uma policy para "Origin Request Policy" e incluir todos os headers e query strings em "Origin Request Settings" (se não, o Cloud Front não vai enviar o header de authorização, os headers específicos para web socket, etc).
 5. Criar um registro na Hosted Zone no Route 53, apontando para a distribuição do Cloud Front.
+6. Garantir que o bucket cipaonline na conta de PRD possui uma policy para permitir operações de leitura e escrita para a role atribuída à VM da aplicação.
