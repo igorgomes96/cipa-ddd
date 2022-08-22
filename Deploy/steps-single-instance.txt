@@ -6,4 +6,33 @@
     4.2. Desabilitar o cache
     4.3. Criar uma policy para "Origin Request Policy" e incluir todos os headers e query strings em "Origin Request Settings" (se não, o Cloud Front não vai enviar o header de authorização, os headers específicos para web socket, etc).
 5. Criar um registro na Hosted Zone no Route 53, apontando para a distribuição do Cloud Front.
-6. Garantir que o bucket cipaonline na conta de PRD possui uma policy para permitir operações de leitura e escrita para a role atribuída à VM da aplicação.
+6. Garantir que o bucket cipaonline na conta de PRD possui uma policy para permitir operações de leitura e escrita para a role atribuída à VM da aplicação. Exemplo:
+        {
+            "Sid": "CipaOnline",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::173284746695:role/EC2ReadSSM"
+            },
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::cipaonline/*"
+        }
+7. Confira se as credenciais SMTP de email estão correta no Parameter Store (/Cipa/Email/Password e /Cipa/Email/UserName).
+    7.1. Caso precise de novas credenciais, acesse o serviço Amazon SES -> SMTP Settings -> Create SMTP credentials. Pegue as credenciais e armazene no Parameter Store.
+    7.2. Acesse Amazon SES -> Verified Identities -> cipa@4uptech.com.br -> Authorization, selecione a policy e verfique se está apontando para a Role correta da VM. Exemplo:
+        {
+            "Version": "2008-10-17",
+            "Statement": [
+                {
+                "Sid": "stmt1635029023404",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn:aws:iam::173284746695:role/EC2ReadSSM"
+                },
+                "Action": [
+                    "ses:SendEmail",
+                    "ses:SendRawEmail"
+                ],
+                "Resource": "arn:aws:ses:us-east-2:173284746695:identity/cipa@4uptech.com.br"
+                }
+            ]
+        } 
