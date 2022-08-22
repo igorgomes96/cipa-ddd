@@ -79,7 +79,8 @@ namespace Cipa.Infra.Data.Repositories
             {
                 InputStream = file,
                 Key = newKey,
-                BucketName = BUCKET_NAME
+                BucketName = BUCKET_NAME,
+                CannedACL = S3CannedACL.PublicRead
             };
 
             var fileTransferUtility = new TransferUtility(_s3Client);
