@@ -32,9 +32,6 @@ namespace Cipa.Infra.Data.Utils
             // Replace smtp_password with your Amazon SES SMTP password.
             string SMTP_PASSWORD = emailConfiguration.Password;
 
-            logger.LogInformation(SMTP_USERNAME);
-            logger.LogInformation(SMTP_PASSWORD);
-
             // If you're using Amazon SES in a region other than US West (Oregon), 
             // replace email-smtp.us-west-2.amazonaws.com with the Amazon SES SMTP  
             // endpoint in the appropriate AWS Region.
