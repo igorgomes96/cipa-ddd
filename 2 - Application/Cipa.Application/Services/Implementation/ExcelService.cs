@@ -77,7 +77,7 @@ namespace Cipa.Application.Services.Implementation
                 foreach (DataRow dr in dataTable.Rows)
                 {
                     for (int c = 0; c < columnsCount; c++)
-                        sheet.Cell(linha, c + coluna).Value = dr[c];
+                        sheet.Cell(linha, c + coluna).SetValue(dr[c].ToString());
 
                     linha++;
                 }

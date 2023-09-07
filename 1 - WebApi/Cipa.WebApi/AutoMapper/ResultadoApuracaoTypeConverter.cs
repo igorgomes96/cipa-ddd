@@ -9,7 +9,10 @@ namespace Cipa.WebApi.AutoMapper
 {
     public class ResultadoApuracaoTypeConverter : ITypeConverter<IEnumerable<Inscricao>, ResultadoApuracaoViewModel>
     {
-        public ResultadoApuracaoViewModel Convert(IEnumerable<Inscricao> source, ResultadoApuracaoViewModel destination, ResolutionContext context)
+        public ResultadoApuracaoViewModel Convert(
+            IEnumerable<Inscricao> source,
+            ResultadoApuracaoViewModel destination,
+            ResolutionContext context)
         {
             if (context == null || source == null)
                 return null;
