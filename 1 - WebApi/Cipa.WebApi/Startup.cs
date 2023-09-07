@@ -98,7 +98,7 @@ namespace Cipa.WebApi
             });
 
             // AutoMapper
-            services.AddSingleton(AutoMapperConfig.MapperConfig());
+            services.AddSingleton(AutoMapperConfig.MapperConfig(Configuration["FotosUrlBase"]));
 
             // Dependências
             AddDependencies(services);

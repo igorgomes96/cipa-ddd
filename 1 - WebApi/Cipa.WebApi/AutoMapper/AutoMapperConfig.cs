@@ -9,8 +9,8 @@ namespace Cipa.WebApi.AutoMapper
 {
     public class AutoMapperConfig
     {
-        private const string URLFotos = "https://d2q7dqdl9akp5k.cloudfront.net/";
-        public static IMapper MapperConfig()
+        //private const string URLFotos = "https://d2q7dqdl9akp5k.cloudfront.net/";
+        public static IMapper MapperConfig(string fotosUrlBase)
         {
             var config = new MapperConfiguration(cfg =>
             {
@@ -40,7 +40,7 @@ namespace Cipa.WebApi.AutoMapper
                 cfg.CreateMap<EtapaCronograma, EtapaCronogramaViewModel>().ReverseMap();
                 cfg.CreateMap<Eleitor, EleitorViewModel>().ReverseMap();
                 cfg.CreateMap<Inscricao, InscricaoViewModel>()
-                    .ForMember(dest => dest.Foto, opt => opt.MapFrom(src => URLFotos + src.Foto))
+                    .ForMember(dest => dest.Foto, opt => opt.MapFrom(src => fotosUrlBase + src.Foto))
                     .ForMember(dest => dest.StatusAprovacao, opt => opt.MapFrom(src => src.StatusInscricao.ToString("g")))
                     .ForMember(dest => dest.HorarioInscricao, opt => opt.MapFrom(src => src.DataCadastro))
                     .IncludeAllDerived();
@@ -63,7 +63,7 @@ namespace Cipa.WebApi.AutoMapper
                     HorarioInscricao = src.DataCadastro,
                     ResultadoApuracao = ConverteResultadoApuracao(src.ResultadoApuracao),
                     Votos = src.Votos,
-                    Foto = URLFotos + src.Foto
+                    Foto = fotosUrlBase + src.Foto
                 });
                 cfg.CreateMap<ConfiguracaoEleicao, ConfiguracaoEleicaoViewModel>().ReverseMap();
                 cfg.CreateMap<LimiteDimensionamento, LimiteDimensionamentoViewModel>();
@@ -85,7 +85,7 @@ namespace Cipa.WebApi.AutoMapper
                 cfg.CreateMap<FinalizacaoImportacaoStatusEventArgs, FinalizacaoImportacaoStatusViewModel>()
                     .ForMember(dest => dest.Status, opt => opt.MapFrom(src => StatusImportacaoResolver.MapStatus(src.Status)));
                 cfg.CreateMap<Arquivo, ArquivoViewModel>()
-                    .ForMember(dest => dest.Path, opt => opt.MapFrom(src => URLFotos + src.Path))
+                    .ForMember(dest => dest.Path, opt => opt.MapFrom(src => fotosUrlBase + src.Path))
                     .ForMember(dest => dest.DataUpload, opt => opt.MapFrom(src => src.DataCadastro));
             });
             return config.CreateMapper();
