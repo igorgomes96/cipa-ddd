@@ -1,25 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1 - WebApi", "1 - WebApi", "{0E2CF18B-8F57-4194-9E56-853CFBD5DACB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cipa.WebApi", "1 - WebApi\Cipa.WebApi\Cipa.WebApi.csproj", "{ABC66A0E-2A49-4FDD-9AF9-0B6F4F692377}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cipa.WebApi", "1 - WebApi\Cipa.WebApi\Cipa.WebApi.csproj", "{ABC66A0E-2A49-4FDD-9AF9-0B6F4F692377}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2 - Application", "2 - Application", "{417470D6-8630-47B9-B0A0-BD851FD42763}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cipa.Application", "2 - Application\Cipa.Application\Cipa.Application.csproj", "{2EA24358-5E63-475A-839A-AAA63EA9C1D6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cipa.Application", "2 - Application\Cipa.Application\Cipa.Application.csproj", "{2EA24358-5E63-475A-839A-AAA63EA9C1D6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3 - Domain", "3 - Domain", "{F88D1F78-689E-453A-97E6-ADCD575F4A19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cipa.Domain", "3 - Domain\Cipa.Domain\Cipa.Domain.csproj", "{86EBB57A-8D45-4680-BE33-B17520457B73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cipa.Domain", "3 - Domain\Cipa.Domain\Cipa.Domain.csproj", "{86EBB57A-8D45-4680-BE33-B17520457B73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cipa.Domain.Test", "3 - Domain\Cipa.Domain.Test\Cipa.Domain.Test.csproj", "{F4386113-182C-49C2-A549-CBDDE65C4A98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cipa.Domain.Test", "3 - Domain\Cipa.Domain.Test\Cipa.Domain.Test.csproj", "{F4386113-182C-49C2-A549-CBDDE65C4A98}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4 - Infra", "4 - Infra", "{6BBDB614-8A29-4575-B090-3FB8AC75DA96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cipa.Infra.Data", "4 - Infra\Cipa.Infra.Data\Cipa.Infra.Data.csproj", "{40FFEA93-879D-434C-A271-97FB6FF91067}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cipa.Infra.Data", "4 - Infra\Cipa.Infra.Data\Cipa.Infra.Data.csproj", "{40FFEA93-879D-434C-A271-97FB6FF91067}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CDK", "CDK", "{B2C48BBF-E52D-438C-B98B-BF13F4CDF9C4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deploy", "CDK\Deploy\Deploy.csproj", "{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,9 +33,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{ABC66A0E-2A49-4FDD-9AF9-0B6F4F692377}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -94,6 +95,21 @@ Global
 		{40FFEA93-879D-434C-A271-97FB6FF91067}.Release|x64.Build.0 = Release|Any CPU
 		{40FFEA93-879D-434C-A271-97FB6FF91067}.Release|x86.ActiveCfg = Release|Any CPU
 		{40FFEA93-879D-434C-A271-97FB6FF91067}.Release|x86.Build.0 = Release|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Debug|x64.Build.0 = Debug|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Debug|x86.Build.0 = Debug|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Release|x64.ActiveCfg = Release|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Release|x64.Build.0 = Release|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Release|x86.ActiveCfg = Release|Any CPU
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{ABC66A0E-2A49-4FDD-9AF9-0B6F4F692377} = {0E2CF18B-8F57-4194-9E56-853CFBD5DACB}
@@ -101,5 +117,9 @@ Global
 		{86EBB57A-8D45-4680-BE33-B17520457B73} = {F88D1F78-689E-453A-97E6-ADCD575F4A19}
 		{F4386113-182C-49C2-A549-CBDDE65C4A98} = {F88D1F78-689E-453A-97E6-ADCD575F4A19}
 		{40FFEA93-879D-434C-A271-97FB6FF91067} = {6BBDB614-8A29-4575-B090-3FB8AC75DA96}
+		{BFF633F5-7747-4ADA-9BDA-45216F4BCD9E} = {B2C48BBF-E52D-438C-B98B-BF13F4CDF9C4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B6A26528-8447-45C2-92F9-3C33ADB6AAE2}
 	EndGlobalSection
 EndGlobal

@@ -1,24 +1,19 @@
-1. Subir VM com imagem customizada, lembrando de colocar no campo User Data o script do arquivo user-data.sh.
-2. Criar um certificado para o domínio, se não houver.
-3. Criar uma distribuição no Cloud Font, apontando para o DNS da VM.
-4. Na distribuição criada, criar um novo Behavior:
-    4.1. Pattern: "/api/*"
-    4.2. Desabilitar o cache
-    4.3. Criar uma policy para "Origin Request Policy" e incluir todos os headers e query strings em "Origin Request Settings" (se não, o Cloud Front não vai enviar o header de authorização, os headers específicos para web socket, etc).
-5. Criar um registro na Hosted Zone no Route 53, apontando para a distribuição do Cloud Front.
-6. Garantir que o bucket cipaonline na conta de PRD possui uma policy para permitir operações de leitura e escrita para a role atribuída à VM da aplicação. Exemplo:
-        {
-            "Sid": "CipaOnline",
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::173284746695:role/EC2ReadSSM"
-            },
-            "Action": "s3:*",
-            "Resource": "arn:aws:s3:::cipaonline/*"
-        }
-7. Confira se as credenciais SMTP de email estão correta no Parameter Store (/Cipa/Email/Password e /Cipa/Email/UserName).
-    7.1. Caso precise de novas credenciais, acesse o serviço Amazon SES -> SMTP Settings -> Create SMTP credentials. Pegue as credenciais e armazene no Parameter Store.
-    7.2. Acesse Amazon SES -> Verified Identities -> cipa@4uptech.com.br -> Authorization, selecione a policy e verfique se está apontando para a Role correta da VM. Exemplo:
+Informações importantes:
+Usuário AWS:
+  - orion (a senha é a mesma do usuário root)
+
+Contas
+  - Root: 173284746695
+  - Dev: 824566840233
+  - Prod: 008314776426 - o Cipa está nessa conta
+
+1. Restaurar o banco de dados a partir do arquivo "C:\Users\igorg\OneDrive\Cipa Online\backup_03012023.sql".
+2. Atualizar os valores dos SSM parameters e fazer deploy da stack definida no projeto CDK/Deploy.
+3. Validar o certificado criado pela stack.
+4. Criar um registro na Hosted Zone no Route 53, apontando para a distribuição do Cloud Front.
+5. Confira se as credenciais SMTP de email estão correta no Parameter Store (/Cipa/Email/Password e /Cipa/Email/UserName).
+    5.1. Caso precise de novas credenciais, acesse o serviço Amazon SES -> SMTP Settings -> Create SMTP credentials. Pegue as credenciais e armazene no Parameter Store.
+    5.2. Acesse Amazon SES -> Verified Identities -> cipa@4uptech.com.br -> Authorization, selecione a policy e verfique se está apontando para a Role correta da VM. Exemplo:
         {
             "Version": "2008-10-17",
             "Statement": [
