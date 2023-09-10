@@ -6,3 +6,5 @@ sudo chmod -R 777 /var/www/cipa/Assets
 sudo mkdir /var/www/cipa/StaticFiles
 sudo chmod -R 777 /var/www/cipa/StaticFiles
 sudo systemctl restart cipa
+
+# journalctl -u cipa.service -f

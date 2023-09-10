@@ -341,3 +341,5 @@ ASALocalRun/
 healthchecksdb
 
 cdk.out/
+
+deploy_cipa_stack.ps1

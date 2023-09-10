@@ -1,10 +1,14 @@
 using Amazon.CDK;
+using Amazon.CDK.AWS.CertificateManager;
 using Amazon.CDK.AWS.CloudFront;
 using Amazon.CDK.AWS.CloudFront.Origins;
 using Amazon.CDK.AWS.EC2;
 using Amazon.CDK.AWS.IAM;
+using Amazon.CDK.AWS.Route53;
+using Amazon.CDK.AWS.Route53.Targets;
 using Amazon.CDK.AWS.S3;
 using Amazon.CDK.AWS.SSM;
+using Amazon.CDK.CustomResources;
 using Constructs;
 using System;
 using System.Collections.Generic;
@@ -13,6 +17,7 @@ namespace Deploy
 {
     public class CipaStack : Stack
     {
+        private const string StaticFilesBucketArn = "arn:aws:s3:::cipaonline";
         internal CipaStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
             // The code that defines your stack goes here
@@ -20,47 +25,180 @@ namespace Deploy
             {
                 IsDefault = true
             });
-            var securityGroup = new SecurityGroup(this, "cipa-sg", new SecurityGroupProps
-            {
-                SecurityGroupName = "cipa-vm-sg",
-                AllowAllOutbound = true,
-                Vpc = vpc
-            });
-            securityGroup.AddIngressRule(
-                Peer.AnyIpv4(),
-                Port.AllTraffic(),
-                "Allow access from anywhere.");
+            SecurityGroup securityGroup = CreateSecurityGroup(vpc);
+            Role role = CreateVmRole();
+            Instance_ ec2Instance = CreateVmInstance(vpc, securityGroup, role);
 
-            var role = new Role(this, "cipa-vm-role", new RoleProps
-            {
-                AssumedBy = new ServicePrincipal("ec2.amazonaws.com"),
-                RoleName = "cipa-vm-role",
-                ManagedPolicies = new IManagedPolicy[]
+            var bucket = Bucket.FromBucketArn(this, "bucket", StaticFilesBucketArn);
+            CreateBucketPolicy(role, bucket);
+
+            IHostedZone hostedZone = HostedZone.FromHostedZoneAttributes(
+                this, "hosted-zone",
+                new HostedZoneAttributes
                 {
-                    ManagedPolicy.FromAwsManagedPolicyName("AmazonS3FullAccess"),
-                    ManagedPolicy.FromAwsManagedPolicyName("CloudWatchLogsFullAccess"),
-                    ManagedPolicy.FromAwsManagedPolicyName("AmazonSESFullAccess"),
-                    ManagedPolicy.FromAwsManagedPolicyName("AmazonSSMReadOnlyAccess")
+                    HostedZoneId = Constants.HostedZoneId,
+                    ZoneName = Constants.HostedZoneName
+                });
+            var cipaDomainName = $"cipa.{Constants.HostedZoneName}";
+            string certificateArn = GetCertificateArn();
+            ICertificate certificate = Certificate.FromCertificateArn(
+                this, "cipa-certificate", certificateArn);
+
+            BehaviorOptions s3Behavior = CreateS3StaticFilesCdnBehavior(bucket);
+            HttpOrigin httpOrigin = CreateCdnVmOrigin(ec2Instance);
+            BehaviorOptions apiBehavior = CreateApiCdnBehavior(httpOrigin);
+            Distribution cdn = CreateCdnDistribution(
+                httpOrigin, s3Behavior, apiBehavior, certificate, cipaDomainName);
+
+            CreateRoute53AliasRecord(hostedZone, cdn);
+
+            CreateSSMParameters(cdn);
+        }
+
+        /// <summary>
+        /// This method creates a custom AWS resource responsible for reading the SSM parameter
+        /// that contains the certificate ARN, created in the CertificateStack. 
+        /// This is necessary because the CertificateStack was create in another region as
+        /// CloudFront requires that the certificate to be create in us-east-1.
+        /// Cross-region stack import is not possible.
+        /// </summary>
+        /// <returns></returns>
+        private string GetCertificateArn()
+        {
+            var ssmReader = new AwsCustomResource(
+                this,
+                "GetCertificateParamValue",
+                new AwsCustomResourceProps
+                {
+                    OnCreate = new AwsSdkCall
+                    {
+                        Service = "SSM",
+                        Action = "getParameter",
+                        Parameters = new Dictionary<string, string>
+                        {
+                            { "Name", Constants.CertificateArnSSMParam }
+                        },
+                        Region = "us-east-1",
+                        PhysicalResourceId = PhysicalResourceId.Of(Guid.NewGuid().ToString())
+                    },
+                    Policy = AwsCustomResourcePolicy.FromSdkCalls(new SdkCallsPolicyOptions
+                    {
+                        Resources = AwsCustomResourcePolicy.ANY_RESOURCE
+                    })
+                });
+            var certificateArn = ssmReader.GetResponseField("Parameter.Value").ToString();
+            return certificateArn;
+        }
+
+        private void CreateRoute53AliasRecord(
+            IHostedZone hostedZone, Distribution cdn)
+        {
+            _ = new ARecord(this, "cipa-a-record", new ARecordProps
+            {
+                Target = RecordTarget.FromAlias(new CloudFrontTarget(cdn)),
+                Zone = hostedZone,
+                RecordName = "CipaCdn"
+            });
+        }
+
+        private void CreateSSMParameters(Distribution cdn)
+        {
+            _ = new StringParameter(this, "db-connection-string", new StringParameterProps
+            {
+                ParameterName = "/Cipa/ConnectionStrings/MySqlConnection",
+                StringValue = System.Environment.GetEnvironmentVariable("MySqlConnection")
+            });
+
+            _ = new StringParameter(this, "email-username", new StringParameterProps
+            {
+                ParameterName = "/Cipa/Email/UserName",
+                StringValue = System.Environment.GetEnvironmentVariable("EmailUserName")
+            });
+
+            _ = new StringParameter(this, "email-password", new StringParameterProps
+            {
+                ParameterName = "/Cipa/Email/Password",
+                StringValue = System.Environment.GetEnvironmentVariable("EmailPassword")
+            });
+
+            _ = new StringParameter(this, "jwt-secret", new StringParameterProps
+            {
+                ParameterName = "/Cipa/TokenConfigurations/Secret",
+                StringValue = System.Environment.GetEnvironmentVariable("JwtSecret")
+            });
+
+            _ = new StringParameter(this, "fotos-cdn", new StringParameterProps
+            {
+                ParameterName = "/Cipa/FotosUrlBase",
+                StringValue = $"https://{cdn.DistributionDomainName}/"
+            });
+        }
+
+        private Distribution CreateCdnDistribution(
+            HttpOrigin httpOrigin,
+            BehaviorOptions s3Behavior,
+            BehaviorOptions apiBehavior,
+            ICertificate certificate,
+            string domainName)
+        {
+            return new Distribution(this, "cdn", new DistributionProps
+            {
+                DefaultBehavior = new BehaviorOptions
+                {
+                    Origin = httpOrigin, // HTML and static files in the VM
+                    ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+                },
+                Certificate = certificate,
+                DomainNames = new[] { domainName },
+                AdditionalBehaviors = new Dictionary<string, IBehaviorOptions>
+                {
+                    { "/api/*", apiBehavior },
+                    { "/fotos/*", s3Behavior },
+                    { "/documentos/*", s3Behavior },
+                    { "/documentocronograma/*", s3Behavior },
+                    { "/importacao/*", s3Behavior }
                 }
             });
+        }
 
-            var ec2Instance = new Instance_(this, "cipa-server", new InstanceProps
+        private static BehaviorOptions CreateApiCdnBehavior(HttpOrigin httpOrigin)
+        {
+            return new BehaviorOptions
             {
-                InstanceName = "cipa-server",
-                Vpc = vpc,
-                VpcSubnets = new SubnetSelection
-                {
-                    SubnetType = SubnetType.PUBLIC
-                },
-                Role = role,
-                SecurityGroup = securityGroup,
-                InstanceType = InstanceType.Of(InstanceClass.BURSTABLE2, InstanceSize.SMALL),
-                KeyName = "ProdKeyPair",
-                MachineImage = MachineImage.LatestAmazonLinux2023(),
-                UserData = BuildUserData()
-            });
+                Origin = httpOrigin,
+                ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                CachePolicy = CachePolicy.CACHING_DISABLED,
+                OriginRequestPolicy = OriginRequestPolicy.ALL_VIEWER,
+                AllowedMethods = AllowedMethods.ALLOW_ALL,
+                ResponseHeadersPolicy = ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS
+            };
+        }
 
-            var bucket = Bucket.FromBucketArn(this, "bucket", "arn:aws:s3:::cipaonline");
+        private static HttpOrigin CreateCdnVmOrigin(Instance_ ec2Instance)
+        {
+            return new HttpOrigin(
+                ec2Instance.InstancePublicDnsName,
+                new HttpOriginProps
+                {
+                    ProtocolPolicy = OriginProtocolPolicy.HTTP_ONLY
+                });
+        }
+
+        private BehaviorOptions CreateS3StaticFilesCdnBehavior(IBucket bucket)
+        {
+            var originAccessIdentity = new OriginAccessIdentity(this, "oai");
+            return new BehaviorOptions
+            {
+                Origin = new S3Origin(bucket, new S3OriginProps
+                {
+                    OriginAccessIdentity = originAccessIdentity
+                }),
+                ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+            };
+        }
+
+        private void CreateBucketPolicy(Role role, IBucket bucket)
+        {
             var bucketWritePolicy = new PolicyStatement(new PolicyStatementProps
             {
                 Actions = new[] { "s3:*" },
@@ -83,72 +221,56 @@ namespace Deploy
                     Statements = new[] { bucketWritePolicy, bucketReadPolicy }
                 })
             });
-            var originAccessIdentity = new OriginAccessIdentity(this, $"oai-{Guid.NewGuid().ToString()[..5]}");
-            var s3Behavior = new BehaviorOptions
+        }
+
+        private Instance_ CreateVmInstance(IVpc vpc, SecurityGroup securityGroup, Role role)
+        {
+            return new Instance_(this, "cipa-server", new InstanceProps
             {
-                Origin = new S3Origin(bucket, new S3OriginProps
+                InstanceName = "cipa-server",
+                Vpc = vpc,
+                VpcSubnets = new SubnetSelection
                 {
-                    OriginAccessIdentity = originAccessIdentity
-                }),
-                ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS
-            };
-            var httpOrigin = new HttpOrigin(
-                ec2Instance.InstancePublicDnsName,
-                new HttpOriginProps
-                {
-                    ProtocolPolicy = OriginProtocolPolicy.HTTP_ONLY,
-                });
-            var cdn = new Distribution(this, "cdn", new DistributionProps
-            {
-                DefaultBehavior = new BehaviorOptions
-                {
-                    Origin = httpOrigin,
-                    ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+                    SubnetType = SubnetType.PUBLIC
                 },
-                AdditionalBehaviors = new Dictionary<string, IBehaviorOptions>
+                Role = role,
+                SecurityGroup = securityGroup,
+                InstanceType = InstanceType.Of(InstanceClass.BURSTABLE2, InstanceSize.SMALL),
+                KeyName = "ProdKeyPair",
+                MachineImage = MachineImage.LatestAmazonLinux2023(),
+                UserData = BuildUserData()
+            });
+        }
+
+        private Role CreateVmRole()
+        {
+            return new Role(this, "cipa-vm-role", new RoleProps
+            {
+                AssumedBy = new ServicePrincipal("ec2.amazonaws.com"),
+                RoleName = "cipa-vm-role",
+                ManagedPolicies = new IManagedPolicy[]
                 {
-                    {
-                        "/api/*",
-                        new BehaviorOptions
-                        {
-                            Origin = httpOrigin,
-                            ViewerProtocolPolicy = ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-                            CachePolicy = CachePolicy.CACHING_DISABLED,
-                            OriginRequestPolicy = OriginRequestPolicy.ALL_VIEWER,
-                            AllowedMethods = AllowedMethods.ALLOW_ALL,
-                            ResponseHeadersPolicy = ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS_WITH_PREFLIGHT_AND_SECURITY_HEADERS
-                        }
-                    },
-                    { "/fotos/*", s3Behavior },
-                    { "/documentos/*", s3Behavior },
-                    { "/documentocronograma/*", s3Behavior },
-                    { "/importacao/*", s3Behavior }
+                    ManagedPolicy.FromAwsManagedPolicyName("AmazonS3FullAccess"),
+                    ManagedPolicy.FromAwsManagedPolicyName("CloudWatchLogsFullAccess"),
+                    ManagedPolicy.FromAwsManagedPolicyName("AmazonSESFullAccess"),
+                    ManagedPolicy.FromAwsManagedPolicyName("AmazonSSMReadOnlyAccess")
                 }
             });
+        }
 
-            _ = new StringParameter(this, "db-connection-string", new StringParameterProps
+        private SecurityGroup CreateSecurityGroup(IVpc vpc)
+        {
+            var securityGroup = new SecurityGroup(this, "cipa-sg", new SecurityGroupProps
             {
-                ParameterName = "/Cipa/ConnectionStrings/MySqlConnection",
-                StringValue = "Server=;DataBase=cipa;Uid=root;Pwd=;SslMode=None;"
+                SecurityGroupName = "cipa-vm-sg",
+                AllowAllOutbound = true,
+                Vpc = vpc
             });
-
-            _ = new StringParameter(this, "email-password", new StringParameterProps
-            {
-                ParameterName = "/Cipa/Email/Password",
-                StringValue = "[password]"
-            });
-
-            _ = new StringParameter(this, "jwt-secret", new StringParameterProps
-            {
-                ParameterName = "/Cipa/TokenConfigurations/Secret",
-                StringValue = "[secret]"
-            });
-
-            _ = new StringParameter(this, "fotos-cdn", new StringParameterProps
-            {
-                ParameterName = "/Cipa/FotosUrlBase",
-                StringValue = $"https://{cdn.DistributionDomainName}/"
-            });
+            securityGroup.AddIngressRule(
+                Peer.AnyIpv4(),
+                Port.Tcp(80),
+                "Allow HTTP access from anywhere.");
+            return securityGroup;
         }
 
         private static UserData BuildUserData()
