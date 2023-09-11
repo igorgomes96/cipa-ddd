@@ -58,29 +58,31 @@ namespace Deploy
         /// <summary>
         /// This method creates a custom AWS resource responsible for reading the SSM parameter
         /// that contains the certificate ARN, created in the CertificateStack. 
-        /// This is necessary because the CertificateStack was create in another region as
-        /// CloudFront requires that the certificate to be create in us-east-1.
+        /// This is necessary because the CertificateStack was created in another region as
+        /// CloudFront requires that the certificate to be created in us-east-1.
         /// Cross-region stack import is not possible.
         /// </summary>
         /// <returns></returns>
         private string GetCertificateArn()
         {
+            var ssmCall = new AwsSdkCall
+            {
+                Service = "SSM",
+                Action = "getParameter",
+                Parameters = new Dictionary<string, string>
+                        {
+                            { "Name", Constants.CertificateArnSSMParam }
+                        },
+                Region = "us-east-1",
+                PhysicalResourceId = PhysicalResourceId.Of(Guid.NewGuid().ToString())
+            };
             var ssmReader = new AwsCustomResource(
                 this,
                 "GetCertificateParamValue",
                 new AwsCustomResourceProps
                 {
-                    OnCreate = new AwsSdkCall
-                    {
-                        Service = "SSM",
-                        Action = "getParameter",
-                        Parameters = new Dictionary<string, string>
-                        {
-                            { "Name", Constants.CertificateArnSSMParam }
-                        },
-                        Region = "us-east-1",
-                        PhysicalResourceId = PhysicalResourceId.Of(Guid.NewGuid().ToString())
-                    },
+                    OnCreate = ssmCall,
+                    OnUpdate = ssmCall,
                     Policy = AwsCustomResourcePolicy.FromSdkCalls(new SdkCallsPolicyOptions
                     {
                         Resources = AwsCustomResourcePolicy.ANY_RESOURCE
@@ -97,7 +99,7 @@ namespace Deploy
             {
                 Target = RecordTarget.FromAlias(new CloudFrontTarget(cdn)),
                 Zone = hostedZone,
-                RecordName = "CipaCdn"
+                RecordName = "cipa"
             });
         }
 
