@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Cipa.Application;
 using Cipa.Application.Events;
 using Cipa.Application.Events.EventsArgs;
 using Cipa.Application.Interfaces;
@@ -34,6 +33,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Amazon.SimpleEmail;
 using Cipa.Domain.Services.Interfaces;
 using Cipa.Infra.Data.Utils;
+using Cipa.Application.Implementation;
 
 namespace Cipa.WebApi
 {

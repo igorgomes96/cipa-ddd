@@ -15,7 +15,7 @@ using System;
 using Cipa.Domain.Services.Interfaces;
 using System.Threading.Tasks;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class EleicaoAppService : AppServiceBase<Eleicao>, IEleicaoAppService
     {
@@ -379,12 +379,13 @@ namespace Cipa.Application
             if (inscricao == null) throw new NotFoundException("Inscrição não encontrada.");
 
             var fileName = $"{Guid.NewGuid().ToString().Replace("-", "")}{Path.GetExtension(fotoFileName)}";
-            var fileKey = $@"{PATH_FOTOS}{eleicaoId.ToString()}/{fileName}"; 
+            var fileKey = $@"{PATH_FOTOS}{eleicaoId.ToString()}/{fileName}";
             var fotoAnterior = inscricao.Foto;
             inscricao.Foto = await _unitOfWork.ArquivoRepository.RealizarUpload(file, fileKey);
             base.Atualizar(eleicao);
 
-            if (!string.IsNullOrWhiteSpace(fotoAnterior)) {
+            if (!string.IsNullOrWhiteSpace(fotoAnterior))
+            {
                 _unitOfWork.ArquivoRepository.ExluirArquivoNuvem(fotoAnterior);
             }
             return inscricao;
@@ -515,8 +516,9 @@ namespace Cipa.Application
                 inscricao.DataCadastro,
                 inscricao.Votos
             }).ToList();
-            
-            foreach (var inscricao in apuracao) {
+
+            foreach (var inscricao in apuracao)
+            {
                 dataTable.Rows.Add(inscricao.Nome, inscricao.Email,
                     inscricao.Matricula, inscricao.Cargo, inscricao.Area,
                     inscricao.DataNascimento, inscricao.DataAdmissao, inscricao.DataCadastro,

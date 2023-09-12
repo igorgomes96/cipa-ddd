@@ -5,7 +5,7 @@ using Cipa.Application.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class EstabelecimentoAppService : AppServiceBase<Estabelecimento>, IEstabelecimentoAppService
     {
@@ -21,7 +21,7 @@ namespace Cipa.Application
         {
             var empresa = _unitOfWork.EmpresaRepository.BuscarPeloId(estabelecimento.EmpresaId);
             if (empresa == null) throw new NotFoundException("Empresa não encontrada.");
-            
+
             if (!empresa.Conta.VerificarSeAindaPermiteCadastroDeEstabelecimentos())
                 throw new CustomException(
                     $"Não é possível cadastrar novos estabelecimentos, pois sua conta possui o limite de " +

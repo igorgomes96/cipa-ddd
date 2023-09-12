@@ -5,7 +5,7 @@ using Cipa.Domain.Factories.Interfaces;
 using Cipa.Domain.Helpers;
 using Cipa.Application.Repositories;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class ProcessamentoEtapaAppService : AppServiceBase<ProcessamentoEtapa>, IProcessamentoEtapaAppService
     {
@@ -28,7 +28,7 @@ namespace Cipa.Application
                 var emails = processamento.RealizarProcessamentoGerarEmails(_formatadorEmail);
                 foreach (var email in emails)
                     _unitOfWork.EmailRepository.Adicionar(email);
-                base.Atualizar(processamento);                    
+                base.Atualizar(processamento);
             }
         }
     }

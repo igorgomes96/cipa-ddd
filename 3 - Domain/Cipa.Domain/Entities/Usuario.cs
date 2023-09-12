@@ -15,8 +15,15 @@ namespace Cipa.Domain.Entities
             Cargo = cargo;
             CodigoRecuperacao = Guid.NewGuid();
             ExpiracaoCodigoRecuperacao = DateTime.Now.HorarioBrasilia().AddDays(1);
-            Perfil = Cipa.Domain.Helpers.PerfilUsuario.Eleitor;
+            Perfil = PerfilUsuario.Eleitor;
         }
+
+        public Usuario(string email, string nome, string cargo, string senha)
+            : this(email, nome, cargo)
+        {
+            Senha = senha;
+        }
+
         public string Email { get; set; }
         public string Nome { get; set; }
         public string Senha { get; set; }
@@ -63,6 +70,11 @@ namespace Cipa.Domain.Entities
 
             CodigoRecuperacao = null;
             ExpiracaoCodigoRecuperacao = null;
+            Senha = senha;
+        }
+
+        public void CadastrarSenha(string senha)
+        {
             Senha = senha;
         }
 

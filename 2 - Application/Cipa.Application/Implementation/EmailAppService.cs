@@ -7,7 +7,7 @@ using System;
 using System.Linq;
 using System.Threading;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class EmailAppService : AppServiceBase<Email>, IEmailAppService
     {
@@ -22,7 +22,7 @@ namespace Cipa.Application
         public void EnviarEmailsBackground()
         {
             var emails = ((IEmailRepository)_repositoryBase).BuscarEmailsPendentes().ToList();
-            
+
             foreach (var email in emails)
             {
                 email.IniciarProcessoEnvio();

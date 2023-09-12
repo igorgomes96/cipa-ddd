@@ -4,7 +4,7 @@ using Cipa.Domain.Exceptions;
 using Cipa.Application.Repositories;
 using System.Collections.Generic;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class ContaAppService : AppServiceBase<Conta>, IContaAppService
     {

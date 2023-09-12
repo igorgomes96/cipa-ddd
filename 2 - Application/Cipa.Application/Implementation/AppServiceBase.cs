@@ -4,7 +4,7 @@ using Cipa.Application.Repositories;
 using System;
 using System.Collections.Generic;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class AppServiceBase<TEntity> : IDisposable, IAppServiceBase<TEntity> where TEntity : class
     {

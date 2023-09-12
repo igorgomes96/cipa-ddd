@@ -8,7 +8,7 @@ using Cipa.Application.Repositories;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class ArquivoAppService : AppServiceBase<Arquivo>, IArquivoAppService
     {
@@ -31,7 +31,7 @@ namespace Cipa.Application
             var arquivosExistentes = _unitOfWork.ArquivoRepository.BuscaArquivos(dependencyType, dependencyId);
             if (arquivosExistentes.Any(a => a.Nome == nomeArquivo))
                 throw new DuplicatedException("Já há um arquivo salvo com esse nome.");
-                
+
             var novoArquivo = new Arquivo(
                 nomeArquivo, file.Length, contentType, emailUsuario,
                 nomeUsuario, dependencyType, dependencyId

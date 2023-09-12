@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class UsuarioAppService : AppServiceBase<Usuario>, IUsuarioAppService
     {

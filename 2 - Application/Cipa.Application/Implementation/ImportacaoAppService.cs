@@ -14,8 +14,9 @@ using Cipa.Domain.Entities;
 using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
 using Cipa.Application.Repositories;
+using Cipa.Application.Services.Implementation;
 
-namespace Cipa.Application
+namespace Cipa.Application.Implementation
 {
     public class ImportacaoAppService : AppServiceBase<Importacao>, IImportacaoAppService
     {
@@ -43,7 +44,7 @@ namespace Cipa.Application
                     yield return column.ColumnName;
         }
 
-        private IEnumerable<Inconsistencia> ValidarFormatoDataTable(DataTable dataTable, string emailUsuario)
+        private IEnumerable<Inconsistencia> ValidarFormatoDataTable(DataTable dataTable)
         {
             var inconsistencias = new List<Inconsistencia>();
 
@@ -81,7 +82,7 @@ namespace Cipa.Application
 
         private T ObtemValorFormatoCorreto<T>(DataRow dr, string columnName, DataColumnValidator validator)
         {
-            if (!dr.Table.Columns.Contains(columnName)) return default(T);
+            if (!dr.Table.Columns.Contains(columnName)) return default;
             return (T)validator.ParseValor(dr[columnName]);
         }
 
@@ -106,8 +107,16 @@ namespace Cipa.Application
                     EmailGestor = ObtemValorFormatoCorreto<string>(dr, ColunasArquivo.EmailGestor, validators[ColunasArquivo.EmailGestor])?.Trim()
                 };
                 var usuario = _unitOfWork.UsuarioRepository.BuscarUsuario(eleitor.Email);
+                var senhaPadrao = CryptoService.ComputeSha256Hash(
+                    $"{eleitor.DataNascimento?.ToString("ddMMyyyy") ?? string.Empty}{eleitor.Matricula}");
                 if (usuario == null)
-                    usuario = new Usuario(eleitor.Email, eleitor.Nome, eleitor.Cargo);
+                {
+                    usuario = new Usuario(eleitor.Email, eleitor.Nome, eleitor.Cargo, senhaPadrao);
+                }
+                else if (usuario.Perfil == PerfilUsuario.Eleitor)
+                {
+                    usuario.CadastrarSenha(senhaPadrao);
+                }
                 eleitor.Usuario = usuario;
                 eleitores.Add(eleitor);
                 linha++;
@@ -134,7 +143,7 @@ namespace Cipa.Application
                 base.Atualizar(importacao);
                 var arquivoImportacao = await _unitOfWork.ArquivoRepository.RealizarDownloadArquivo(importacao.Arquivo);
                 var dataTable = _excelService.LerTabela(arquivoImportacao, LINHA_INICIAL_ARQUIVO, 10);
-                var inconsistencias = ValidarFormatoDataTable(dataTable, importacao.Arquivo.EmailUsuario);
+                var inconsistencias = ValidarFormatoDataTable(dataTable);
 
                 if (!FinalizarImportacaoComErro(importacao, inconsistencias))
                 {

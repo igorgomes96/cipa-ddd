@@ -1,6 +1,7 @@
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Cipa.Application.Interfaces;
+using Cipa.Application.Services.Implementation;
 using Cipa.Domain.Entities;
 using Cipa.Domain.Helpers;
 using Cipa.WebApi.Authentication;
@@ -78,8 +79,6 @@ namespace Cipa.WebApi.Controllers
             novoUsuario.Perfil = PerfilUsuario.Administrador;
             return _mapper.Map<UsuarioViewModel>(_usuarioAppService.AdicionarAdministrador(novoUsuario));
         }
-
-
 
         [HttpPut("{id}")]
         [Authorize(PoliticasAutorizacao.UsuarioSESMTContaValida)]
