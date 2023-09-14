@@ -12,13 +12,11 @@ namespace Cipa.WebApi.BackgroundTasks
 
         public override async Task ProcessInScope(IServiceProvider serviceProvider)
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var scopedProcessingService = scope.ServiceProvider.GetRequiredService<IImportacaoAppService>();
-                await scopedProcessingService.RealizarImportacaoEmBrackground();
-            }
+            using var scope = serviceProvider.CreateScope();
+            var scopedProcessingService = scope.ServiceProvider.GetRequiredService<IImportacaoAppService>();
+            await scopedProcessingService.RealizarImportacaoEmBrackground();
         }
 
-        protected override int Delay { get { return (int)TimeSpan.FromSeconds(10).TotalMilliseconds; } }
+        protected override int Delay { get { return (int)TimeSpan.FromMinutes(2).TotalMilliseconds; } }
     }
 }

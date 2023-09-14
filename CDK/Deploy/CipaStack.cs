@@ -227,7 +227,7 @@ namespace Deploy
 
         private Instance_ CreateVmInstance(IVpc vpc, SecurityGroup securityGroup, Role role)
         {
-            return new Instance_(this, "cipa-server", new InstanceProps
+            var vm = new Instance_(this, "cipa-server", new InstanceProps
             {
                 InstanceName = "cipa-server",
                 Vpc = vpc,
@@ -242,6 +242,11 @@ namespace Deploy
                 MachineImage = MachineImage.LatestAmazonLinux2023(),
                 UserData = BuildUserData()
             });
+            _ = new CfnEIP(this, "elastic-ip", new CfnEIPProps
+            {
+                InstanceId = vm.InstanceId
+            });
+            return vm;
         }
 
         private Role CreateVmRole()

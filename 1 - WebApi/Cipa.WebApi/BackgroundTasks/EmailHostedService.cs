@@ -20,6 +20,6 @@ namespace Cipa.WebApi.BackgroundTasks
             return Task.CompletedTask;
         }
 
-        protected override int Delay { get { return (int)TimeSpan.FromSeconds(40).TotalMilliseconds; } }
+        protected override int Delay { get { return (int)TimeSpan.FromMinutes(5).TotalMilliseconds; } }
     }
 }

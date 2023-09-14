@@ -14,7 +14,18 @@ namespace Cipa.Infra.Data.Repositories
     {
         public EleicaoRepository(CipaContext db) : base(db) { }
 
-        public IEnumerable<Eleicao> BuscarPelaConta(int contaId) => DbSet.Where(e => e.ContaId == contaId);
+        public IEnumerable<Eleicao> BuscarPelaConta(int contaId)
+        {
+            var query = DbSet.Where(e => e.ContaId == contaId);
+            return query
+                .Include(e => e.Cronograma)
+                .Include(e => e.Configuracao)
+                .Include(e => e.Conta)
+                .Include(e => e.Grupo)
+                .Include(e => e.Dimensionamento)
+                .Include(e => e.Estabelecimento)
+                .ThenInclude(e => e.Empresa);
+        }
 
         public IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId) =>
             DbSet.Where(e => e.Eleitores.Any(eleitor => eleitor.UsuarioId == usuarioId));
@@ -41,7 +52,7 @@ namespace Cipa.Infra.Data.Repositories
                 .Where(e => !e.DataFinalizacao.HasValue)
                 .ToList();
             return eleicoesAndamento.Where(e =>
-                (e.EtapaAtual == null 
+                (e.EtapaAtual == null
                 && e.Cronograma.All(c => c.PosicaoEtapa == EPosicaoEtapa.Futura)
                 && e.Cronograma.First().DataPrevista.Date <= DateTime.Now.HorarioBrasilia().Date
                 && e.Cronograma.First().DataPrevista.Date >= dataInicio)  // Início do Processo
