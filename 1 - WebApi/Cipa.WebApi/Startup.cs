@@ -61,8 +61,7 @@ namespace Cipa.WebApi
                 options.UseMySql(
                     connectionString,
                     ServerVersion.AutoDetect(connectionString),
-                    b => b.MigrationsAssembly("Cipa.WebApi"))
-                .LogTo(Console.WriteLine);
+                    b => b.MigrationsAssembly("Cipa.WebApi"));
             });
 
             var signingConfigurations = new SigningConfigurations(Configuration.GetSection("TokenConfigurations:Secret").Value);
@@ -110,10 +109,10 @@ namespace Cipa.WebApi
                 .AllowCredentials()
                 .WithOrigins("http://localhost:4200", "https://cipa.4uptech.com.br")));
 
-            //services.AddHostedService<ImportacaoHostedService>();
-            //services.AddHostedService<EmailHostedService>();
-            //services.AddHostedService<ProcesssamentoEtapasHostedService>();
-            //services.AddHostedService<AlteracaoEtapaService>();
+            services.AddHostedService<ImportacaoHostedService>();
+            services.AddHostedService<EmailHostedService>();
+            services.AddHostedService<ProcesssamentoEtapasHostedService>();
+            services.AddHostedService<AlteracaoEtapaService>();
 
             services.Configure<GzipCompressionProviderOptions>(options =>
             {

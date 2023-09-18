@@ -9,7 +9,6 @@ namespace Cipa.WebApi.AutoMapper
 {
     public class AutoMapperConfig
     {
-        //private const string URLFotos = "https://d2q7dqdl9akp5k.cloudfront.net/";
         public static IMapper MapperConfig(string fotosUrlBase)
         {
             var config = new MapperConfiguration(cfg =>
