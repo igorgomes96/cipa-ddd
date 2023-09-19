@@ -39,10 +39,8 @@ namespace Cipa.WebApi
 {
     public class Startup
     {
-        private readonly ILogger<Startup> _logger;
-        public Startup(ILogger<Startup> logger, IConfiguration configuration)
+        public Startup(IConfiguration configuration)
         {
-            _logger = logger;
             Configuration = configuration;
         }
 
