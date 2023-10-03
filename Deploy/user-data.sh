@@ -1,6 +1,7 @@
 #!/bin/bash
 yum update -y
 yum install nginx -y
+systemctl enable nginx # habilita inicialização automática
 rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm  # add the Microsoft package signing key to your list of trusted keys
 yum install dotnet-sdk-6.0 -y  # install .net sdk
 yum install git -y
