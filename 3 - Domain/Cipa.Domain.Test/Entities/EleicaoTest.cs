@@ -603,8 +603,8 @@ namespace Cipa.Domain.Test.Entities
         public void PassarParaProximaEtapa_EtapaVotacaoSemQtdaMinimaVotos_ThrowCustomException(
             int qtdaEleitores, int qtdaVotos)
         {
-            // Garante que a data de término da votação (Ata da Eleição) será a hoje
-            var dataInicio = DateTime.Today.AddDays(-30);
+            // Garante que a data de término da votação (Ata da Eleição) foi ontem
+            var dataInicio = DateTime.Today.AddDays(-31);
             var eleicao = CriarEleicao(dataInicio);
 
             // Adiciona os eleitores
@@ -644,8 +644,8 @@ namespace Cipa.Domain.Test.Entities
         public void PassarParaProximaEtapa_EtapaVotacaoSemQtdaMinimaVotosPoremAtrasada_CronogramaAtualizado(
             int qtdaEleitores, int qtdaVotos)
         {
-            // Garante que a data de término da votação (Ata da Eleição) foi ontem
-            var dataInicio = DateTime.Today.AddDays(-31);
+            // Garante que a data de término da votação (Ata da Eleição) foi anteontem
+            var dataInicio = DateTime.Today.AddDays(-32);
             var eleicao = CriarEleicao(dataInicio);
 
             // Adiciona os eleitores
@@ -677,7 +677,7 @@ namespace Cipa.Domain.Test.Entities
 
             eleicao.PassarParaProximaEtapa();
             Assert.Equal(ECodigoEtapaObrigatoria.Ata, eleicao.EtapaAtual.EtapaObrigatoriaId);
-            Assert.Equal(DateTime.Today.AddDays(-1), eleicao.EtapaAtual.DataPrevista.Date);
+            Assert.Equal(DateTime.Today.AddDays(-2), eleicao.EtapaAtual.DataPrevista.Date);
         }
 
         public static object[][] InlineDataCronograma = new object[][] {

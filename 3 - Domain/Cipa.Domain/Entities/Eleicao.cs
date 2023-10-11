@@ -338,9 +338,13 @@ namespace Cipa.Domain.Entities
                 _dimensionamento = Dimensionamento;
             }
 
+            // 2 dias após a data prevista de término da votação.
+            // 1 dias após o término, se não atingiu a qtda mínima de votos, tenta novamente.
+            // 2 dias, se não atingiu 1/3 de votos (TODO), tenta novamente, e apura ao final do dia.
+            var ontem = DateTime.Today.AddDays(-1);
             if (EtapaAtual.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Votacao
                 && !Dimensionamento.PossuiQtdaMinimaVotos
-                && (EtapaPosterior == null || EtapaPosterior.DataPrevista.Date >= DateTime.Today))
+                && (EtapaPosterior == null || EtapaPosterior.DataPrevista.Date >= ontem))
             {
                 throw new CustomException("Esta eleição ainda não atingiu os 50% de participação de todos os funcionários, conforme exigido pela NR-5.");
             }
