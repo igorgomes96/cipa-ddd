@@ -4,6 +4,7 @@ using Cipa.Domain.Exceptions;
 using Cipa.Domain.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using Xunit;
 
@@ -42,12 +43,12 @@ namespace Cipa.Domain.Test.Entities
         private Estabelecimento EstabelecimentoPadrao => new Estabelecimento("Cidade", "Endereço", 1) { Grupo = GrupoPadrao() };
 
 
-        private Eleicao CriarEleicao(Conta conta, Grupo grupo)
+        private Eleicao CriarEleicao(Grupo grupo, DateTime inicio)
         {
             var eleicao = new Eleicao(
-                new DateTime(2019, 1, 1),
+                inicio,
                 2,
-                new DateTime(2019, 2, 28),
+                inicio.AddDays(60),
                 UsuarioPadrao,
                 EstabelecimentoPadrao,
                 grupo);
@@ -56,7 +57,9 @@ namespace Cipa.Domain.Test.Entities
             return eleicao;
         }
 
-        private Eleicao CriarEleicao() => CriarEleicao(ContaPadrao(), GrupoPadrao());
+        private Eleicao CriarEleicao() => CriarEleicao(GrupoPadrao(), new DateTime(2019, 1, 1));
+
+        private Eleicao CriarEleicao(DateTime inicio) => CriarEleicao(GrupoPadrao(), inicio);
 
         private void FinalizarEleicao(Eleicao eleicao)
         {
@@ -600,7 +603,9 @@ namespace Cipa.Domain.Test.Entities
         public void PassarParaProximaEtapa_EtapaVotacaoSemQtdaMinimaVotos_ThrowCustomException(
             int qtdaEleitores, int qtdaVotos)
         {
-            var eleicao = CriarEleicao();
+            // Garante que a data de término da votação (Ata da Eleição) será a hoje
+            var dataInicio = DateTime.Today.AddDays(-30);
+            var eleicao = CriarEleicao(dataInicio);
 
             // Adiciona os eleitores
             List<Eleitor> eleitores = new List<Eleitor>();
@@ -633,6 +638,48 @@ namespace Cipa.Domain.Test.Entities
             Assert.Equal("Esta eleição ainda não atingiu os 50% de participação de todos os funcionários, conforme exigido pela NR-5.", excecao.Message);
         }
 
+        [Theory]
+        [InlineData(7000, 3499)]
+        [InlineData(7001, 3500)]
+        public void PassarParaProximaEtapa_EtapaVotacaoSemQtdaMinimaVotosPoremAtrasada_CronogramaAtualizado(
+            int qtdaEleitores, int qtdaVotos)
+        {
+            // Garante que a data de término da votação (Ata da Eleição) foi ontem
+            var dataInicio = DateTime.Today.AddDays(-31);
+            var eleicao = CriarEleicao(dataInicio);
+
+            // Adiciona os eleitores
+            List<Eleitor> eleitores = new List<Eleitor>();
+            for (int i = 0; i < qtdaEleitores; i++)
+            {
+                var usuario = new Usuario($"eleitor{i}@email.com", $"Eleitor {i}", "Cargo");
+                var eleitor = new Eleitor(usuario) { Id = i };
+                eleicao.AdicionarEleitor(eleitor);
+                eleitores.Add(eleitor);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Inscricao);
+
+            // Faz as inscrições
+            var qtdaInscricoes = 27;
+            var usuarioAprovador = new Usuario("aprovador@email.com", "Aprovador", "Aprovador");
+            for (int i = 0; i < qtdaInscricoes; i++)
+            {
+                var inscricao = eleicao.FazerInscricao(eleitores.ElementAt(i), "Objetivos");
+                inscricao.Id = i + 1;
+                eleicao.AprovarInscricao(inscricao.Id, usuarioAprovador);
+            }
+
+            PassarEtapaAte(eleicao, ECodigoEtapaObrigatoria.Votacao);
+
+            for (int i = 0; i < qtdaVotos; i++)
+                eleicao.RegistrarVoto((i % qtdaInscricoes) + 1, eleitores.ElementAt(i), "::1");
+
+            eleicao.PassarParaProximaEtapa();
+            Assert.Equal(ECodigoEtapaObrigatoria.Ata, eleicao.EtapaAtual.EtapaObrigatoriaId);
+            Assert.Equal(DateTime.Today.AddDays(-1), eleicao.EtapaAtual.DataPrevista.Date);
+        }
+
         public static object[][] InlineDataCronograma = new object[][] {
             new object[] {
                 1, EPosicaoEtapa.Atual, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura, EPosicaoEtapa.Futura,
@@ -658,8 +705,15 @@ namespace Cipa.Domain.Test.Entities
         [Theory, MemberData(nameof(InlineDataCronograma))]
         public void PassarParaProximaEtapa_NenhumaInsconsistencia_CronogramaAtualizado(
             int passarEtapaNVezes,
-            EPosicaoEtapa posicaoEtapaEsperada1, EPosicaoEtapa posicaoEtapaEsperada2, EPosicaoEtapa posicaoEtapaEsperada3, EPosicaoEtapa posicaoEtapaEsperada4,
-            DateTime? dataRealizada1, DateTime? dataRealizada2, DateTime? dataRealizada3, DateTime? dataRealizada4, DateTime? dataFinalizacaoEleicao
+            EPosicaoEtapa posicaoEtapaEsperada1,
+            EPosicaoEtapa posicaoEtapaEsperada2,
+            EPosicaoEtapa posicaoEtapaEsperada3,
+            EPosicaoEtapa posicaoEtapaEsperada4,
+            DateTime? dataRealizada1,
+            DateTime? dataRealizada2,
+            DateTime? dataRealizada3,
+            DateTime? dataRealizada4,
+            DateTime? dataFinalizacaoEleicao
         )
         {
             var eleicao = CriarEleicao();

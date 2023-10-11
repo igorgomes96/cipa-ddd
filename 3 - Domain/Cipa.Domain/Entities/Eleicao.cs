@@ -338,7 +338,9 @@ namespace Cipa.Domain.Entities
                 _dimensionamento = Dimensionamento;
             }
 
-            if (EtapaAtual.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Votacao && !Dimensionamento.PossuiQtdaMinimaVotos)
+            if (EtapaAtual.EtapaObrigatoriaId == ECodigoEtapaObrigatoria.Votacao
+                && !Dimensionamento.PossuiQtdaMinimaVotos
+                && (EtapaPosterior == null || EtapaPosterior.DataPrevista.Date >= DateTime.Today))
             {
                 throw new CustomException("Esta eleição ainda não atingiu os 50% de participação de todos os funcionários, conforme exigido pela NR-5.");
             }
