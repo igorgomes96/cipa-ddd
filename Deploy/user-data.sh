@@ -1,6 +1,7 @@
 #!/bin/bash
 yum update -y
 yum install nginx -y
+systemctl enable nginx # habilita inicialização automática
 rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm  # add the Microsoft package signing key to your list of trusted keys
 yum install dotnet-sdk-6.0 -y  # install .net sdk
 yum install git -y
@@ -73,6 +74,7 @@ echo "    server {" >> /etc/nginx/nginx.conf
 echo "        listen       80;" >> /etc/nginx/nginx.conf
 echo "        listen       [::]:80;" >> /etc/nginx/nginx.conf
 echo "        server_name  [cipa.4uptech.com.br];" >> /etc/nginx/nginx.conf
+echo "        client_max_body_size  100M;" >> /etc/nginx/nginx.conf
 echo "" >> /etc/nginx/nginx.conf
 echo "        location / {" >> /etc/nginx/nginx.conf
 echo "            root         /var/www/cipa/wwwroot/;" >> /etc/nginx/nginx.conf
