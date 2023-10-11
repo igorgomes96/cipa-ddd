@@ -533,7 +533,7 @@ namespace Cipa.Domain.Entities
                 Votos = qtdaVotosEmBranco
             };
             apuracao = apuracao.Union(new[] { votosEmBranco });
-            if (!Dimensionamento.PossuiQtdaMinimaVotos) return apuracao;
+            //if (!Dimensionamento.PossuiQtdaMinimaVotos) return apuracao;
 
             var efetivos = apuracao
                .Take(Dimensionamento.QtdaEfetivos)
