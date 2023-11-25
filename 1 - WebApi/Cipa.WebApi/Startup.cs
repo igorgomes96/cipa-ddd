@@ -55,7 +55,7 @@ namespace Cipa.WebApi
             services.AddDbContext<CipaContext>(options =>
             {
                 options.UseLazyLoadingProxies();
-                options.LogTo(Console.WriteLine);
+                // options.LogTo(Console.WriteLine);
                 var connectionString = Configuration.GetConnectionString("MySqlConnection");
                 options.UseMySql(
                     connectionString,
