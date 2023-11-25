@@ -132,6 +132,8 @@ namespace Cipa.Domain.Entities
         public virtual ICollection<Importacao> Importacoes { get; } = new List<Importacao>();
         public virtual ICollection<ProcessamentoEtapa> ProcessamentosEtapas { get; } = new List<ProcessamentoEtapa>();
 
+        public bool UsuarioEleitor { get; set; }
+        
         public EtapaCronograma EtapaAtual
         {
             get => Cronograma.FirstOrDefault(c => c.PosicaoEtapa == EPosicaoEtapa.Atual);

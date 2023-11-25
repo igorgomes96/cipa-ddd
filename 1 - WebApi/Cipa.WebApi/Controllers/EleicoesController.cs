@@ -60,13 +60,9 @@ namespace Cipa.WebApi.Controllers
                 else
                     eleicoes = eleicoes.Where(e => e.DataFinalizacao != null);
             }
-            return _mapper.Map<List<EleicaoDetalheViewModel>>(eleicoes.ToList());
-        }
 
-        [HttpGet("{id}/usuarioeleitor")]
-        public ActionResult<bool> GetUsuarioEhEleitor(int id)
-        {
-            return _eleicaoAppService.VerificarSeUsuarioEhEleitor(id, UsuarioId);
+            eleicoes = _eleicaoAppService.BuscarInformacoesAdicionais(eleicoes.ToList(), UsuarioId);
+            return _mapper.Map<List<EleicaoDetalheViewModel>>(eleicoes);
         }
 
         [HttpGet("{id}")]

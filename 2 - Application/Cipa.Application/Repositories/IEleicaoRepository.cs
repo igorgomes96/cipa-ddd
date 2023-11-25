@@ -13,7 +13,7 @@ namespace Cipa.Application.Repositories
         IEnumerable<Voto> BuscarVotos(int id);
         IEnumerable<Eleicao> BuscarPelaConta(int contaId);
         IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId);
-        bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId);
+        IEnumerable<int> VerificarEleicoesOndeUsuarioEhEleitor(IEnumerable<int> eleicoesIds, int usuarioId);
         IEnumerable<Eleicao> BuscarEleicoesComMudancaEtapaAgendadaParaHoje();
 
     }

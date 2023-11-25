@@ -37,9 +37,9 @@ namespace Cipa.Application.Interfaces
         Stream BuscarFotoInscricao(int eleicaoId, int inscricaoId);
         Task<Importacao> ImportarEleitores(int eleicaoId, int usuarioId, Stream file, string nomeArquivo, string contentType);
         Task<Arquivo> FazerUploadArquivo(int eleicaoId, int etapaId, int usuarioId, Stream file, string nomeArquivo, string contentType);
-        bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId);
         Stream GerarRelatorioInscricoes(int eleicaoId);
         Stream GerarRelatorioVotos(int eleicaoId);
         void AtualizarCronogramas();
+        IList<Eleicao> BuscarInformacoesAdicionais(IList<Eleicao> eleicoes, int usuarioId);
     }
 }

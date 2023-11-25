@@ -55,6 +55,7 @@ namespace Cipa.WebApi
             services.AddDbContext<CipaContext>(options =>
             {
                 options.UseLazyLoadingProxies();
+                options.LogTo(Console.WriteLine);
                 var connectionString = Configuration.GetConnectionString("MySqlConnection");
                 options.UseMySql(
                     connectionString,
@@ -107,10 +108,11 @@ namespace Cipa.WebApi
                 .AllowCredentials()
                 .WithOrigins("http://localhost:4200", "https://cipa.4uptech.com.br")));
 
-            services.AddHostedService<ImportacaoHostedService>();
-            services.AddHostedService<EmailHostedService>();
-            services.AddHostedService<ProcesssamentoEtapasHostedService>();
-            services.AddHostedService<AlteracaoEtapaService>();
+            
+            // services.AddHostedService<ImportacaoHostedService>();
+            // services.AddHostedService<EmailHostedService>();
+            // services.AddHostedService<ProcesssamentoEtapasHostedService>();
+            // services.AddHostedService<AlteracaoEtapaService>();
 
             services.Configure<GzipCompressionProviderOptions>(options =>
             {

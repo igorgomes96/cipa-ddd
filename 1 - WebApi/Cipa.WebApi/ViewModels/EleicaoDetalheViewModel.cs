@@ -10,5 +10,6 @@ namespace Cipa.WebApi.ViewModels
         public DateTime TerminoInscricao { get; set; }
         public DateTime InicioVotacao { get; set; }
         public DateTime TerminoVotacao { get; set; }
+        public bool UsuarioEleitor { get; set; }
     }
 }

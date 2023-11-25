@@ -120,6 +120,19 @@ namespace Cipa.Application.Implementation
         public IEnumerable<Inscricao> BuscarInscricoes(int eleicaoId, StatusInscricao? status) =>
             _unitOfWork.EleicaoRepository.BuscarInscricoes(eleicaoId, status);
 
+        public IList<Eleicao> BuscarInformacoesAdicionais(IList<Eleicao> eleicoes, int usuarioId)
+        {
+            var eleicoesId = eleicoes.Select(e => e.Id);
+            var eleicoesEleitor = _unitOfWork.EleicaoRepository
+                .VerificarEleicoesOndeUsuarioEhEleitor(eleicoesId, usuarioId).ToList();
+            foreach (var eleicao in eleicoes)
+            {
+                eleicao.UsuarioEleitor = eleicoesEleitor.Contains(eleicao.Id);
+            }
+
+            return eleicoes;
+        }
+
         public Inscricao BuscarInscricaoPeloUsuario(int eleicaoId, int usuarioId)
         {
             var eleicao = _unitOfWork.EleicaoRepository.BuscarPeloId(eleicaoId);
@@ -185,9 +198,6 @@ namespace Cipa.Application.Implementation
             base.Atualizar(eleicao);
             return eleicao;
         }
-
-        public bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId) =>
-            (_repositoryBase as IEleicaoRepository).VerificarSeUsuarioEhEleitor(eleicaoId, usuarioId);
 
         public Eleitor AdicionarEleitor(int eleicaoId, Eleitor eleitor)
         {

@@ -23,12 +23,20 @@ namespace Cipa.WebApi.AutoMapper
 
                 cfg.CreateMap<Eleicao, EleicaoDetalheViewModel>()
                     .ForMember(dest => dest.Grupo, opt => opt.MapFrom(src => src.Grupo.CodigoGrupo))
-                    .ForMember(dest => dest.InscricoesFinalizadas, opt => opt.MapFrom(src => src.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao)))
-                    .ForMember(dest => dest.VotacaoFinalizada, opt => opt.MapFrom(src => src.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Votacao)))
-                    .ForMember(dest => dest.InicioInscricao, opt => opt.MapFrom(src => src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao).Data))
-                    .ForMember(dest => dest.InicioVotacao, opt => opt.MapFrom(src => src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Votacao).Data))
-                    .ForMember(dest => dest.TerminoInscricao, opt => opt.MapFrom(src => src.DataTerminoEtapa(src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao))))
-                    .ForMember(dest => dest.TerminoVotacao, opt => opt.MapFrom(src => src.DataTerminoEtapa(src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Votacao))));
+                    .ForMember(dest => dest.InscricoesFinalizadas,
+                        opt => opt.MapFrom(src => src.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Inscricao)))
+                    .ForMember(dest => dest.VotacaoFinalizada,
+                        opt => opt.MapFrom(src => src.JaUltrapassouEtapa(ECodigoEtapaObrigatoria.Votacao)))
+                    .ForMember(dest => dest.InicioInscricao,
+                        opt => opt.MapFrom(src => src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao).Data))
+                    .ForMember(dest => dest.InicioVotacao,
+                        opt => opt.MapFrom(src => src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Votacao).Data))
+                    .ForMember(dest => dest.TerminoInscricao,
+                        opt => opt.MapFrom(src =>
+                            src.DataTerminoEtapa(src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Inscricao))))
+                    .ForMember(dest => dest.TerminoVotacao,
+                        opt => opt.MapFrom(src =>
+                            src.DataTerminoEtapa(src.BuscarEtapaObrigatoria(ECodigoEtapaObrigatoria.Votacao))));
 
                 cfg.CreateMap<Empresa, EmpresaViewModel>().ReverseMap();
                 cfg.CreateMap<Estabelecimento, EstabelecimentoViewModel>()

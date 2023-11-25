@@ -56,6 +56,8 @@ namespace Cipa.Infra.Data.EntityConfig
                  .WithOne()
                  .HasForeignKey<ConfiguracaoEleicao>(c => c.Id);
 
+            builder.Ignore(e => e.UsuarioEleitor);
+            
             builder.HasIndex(e => new { e.EstabelecimentoId, e.Gestao }).IsUnique();
         }
     }
