@@ -288,8 +288,6 @@ namespace Cipa.WebApi.Controllers
         [HttpPost("{id}/inscricoes/{inscricaoId}/votar")]
         public VotoViewModel PostVotar(int id, int inscricaoId)
         {
-            var headers = Request.Headers.Select(h => $"{h.Key}:{h.Value}");
-            _logger.LogInformation("Headers: {headers}", string.Join(",", headers));
             return _mapper.Map<VotoViewModel>(_eleicaoAppService.RegistrarVoto(id, inscricaoId, UsuarioId, IpRequisicao));
         }
 
