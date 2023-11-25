@@ -64,6 +64,13 @@ namespace Cipa.WebApi.Controllers
             eleicoes = _eleicaoAppService.BuscarInformacoesAdicionais(eleicoes.ToList(), UsuarioId);
             return _mapper.Map<List<EleicaoDetalheViewModel>>(eleicoes);
         }
+        
+        // TODO: remove - I didn't do it yet to avoid error because of cache in user's browser 
+        [HttpGet("{id}/usuarioeleitor")]
+        public ActionResult<bool> GetUsuarioEhEleitor(int id)
+        {
+            return _eleicaoAppService.VerificarSeUsuarioEhEleitor(id, UsuarioId);
+        }
 
         [HttpGet("{id}")]
         public ActionResult<EleicaoDetalheViewModel> GetEleicao(int id)

@@ -105,7 +105,10 @@ namespace Cipa.Application.Implementation
             if (eleicao == null) throw new NotFoundException("Eleição não encontrada.");
             return eleicao.Cronograma.OrderBy(e => e.Ordem);
         }
-
+        
+        public bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId) =>
+            (_repositoryBase as IEleicaoRepository).VerificarSeUsuarioEhEleitor(eleicaoId, usuarioId);
+        
         public IEnumerable<Eleitor> BuscarEleitores(int eleicaoId) =>
             _unitOfWork.EleicaoRepository.BuscarEleitores(eleicaoId).OrderBy(e => e.Nome);
 

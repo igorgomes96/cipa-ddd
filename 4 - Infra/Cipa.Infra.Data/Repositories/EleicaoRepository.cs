@@ -44,6 +44,9 @@ namespace Cipa.Infra.Data.Repositories
         public IEnumerable<int> VerificarEleicoesOndeUsuarioEhEleitor(IEnumerable<int> eleicoesIds, int usuarioId) =>
             _db.Eleitores.Where(e => eleicoesIds.Contains(e.EleicaoId) && e.UsuarioId == usuarioId)
                 .Select(e => e.EleicaoId);
+        
+        public bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId) =>
+            _db.Eleitores.Any(e => e.EleicaoId == eleicaoId && e.UsuarioId == usuarioId);
 
         public IEnumerable<Eleicao> BuscarEleicoesComMudancaEtapaAgendadaParaHoje()
         {

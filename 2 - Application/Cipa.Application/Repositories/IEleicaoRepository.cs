@@ -15,6 +15,7 @@ namespace Cipa.Application.Repositories
         IEnumerable<Eleicao> BuscarPeloUsuario(int usuarioId);
         IEnumerable<int> VerificarEleicoesOndeUsuarioEhEleitor(IEnumerable<int> eleicoesIds, int usuarioId);
         IEnumerable<Eleicao> BuscarEleicoesComMudancaEtapaAgendadaParaHoje();
+        bool VerificarSeUsuarioEhEleitor(int eleicaoId, int usuarioId);
 
     }
 }
