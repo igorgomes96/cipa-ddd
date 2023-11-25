@@ -8,7 +8,7 @@ namespace Cipa.WebApi.Controllers
     {
         protected string IpRequisicao => 
             Request.Headers.TryGetValue("x-forwarded-for", out var ip) ?
-                ip.First().Trim().Replace(",", "") :
+                ip.First().Split(",").First().Trim() :
                 Request.HttpContext.Connection.RemoteIpAddress!.ToString();
 
         protected int ContaId
