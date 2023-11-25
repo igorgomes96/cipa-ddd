@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Cipa.WebApi.Controllers
 {
@@ -24,17 +25,20 @@ namespace Cipa.WebApi.Controllers
         private readonly IEleicaoAppService _eleicaoAppService;
         private readonly IArquivoAppService _arquivoAppService;
         private readonly IImportacaoAppService _importacaoAppService;
+        private readonly ILogger<EleicoesController> _logger;
         private readonly IMapper _mapper;
         public EleicoesController(
             IEleicaoAppService eleicaoAppService,
             IMapper mapper,
             IArquivoAppService arquivoAppService,
-            IImportacaoAppService importacaoAppService)
+            IImportacaoAppService importacaoAppService,
+            ILogger<EleicoesController> logger)
         {
             _eleicaoAppService = eleicaoAppService;
             _mapper = mapper;
             _arquivoAppService = arquivoAppService;
             _importacaoAppService = importacaoAppService;
+            _logger = logger;
         }
         #endregion
 
@@ -284,6 +288,8 @@ namespace Cipa.WebApi.Controllers
         [HttpPost("{id}/inscricoes/{inscricaoId}/votar")]
         public VotoViewModel PostVotar(int id, int inscricaoId)
         {
+            var headers = Request.Headers.Select(h => $"{h.Key}:{h.Value}");
+            _logger.LogInformation("Headers: {headers}", string.Join(",", headers));
             return _mapper.Map<VotoViewModel>(_eleicaoAppService.RegistrarVoto(id, inscricaoId, UsuarioId, IpRequisicao));
         }
 

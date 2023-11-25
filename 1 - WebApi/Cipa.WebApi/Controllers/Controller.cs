@@ -7,7 +7,7 @@ namespace Cipa.WebApi.Controllers
     public class Controller : ControllerBase
     {
         protected string IpRequisicao => 
-            Request.Headers.TryGetValue("X-Forwarded-For", out var ip) ?
+            Request.Headers.TryGetValue("x-forwarded-for", out var ip) ?
                 ip.First() :
                 Request.HttpContext.Connection.RemoteIpAddress!.ToString();
 
