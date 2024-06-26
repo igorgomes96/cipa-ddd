@@ -1,0 +1,313 @@
+@startuml
+class Usuario {
+    + Usuario(email:string, nome:string, cargo:string)
+    + Usuario(email:string, nome:string, cargo:string, senha:string)
+    + Email : string <<get>> <<set>>
+    + Nome : string <<get>> <<set>>
+    + Senha : string <<get>> <<set>>
+    + ContaId : int? <<get>> <<set>>
+    + Perfil : string <<get>> <<set>>
+    + Cargo : string <<get>> <<set>>
+    + AlterarParaPerfilEleitor() : void
+    + AlterarParaPerfilSESMT(conta:Conta) : void
+    + AlterarParaPerfilAdministrador() : void
+    + JaCadastrouSenha : bool <<get>>
+    + CadastrarSenha(codigoRecuperacao:Guid, senha:string) : void
+    + CadastrarSenha(senha:string) : void
+    + ResetarSenha() : void
+}
+Usuario --> "Conta" Conta
+class Conta {
+    + PlanoId : int? <<get>> <<set>>
+    + Ativa : bool <<get>> <<set>>
+    + QtdaEstabelecimentos : int <<get>> <<set>>
+    + VerificarSeAindaPermiteCadastroDeEstabelecimentos() : bool
+    + BuscarTemplateEmail(tipoTemplateEmail:ETipoTemplateEmail) : TemplateEmail
+    + AdicionarTempateEmail(templateEmail:TemplateEmail) : void
+    + AdicionarEtapaPadrao(etapaPadrao:EtapaPadraoConta) : void
+    + AtualizarEtapaPadrao(etapaPadrao:EtapaPadraoConta) : void
+    + RemoverEtapaPadrao(etapaPadrao:EtapaPadraoConta) : void
+    + BuscarEtapaPadraoPeloId(id:int) : EtapaPadraoConta
+}
+Conta --> "Plano" Plano
+class Dimensionamento {
+    + Dimensionamento(maximo:int, minimo:int, qtdaEfetivos:int, qtdaSuplentes:int)
+    + Dimensionamento(dimensionamento:DimensionamentoBase)
+    + QtdaEleitores : int <<get>> <<set>>
+    + QtdaVotos : int <<get>> <<set>>
+    + QtdaInscricoesAprovadas : int <<get>> <<set>>
+    + QtdaInscricoesReprovadas : int <<get>> <<set>>
+    + QtdaInscricoesPendentes : int <<get>> <<set>>
+    + QtdaInscricoes : int <<get>>
+    + PossuiQtdaMinimaInscritos : bool <<get>>
+    + QtdaMinimaVotos : int <<get>>
+    + PossuiQtdaMinimaVotos : bool <<get>>
+}
+DimensionamentoBase <|-- Dimensionamento
+class ProcessamentoEtapa {
+    + ProcessamentoEtapa()
+    + ProcessamentoEtapa(eleicao:Eleicao, etapaCronograma:EtapaCronograma, etapaCronogramaAnterior:EtapaCronograma)
+    + EtapaCronogramaId : int <<get>>
+    + EtapaCronogramaAnteriorId : int? <<get>>
+    + MensagemErro : string <<get>>
+    + IniciarProcessamento() : void
+    + RealizarProcessamentoGerarEmails(formatadorFactory:IFormatadorEmailServiceFactory) : ICollection<Email>
+}
+ProcessamentoEtapa --> "StatusProcessamentoEtapa" EStatusProcessamentoEtapa
+ProcessamentoEtapa --> "EtapaCronograma" EtapaCronograma
+ProcessamentoEtapa --> "EtapaCronogramaAnterior" EtapaCronograma
+ProcessamentoEtapa --> "Eleicao" Eleicao
+class EtapaObrigatoria {
+    + Nome : string <<get>> <<set>>
+    + Descricao : string <<get>> <<set>>
+    + Ordem : int <<get>> <<set>>
+    + DuracaoMinima : int? <<get>> <<set>>
+    + PrazoMandatoAnterior : int <<get>> <<set>>
+}
+class DimensionamentoBase {
+    + Id : int <<get>> <<set>>
+    + Minimo : int <<get>> <<internal set>>
+    + Maximo : int <<get>> <<internal set>>
+    + QtdaEfetivos : int <<get>> <<internal set>>
+    + QtdaSuplentes : int <<get>> <<internal set>>
+    + TotalCipeiros : int <<get>>
+}
+class Eleitor {
+    + Eleitor(nome:string, email:string)
+    + Eleitor(usuario:Usuario)
+    + Nome : string <<get>> <<set>>
+    + Email : string <<get>> <<set>>
+    + Matricula : string <<get>> <<set>>
+    + Area : string <<get>> <<set>>
+    + Cargo : string <<get>> <<set>>
+    + EleicaoId : int <<get>>
+    + UsuarioId : int <<get>>
+    + NomeGestor : string <<get>> <<set>>
+    + EmailGestor : string <<get>> <<set>>
+}
+Eleitor --> "Eleicao" Eleicao
+Eleitor --> "Usuario" Usuario
+Eleitor --> "Inscricao" Inscricao
+Eleitor --> "Voto" Voto
+class Eleicao {
+    + Eleicao(dataInicio:DateTime, duracaoGestao:int, terminoMandatoAnterior:DateTime?, usuarioCriacao:Usuario, estabelecimento:Estabelecimento, grupo:Grupo)
+    + Eleicao(dataInicio:DateTime, duracaoGestao:int, terminoMandatoAnterior:DateTime?, usuarioCriacao:Usuario, estabelecimento:Estabelecimento, grupo:Grupo, conta:Conta)
+    + Eleicao(id:int, dataInicio:DateTime, duracaoGestao:int, estabelecimentoId:int, grupoId:int, usuarioCriacaoId:int, contaId:int, terminoMandatoAnterior:DateTime?)
+    + Gestao : int <<get>>
+    + DuracaoGestao : int <<get>> <<set>>
+    + EstabelecimentoId : int <<get>>
+    + UsuarioCriacaoId : int <<get>>
+    + ContaId : int <<get>>
+    + GrupoId : int <<get>>
+    + UsuarioEleitor : bool <<get>> <<set>>
+    + GerarCronograma() : void
+    + AtualizarCronograma(etapaCronograma:EtapaCronograma) : void
+    + AtualizarConfiguracoes(configuracao:ConfiguracaoEleicao) : void
+    + AtualizarDimensionamento(linhaDimensionamento:LinhaDimensionamento) : void
+    + JaUltrapassouEtapa(etapaObrigatoria:ECodigoEtapaObrigatoria) : bool
+    + AindaNaoUltrapassouEtapa(etapaObrigatoria:ECodigoEtapaObrigatoria) : bool
+    + BuscarEtapaObrigatoria(etapaObrigatoria:ECodigoEtapaObrigatoria) : EtapaCronograma
+    + RetonarEtapaAnterior(etapa:EtapaCronograma) : EtapaCronograma
+    + RetornarEtapaPosterior(etapa:EtapaCronograma) : EtapaCronograma
+    + DataTerminoEtapa(etapa:EtapaCronograma) : DateTime
+    + QtdaInscricoes(statusInscricao:StatusInscricao) : int
+    + BuscarEleitor(id:int) : Eleitor
+    + BuscarEleitorPeloEmail(email:string) : Eleitor
+    + BuscarEleitorPeloUsuarioId(id:int) : Eleitor
+    + PassarParaProximaEtapa(registrarErro:bool) : void
+    + AdicionarEleitor(eleitor:Eleitor) : Eleitor
+    + FazerInscricao(eleitor:Eleitor, objetivos:string) : Inscricao
+    + BuscarInscricaoPeloId(inscricaoId:int) : Inscricao
+    + BuscarInscricaoPeloEleitorId(eleitorId:int) : Inscricao
+    + AtualizarInscricao(eleitorId:int, objetivos:string) : Inscricao
+    + AprovarInscricao(inscricaoId:int, usuarioAprovador:Usuario) : Inscricao
+    + ReprovarInscricao(inscricaoId:int, usuarioAprovador:Usuario, motivoReprovacao:string) : Inscricao
+    + ExcluirEleitor(eleitor:Eleitor) : bool
+    + ExcluirTodosEleitores() : void
+    + RegistrarVoto(inscricaoId:int, eleitor:Eleitor, ip:string) : Voto
+    + VotarEmBranco(eleitor:Eleitor, ip:string) : Voto
+    + BuscarVotoEleitor(eleitor:Eleitor) : Voto
+    + RegistrarResultadoApuracao() : void
+    + ApurarVotos() : IEnumerable<Inscricao>
+    + AtualizarEleitor(eleitor:Eleitor) : Eleitor
+    + RetornarUltimoProcessamentoEtapa() : ProcessamentoEtapa
+}
+Eleicao --> "Configuracao" ConfiguracaoEleicao
+Eleicao --> "Estabelecimento" Estabelecimento
+Eleicao --> "Usuario" Usuario
+Eleicao --> "Conta" Conta
+Eleicao --> "Grupo" Grupo
+Eleicao --> "Dimensionamento" Dimensionamento
+Eleicao --> "EtapaAtual" EtapaCronograma
+Eleicao --> "UltimaEtapa" EtapaCronograma
+Eleicao --> "EtapaAnterior" EtapaCronograma
+Eleicao --> "EtapaPosterior" EtapaCronograma
+class Reprovacao {
+    + InscricaoId : int <<get>> <<set>>
+    + MotivoReprovacao : string <<get>> <<set>>
+    + EmailAprovador : string <<get>> <<set>>
+    + NomeAprovador : string <<get>> <<set>>
+}
+Reprovacao --> "Inscricao" Inscricao
+class ConfiguracaoEleicao {
+    + ConfiguracaoEleicao(envioEditalConvocao:bool, envioConviteInscricao:bool, envioConviteVotacao:bool)
+    + Id : int <<get>> <<set>>
+    + EnvioEditalConvocao : bool <<get>> <<set>>
+    + EnvioConviteInscricao : bool <<get>> <<set>>
+    + EnvioConviteVotacao : bool <<get>> <<set>>
+}
+enum StatusImportacao {
+    Aguardando,
+    Processando,
+    FinalizadoComSucesso,
+    FinalizadoComFalha,
+}
+class Importacao {
+    + Importacao()
+    + Importacao(arquivo:Arquivo, eleicao:Eleicao)
+    + EleicaoId : int <<get>> <<set>>
+    + IniciarProcessamento() : void
+    + FinalizarProcessamentoComSucesso() : void
+    + FinalizarImportacaoComFalha(inconsistencias:IEnumerable<Inconsistencia>) : void
+}
+Importacao --> "Status" StatusImportacao
+Importacao --> "Arquivo" Arquivo
+Importacao --> "Eleicao" Eleicao
+class LinhaDimensionamento {
+    + LinhaDimensionamento(maximo:int, minimo:int, qtdaEfetivos:int, qtdaSuplentes:int)
+    + GrupoId : int <<get>> <<set>>
+}
+DimensionamentoBase <|-- LinhaDimensionamento
+LinhaDimensionamento --> "Grupo" Grupo
+class LimiteDimensionamento {
+    + LimiteDimensionamento()
+    + LimiteDimensionamento(limite:int, intervaloAcrescimo:int, acrescimoEfetivos:int, acrescimoSuplentes:int)
+    + Id : int <<get>> <<set>>
+    + Limite : int <<get>>
+    + IntervaloAcrescimo : int <<get>>
+    + AcrescimoEfetivos : int <<get>>
+    + AcrescimoSuplentes : int <<get>>
+}
+class Inconsistencia {
+    + Inconsistencia(coluna:string, linha:int, mensagem:string)
+    + Coluna : string <<get>>
+    + Linha : int <<get>>
+    + Mensagem : string <<get>>
+    + ImportacaoId : int <<get>>
+}
+Inconsistencia --> "Importacao" Importacao
+class Voto {
+    + Voto()
+    + Voto(eleitor:Eleitor, ip:string)
+    + Id : int <<get>> <<set>>
+    + EleitorId : int <<get>> <<set>>
+    + EleicaoId : int <<get>> <<set>>
+    + IP : string <<get>> <<set>>
+}
+Voto --> "Eleicao" Eleicao
+Voto --> "Eleitor" Eleitor
+enum DependencyFileType {
+    TemplateCronograma,
+    DocumentoCronograma,
+    Importacao,
+}
+class Arquivo {
+    + Arquivo(nome:string, tamanho:long, contentType:string, emailUsuario:string, nomeUsuario:string, dependencyType:DependencyFileType, dependencyId:int)
+    + Arquivo(path:string, nome:string, tamanho:long, contentType:string, emailUsuario:string, nomeUsuario:string, dependencyType:DependencyFileType, dependencyId:int)
+    + Path : string <<get>> <<set>>
+    + Nome : string <<get>>
+    + Tamanho : long <<get>>
+    + ContentType : string <<get>>
+    + EmailUsuario : string <<get>>
+    + NomeUsuario : string <<get>>
+    + DependencyId : int <<get>>
+}
+Arquivo --> "DependencyType" DependencyFileType
+class Empresa {
+    + Empresa(razaoSocial:string, cnpj:string)
+    + RazaoSocial : string <<get>> <<set>>
+    + Cnpj : string <<get>> <<set>>
+    + InformacoesGerais : string <<get>> <<set>>
+    + ContaId : int <<get>> <<set>>
+    + Ativa : bool <<get>>
+    + CnpjFormatado : string <<get>>
+    + Inativar() : void
+}
+Empresa --> "Conta" Conta
+class EtapaBase {
+    + EtapaBase(nome:string, descricao:string, ordem:int)
+    + Id : int <<get>> <<set>>
+    + Nome : string <<get>> <<set>>
+    + Descricao : string <<get>> <<set>>
+    + Ordem : int <<get>> <<set>>
+}
+class Grupo {
+    + Grupo()
+    + Grupo(codigoGrupo:string)
+    + CodigoGrupo : string <<get>> <<set>>
+    + CalcularDimensionamento(qtdaEleitores:int) : LinhaDimensionamento
+}
+Grupo --> "LimiteDimensionamento" LimiteDimensionamento
+class Estabelecimento {
+    + Estabelecimento(cidade:string, endereco:string, empresaId:int)
+    + Cidade : string <<get>> <<set>>
+    + Endereco : string <<get>> <<set>>
+    + Descricao : string <<get>> <<set>>
+    + GrupoId : int? <<get>> <<set>>
+    + EmpresaId : int <<get>> <<set>>
+    + Ativo : bool <<get>>
+    + Inativar() : void
+}
+Estabelecimento --> "Empresa" Empresa
+Estabelecimento --> "Grupo" Grupo
+class EtapaCronograma {
+    + EtapaCronograma(nome:string, descricao:string, ordem:int, eleicaoId:int, dataPrevista:DateTime, etapaObrigatoriaId:ECodigoEtapaObrigatoria?)
+    + EleicaoId : int <<get>>
+    + ErroMudancaEtapa : string <<get>> <<set>>
+}
+EtapaBase <|-- EtapaCronograma
+EtapaCronograma --> "EtapaObrigatoria" EtapaObrigatoria
+EtapaCronograma --> "Eleicao" Eleicao
+class Plano {
+    + Descricao : string <<get>> <<set>>
+    + ValorMes : decimal? <<get>> <<set>>
+    + ValorAno : decimal? <<get>> <<set>>
+    + QtdaEstabelecimentos : int <<get>> <<set>>
+}
+enum StatusInscricao {
+    Pendente,
+    Aprovada,
+    Reprovada,
+}
+enum ResultadoApuracao {
+    NaoEleito,
+    Efetivo,
+    Suplente,
+}
+class Inscricao {
+    + Inscricao(eleicaoId:int, eleitorId:int, objetivos:string)
+    + Inscricao(eleicao:Eleicao, eleitor:Eleitor, objetivos:string)
+    + Votos : int <<get>> <<internal set>>
+    + EleitorId : int <<get>>
+    + EleicaoId : int <<get>>
+    + Foto : string <<get>> <<set>>
+    + Objetivos : string <<get>> <<set>>
+    + EmailAprovador : string <<get>> <<set>>
+    + NomeAprovador : string <<get>> <<set>>
+    + AtualizarInscricao(objetivos:string) : void
+    + AprovarInscricao(usuarioAprovador:Usuario) : void
+    + BuscarUltimaReprovacao() : Reprovacao
+}
+Inscricao --> "StatusInscricao" StatusInscricao
+Inscricao o-> "ResultadoApuracao" ResultadoApuracao
+Inscricao --> "Eleitor" Eleitor
+Inscricao --> "Eleicao" Eleicao
+class EtapaPadraoConta {
+    + EtapaPadraoConta(nome:string, descricao:string, ordem:int, contaId:int, duracaoPadrao:int, etapaObrigatoriaId:ECodigoEtapaObrigatoria?)
+    + ContaId : int <<get>>
+    + DuracaoPadrao : int <<get>> <<set>>
+}
+EtapaBase <|-- EtapaPadraoConta
+EtapaPadraoConta --> "Conta" Conta
+EtapaPadraoConta --> "EtapaObrigatoria" EtapaObrigatoria
+@enduml
